@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>עזר תורה - תושיה תפרח</title>
+<title>עזר תורה - תושיה תפרח | v9</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Heebo:wght@300;400;500;600;700&display=swap');
@@ -121,7 +121,7 @@ tr:hover td{background:#f8f6ff}
 .modal-footer{flex-shrink:0}
 .modal-overlay.open .modal{transform:translateY(0)}
 .modal-sm{width:460px}.modal-lg{width:920px}
-.modal-header{background:var(--navy);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:10}
+.modal-header{background:linear-gradient(135deg,#243868,#1e3258);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:10}
 .modal-header h3{font-family:'Frank Ruhl Libre',serif;font-size:19px}
 .modal-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;line-height:1}
 .modal-close:hover{color:white}
@@ -285,6 +285,20 @@ tr:hover td{background:#f8f6ff}
 .add-opt-row{display:none;gap:5px;margin-top:4px;align-items:center}
 .add-opt-row input{flex:1}
 .add-opt-row.visible{display:flex}
+.card-header{background:linear-gradient(135deg,#1e3a5f,#162d4a)!important}
+.sub-modal-header{background:linear-gradient(135deg,#2d4a7a,#1e3258);color:white;padding:10px 16px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between}
+
+@media print {
+  tr { page-break-inside: avoid; }
+  td { 
+    white-space: normal !important;
+    word-wrap: break-word;
+    max-height: calc(3 * 1.4em);
+    overflow: hidden;
+    line-height: 1.4;
+  }
+  table { page-break-inside: auto; }
+}
 /* ── TEAL CARD ── */
 .stat-card.teal { border-top-color: var(--teal); }
 .stat-card.teal .stat-val { color: var(--teal); }
@@ -333,7 +347,7 @@ tr:hover td{background:#f8f6ff}
 <!-- TOPBAR -->
 <div class="topbar" style="height:auto;padding:8px 16px;flex-direction:column;align-items:stretch;gap:6px">
   <div style="display:flex;align-items:center;justify-content:space-between">
-    <div class="topbar-brand">✡️ עזר תורה <span>| תושיה תפרח</span></div>
+    <div class="topbar-brand">✡️ עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;opacity:.7;font-weight:400">v9.0</span> <span style="font-size:10px;font-family:monospace;opacity:.45;font-weight:400;letter-spacing:.5px">v9</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="user-pill"><span id="topUserName"></span><span class="role-badge" id="topUserRole"></span></div>
       <button class="btn btn-outline btn-sm" onclick="openSwitchUserModal()" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;font-size:11px">🔄 החלף משתמש</button>
@@ -410,9 +424,15 @@ tr:hover td{background:#f8f6ff}
     <input type="text" class="search-input" id="mainSearch" placeholder="🔍 חיפוש חופשי בכל השדות..." oninput="applyFilters()">
     <button class="btn btn-gold" onclick="openNewDonorModal()">+ הוסף תורם</button>
     <button class="btn btn-outline btn-sm" id="exportBtn" onclick="exportFiltered()" style="display:none">📤 ייצוא מוצג</button>
+    <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" onclick="deleteSelectedDonors()" style="display:none">🗑️ מחק נבחרים</button>
     <button class="btn btn-outline btn-sm" id="exportWizBtn" onclick="openExportWizard()" style="display:none">🧙 אשף ייצוא</button>
     <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️</button>
     <button class="btn btn-outline btn-sm" onclick="openLabelsModal()">🏷️ מדבקות</button>
+  </div>
+  <div id="bulkActionBar" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:8px 14px;margin:0 18px 8px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+    <span id="bulkCount" style="font-size:13px;font-weight:700;color:#856404">0 נבחרו</span>
+    <button class="btn btn-danger btn-sm" onclick="deleteSelectedDonors()">🗑️ מחק נבחרים</button>
+    <button class="btn btn-outline btn-sm" onclick="clearAllSelections()">✕ בטל בחירה</button>
   </div>
   <div class="toolbar" style="padding:10px 18px">
     <select class="filter-select" id="fAffil" onchange="applyFilters()">
@@ -436,6 +456,7 @@ tr:hover td{background:#f8f6ff}
     <div class="table-scroll">
       <table id="donorsTable">
         <thead><tr>
+          <th style="width:36px;padding:6px"><input type="checkbox" id="selectAllDonors" onclick="toggleSelectAllDonors(this)" title="בחר הכל"></th>
           <th onclick="sortTable('code')" data-col="code"><span class="si">⇅</span>קוד</th>
           <th onclick="sortTable('name')" data-col="name"><span class="si">⇅</span>שם</th>
           <th onclick="sortTable('affil')" data-col="affil"><span class="si">⇅</span>שיוך</th>
@@ -1000,8 +1021,9 @@ tr:hover td{background:#f8f6ff}
   <div class="modal modal-lg">
     <div class="modal-header">
       <h3 id="donorModalTitle">תורם חדש</h3>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-outline btn-sm" id="saveNewDonorBtn" onclick="saveDonorAndNew()" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:white">💾 שמור וצור חדש</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-danger btn-sm" id="deleteDonorBtn" onclick="deleteCurrentDonor()" style="display:none">🗑️ מחק</button>
+        <button class="btn btn-outline btn-sm" id="saveNewDonorBtn" onclick="saveDonorAndNew()" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:white">💾 שמור + חדש</button>
         <button class="btn btn-gold btn-sm" id="saveDonorBtnTop" onclick="saveDonor()">✔ שמור</button>
         <button class="modal-close" onclick="closeModal('donorModal')">✕</button>
       </div>
@@ -1061,7 +1083,7 @@ tr:hover td{background:#f8f6ff}
           <strong style="font-size:14px">היסטוריית תרומות</strong>
           <button class="btn btn-gold btn-sm" onclick="toggleDonForm()" id="donFormBtn">+ הוסף תרומה</button>
         </div>
-        <div id="donationFormBox" style="display:none;background:var(--cream);border-radius:10px;padding:16px;margin-bottom:14px">
+        <div id="donationFormBox" style="display:none;transition:all .2s;background:var(--cream);border-radius:10px;padding:16px;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">💰 <span id="donFormTitle">הוספת תרומה</span></div>
           <div class="fg2" style="gap:10px;margin-bottom:10px">
             <div class="fg"><label class="form-label">סכום (₪) <span class="req">*</span></label><input class="form-control" id="nd_amount" type="number" placeholder="0" min="0"></div>
@@ -1157,8 +1179,8 @@ tr:hover td{background:#f8f6ff}
       <!-- RELATIONS TAB -->
       <div id="dc-relations" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <strong>תורמים קשורים</strong>
-          <button class="btn btn-gold btn-sm" onclick="showRelSearch()">+ הוסף שיוך</button>
+          <strong>התאמות — קשרים עם תורמים אחרים</strong>
+          <button class="btn btn-gold btn-sm" onclick="showRelSearch()">🔗 הוסף התאמה</button>
         </div>
         <div id="relSearchBox" style="display:none;background:var(--cream);border-radius:10px;padding:14px;margin-bottom:14px">
           <div class="fg" style="margin-bottom:10px"><label class="form-label">חיפוש תורם</label><input class="form-control" id="relSearch" placeholder="חפש לפי שם או קוד..." oninput="searchRelDonors()"></div>
@@ -1176,12 +1198,7 @@ tr:hover td{background:#f8f6ff}
         <div id="relList"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" id="deleteDonorBtn" onclick="deleteCurrentDonor()" style="margin-left:auto;display:none">🗑️ מחק תורם</button>
-      <button class="btn btn-outline btn-sm" onclick="closeModal('donorModal')">סגור</button>
-      <button class="btn btn-outline btn-sm" id="saveNewDonorBtnBottom" onclick="saveDonorAndNew()">💾 שמור וצור חדש</button>
-      <button class="btn btn-navy" id="saveDonorBtn" onclick="saveDonor()">שמור</button>
-    </div>
+    <!-- footer replaced: buttons in header -->
   </div>
 </div>
 
@@ -1243,7 +1260,14 @@ tr:hover td{background:#f8f6ff}
         <div class="fg half"><label class="form-label">שם המגבית <span class="req">*</span></label><input class="form-control" id="cm_name" placeholder="למשל: מגבית פורים תשפ"ה"></div>
         <div class="fg"><label class="form-label">שנה עברית</label><input class="form-control" id="cm_year" placeholder="תשפ"ה"></div>
         <div class="fg"><label class="form-label">סכום יעד (₪)</label><input class="form-control" id="cm_goal" type="number" placeholder="0" min="0"></div>
-        <div class="fg"><label class="form-label">תאריך יעד</label><input class="form-control" id="cm_deadline" type="date"></div>
+        <div class="fg">
+          <label class="form-label">תאריך יעד</label>
+          <div style="display:flex;gap:6px">
+            <input class="form-control" id="cm_deadline" type="date" style="flex:2">
+            <input class="form-control" id="cm_deadline_time" type="time" value="23:59" style="flex:1" placeholder="שעה">
+          </div>
+        </div>
+        <div class="fg"><label class="form-label">שעת יעד</label><input class="form-control" id="cm_deadline_time" type="time" value="23:59"></div>
         <div class="fg"><label class="form-label">סטטוס</label>
           <select class="form-control" id="cm_active">
             <option value="true">פעילה</option>
@@ -1608,6 +1632,7 @@ function showPage(name) {
   if(name==='future') { setTimeout(renderFuturePage,50); }
   if(name==='fundraisers') { renderFRPage(); }
   if(name==='donations') { renderDonationsPanel(); }
+  if(name==='campaign') { setTimeout(startCampaignCountdown, 200); }
   if(name==='report') populateReportCampaigns();
 }
 
@@ -1632,7 +1657,7 @@ function renderDash() {
     const over = raised>=goal&&goal>0;
     box.innerHTML = `<div class="card" style="margin-bottom:20px">
       <div class="card-header"><h3>🎯 מגבית פעילה: ${ac.name}</h3><button class="btn btn-outline btn-sm" onclick="showPage('campaign')">לפאנל המגבית</button></div>
-      <div class="card-body">
+      <div class="card-body">${typeof countdownHtml !== 'undefined' ? countdownHtml : ''}
         <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
           <div class="stat-card ${over?'green':'red'}" style="padding:12px 16px">
             <div class="sv ${over?'green':'red'}" style="font-size:22px">${goal>0?'₪'+goal.toLocaleString():'-'}</div><div class="sl">יעד</div>
@@ -1667,6 +1692,46 @@ function renderDash() {
         <td>${dateCell(dn.date)}</td>
         <td>${methodBadge(dn.method)}</td>
       </tr>`).join('');
+  startCampaignCountdown();
+}
+
+// ── Live campaign countdown (ticks every second) ──
+let _cdTimer = null;
+function startCampaignCountdown() {
+  if(_cdTimer) clearInterval(_cdTimer);
+  const ac = activeCampaign();
+  const el = document.getElementById('campCountdown');
+  if(!el || !ac || !ac.deadline) return;
+  
+  function tick() {
+    const deadline = new Date(ac.deadline + 'T' + (ac.deadlineTime||'23:59') + ':00');
+    const now = new Date();
+    const diff = deadline - now;
+    if(diff <= 0) {
+      el.innerHTML = '<div style="font-weight:700;color:var(--danger)">⏰ המגבית הסתיימה!</div>';
+      clearInterval(_cdTimer); return;
+    }
+    const days  = Math.floor(diff / 86400000);
+    const hrs   = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+    const urg   = days < 2 ? 'var(--danger)' : days < 7 ? 'var(--gold)' : 'var(--teal,#0891b2)';
+    el.innerHTML = `<span style="font-size:22px">⏳</span>
+      <div>
+        <div style="font-weight:700;color:var(--navy);font-size:12px">נותרו לסיום המגבית</div>
+        <div style="display:flex;gap:10px;align-items:baseline">
+          <span style="font-size:24px;font-weight:900;color:${urg}">${days}</span><span style="font-size:11px;color:var(--muted)">ימים</span>
+          <span style="font-size:20px;font-weight:300;color:var(--muted)">:</span>
+          <span style="font-size:24px;font-weight:900;color:${urg}">${String(hrs).padStart(2,'0')}</span><span style="font-size:11px;color:var(--muted)">שעות</span>
+          <span style="font-size:20px;font-weight:300;color:var(--muted)">:</span>
+          <span style="font-size:24px;font-weight:900;color:${urg}">${String(mins).padStart(2,'0')}</span><span style="font-size:11px;color:var(--muted)">דקות</span>
+          <span style="font-size:20px;font-weight:300;color:var(--muted)">:</span>
+          <span style="font-size:20px;font-weight:700;color:${urg}">${String(secs).padStart(2,'0')}</span><span style="font-size:10px;color:var(--muted)">שניות</span>
+        </div>
+      </div>`;
+  }
+  tick();
+  _cdTimer = setInterval(tick, 1000);
 }
 
 function renderGlobalStats() {
@@ -1716,7 +1781,9 @@ function applyFilters() {
     const total=getTotal(d), maxD=getMax(d);
     const waBtn=d.mobile?`<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" onclick="openWAfor('${d.mobile}');event.stopPropagation()" title="WhatsApp">💬</button>`:'';
     const emBtn=d.email?`<button class="btn-icon em" style="width:26px;height:26px;font-size:12px" onclick="openMailfor('${d.email}');event.stopPropagation()" title="מייל">✉️</button>`:'';
+    const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" onchange="updateBulkBar()" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
     return `<tr onclick="openDonorModal('${d.id}')">
+      ${cbHtml}
       <td><strong>${d.code||''}</strong></td>
       <td>${donorName(d)}</td>
       <td><span class="badge" style="background:var(--cream-d);color:var(--muted)">${d.affil||''}</span></td>
@@ -1753,11 +1820,16 @@ function clearFilters() {
 // DONOR MODAL
 // ════════════════════════════════════════════════════
 function openNewDonorModal() {
+  // Reset pending buffers
+  _pendingDonations = [];
+  _pendingFuture = [];
+  _pendingRelations = [];
+  currentDonorId = '__new__';
   if(!can('edit')) return;
   currentDonorId=null; currentDTab='details';
   document.getElementById('donorModalTitle').textContent='תורם חדש';
   document.getElementById('deleteDonorBtn').style.display='none';
-  document.getElementById('saveDonorBtn').style.display='';
+  document.getElementById('saveDonorBtnTop').style.display='';
   fillForm({});
   document.getElementById('f_code').value=genCode(); saveDB();
   document.getElementById('f_createdAt').value=today();
@@ -1770,7 +1842,7 @@ function openDonorModal(id) {
   currentDonorId=id; currentDTab='details';
   document.getElementById('donorModalTitle').textContent=donorName(d);
   document.getElementById('deleteDonorBtn').style.display=can('edit')?'':'none';
-  document.getElementById('saveDonorBtn').style.display=can('edit')?'':'none';
+  document.getElementById('saveDonorBtnTop').style.display=can('edit')?'':'none';
   fillForm(d);
   switchDTab('details');
   openModal('donorModal');
@@ -1831,8 +1903,8 @@ function saveDonor() {
     document.getElementById('donorModalTitle').textContent=donorName(nd);
     document.getElementById('deleteDonorBtn').style.display='';
   }
-  saveDB(); renderAll(); renderGlobalStats();
-  const btn=document.getElementById('saveDonorBtn');
+  flushPendingToNewDonor(currentDonorId); saveDB(); renderAll(); renderGlobalStats();
+  const btn=document.getElementById('saveDonorBtnTop');
   btn.textContent='✓ נשמר'; btn.style.background='var(--success)'; btn.style.color='white';
   setTimeout(()=>{btn.textContent='שמור';btn.style.background='';btn.style.color='';},1500);
 }
@@ -1921,6 +1993,7 @@ function deleteDonorRow(id) {
 // DONATIONS TAB
 // ════════════════════════════════════════════════════
 function renderDonationsTab() {
+  if(isNewDonor()) { renderPendingDonations(); return; }
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   const total=getTotal(d), maxD=getMax(d), cnt=(d.donations||[]).length;
   document.getElementById('donorStatsBox').innerHTML=`
@@ -1962,7 +2035,17 @@ function toggleDonForm() {
   if(ac) document.getElementById('nd_campaign').value=ac.id;
   box.style.display='';
 }
-function cancelDonForm() { document.getElementById('donationFormBox').style.display='none'; document.getElementById('nd_editIdx').value=''; }
+function cancelDonForm() {
+  const box = document.getElementById('donationFormBox');
+  if(box) { box.style.display='none'; box.style.opacity='0'; }
+  const ei = document.getElementById('nd_editIdx');
+  if(ei) ei.value='';
+  // Reset form fields
+  ['nd_amount','nd_date','nd_notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Reset attribution mode
+  const frRad = document.querySelector('input[name="nd_mode"][value="fr"]');
+  if(frRad) { frRad.checked=true; toggleDonMode('nd'); }
+}
 
 function editDonation(idx) {
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
@@ -1996,19 +2079,48 @@ function editDonation(idx) {
 }
 
 function saveDonation() {
-  const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   const amount=parseFloat(document.getElementById('nd_amount').value);
   if(!amount||amount<=0){alert('יש להזין סכום תקין');return;}
-  if(!d.donations) d.donations=[];
   const attrib = getDonAttribution('nd');
-  const obj={amount,date:document.getElementById('nd_date').value,method:document.getElementById('nd_method').value,
+  const obj={
+    amount,
+    date:document.getElementById('nd_date').value,
+    method:document.getElementById('nd_method').value,
     campaignId:document.getElementById('nd_campaign').value||'',
-    fundraiserId:attrib.fundraiserId, groupId:attrib.groupId,
-    notes:document.getElementById('nd_notes').value.trim()};
+    fundraiserId:attrib.fundraiserId,
+    groupId:attrib.groupId,
+    notes:document.getElementById('nd_notes').value.trim()
+  };
+
+  // If donor not yet saved — buffer it
+  if(isNewDonor()) {
+    const editIdx = document.getElementById('nd_editIdx').value;
+    if(editIdx!=='') _pendingDonations[parseInt(editIdx)]=obj;
+    else _pendingDonations.push(obj);
+    cancelDonForm();
+    renderPendingDonations();
+    toast('✓ תרומה נוספה — תישמר עם שמירת התורם');
+    return;
+  }
+
+  const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
+  if(!d.donations) d.donations=[];
   const editIdx=document.getElementById('nd_editIdx').value;
   if(editIdx!=='') d.donations[parseInt(editIdx)]=obj;
   else d.donations.push(obj);
   cancelDonForm(); saveDB(); renderDonationsTab(); renderGlobalStats();
+  toast('✓ תרומה נשמרה');
+  // Remove future-donation if confirming
+  if(window._confirmFutureDonorId && window._confirmFutureIdx !== undefined) {
+    const fd=DB.donors.find(x=>x.id===window._confirmFutureDonorId);
+    if(fd && fd.futureDonations) {
+      fd.futureDonations.splice(window._confirmFutureIdx,1);
+      saveDB();
+      renderFutureTab && renderFutureTab();
+    }
+    window._confirmFutureDonorId=null; window._confirmFutureIdx=undefined;
+    const b=document.getElementById('futurConfirmBanner'); if(b) b.remove();
+  }
   if(document.getElementById('pageDash').classList.contains('active')) renderDash();
 }
 
@@ -2022,6 +2134,7 @@ function deleteDonation(idx) {
 // FUTURE DONATIONS TAB (multiple)
 // ════════════════════════════════════════════════════
 function renderFutureTab() {
+  if(isNewDonor()) { renderPendingFuture(); return; }
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   const futs=d.futureDonations||[];
   populateCampaignSelect('nf_campaign');
@@ -2072,16 +2185,27 @@ function editFuture(idx) {
 }
 
 function saveFutureDonation() {
-  const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   const date=document.getElementById('nf_date').value;
   const notes=document.getElementById('nf_notes').value.trim();
   if(!date&&!notes){alert('יש להזין לפחות תאריך יעד');return;}
-  if(!d.futureDonations) d.futureDonations=[];
   const obj={date,expectedAmount:document.getElementById('nf_amount').value?parseFloat(document.getElementById('nf_amount').value):null,campaignId:document.getElementById('nf_campaign').value||'',notes};
   const ei=document.getElementById('nf_editIdx').value;
+
+  if (isNewDonor()) {
+    if(ei!=='') _pendingFuture[parseInt(ei)]=obj;
+    else _pendingFuture.push(obj);
+    cancelFutureForm();
+    renderPendingFuture();
+    toast('✓ תרומה עתידית נוספה לבופר');
+    return;
+  }
+
+  const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
+  if(!d.futureDonations) d.futureDonations=[];
   if(ei!=='') d.futureDonations[parseInt(ei)]=obj;
   else d.futureDonations.push(obj);
   cancelFutureForm(); saveDB(); renderFutureTab(); renderGlobalStats();
+  toast('✓ תרומה עתידית נשמרה');
 }
 
 function deleteFuture(idx) {
@@ -2143,7 +2267,7 @@ function renderFuturePage() {
           <td style="max-width:200px;white-space:normal">${f.notes||''}</td>
           <td><div style="display:flex;gap:4px;align-items:center">${d.mobile?`<span style="font-size:11px">${d.mobile}</span>`:''} ${waBtn}</div></td>
           <td onclick="event.stopPropagation()">
-            ${canE?`<div class="row-actions"><button class="btn btn-outline btn-sm" onclick="openDonorAndFuture('${d.id}',${fi})">✏️</button><button class="btn btn-danger btn-sm" onclick="deleteFutureFromPage('${d.id}',${fi})">🗑️</button></div>`:''}
+            ${canE?`<div class="row-actions"><button class="btn btn-outline btn-sm" onclick="openDonorAndFuture('${d.id}',${fi})">✏️</button><button class="btn btn-gold btn-sm" onclick="confirmFutureDonation('${d.id}',${fi})" title="אישור קבלת תרומה">✅ אישור</button><button class="btn btn-danger btn-sm" onclick="deleteFutureFromPage('${d.id}',${fi})">🗑️</button></div>`:''}
           </td>
         </tr>`;
       }).join('');
@@ -2258,12 +2382,12 @@ function addDonorFromQD(prefill) {
         if (parts.length > 1) document.getElementById('f_lastName').value = parts.slice(1).join(' ');
       }
       // Change the save button to "save and return to donation"
-      const saveNewBtn = document.getElementById('saveNewDonorBtnBottom');
+      const saveNewBtn = document.getElementById('saveNewDonorBtn');
       if (saveNewBtn) {
         saveNewBtn.textContent = '💾 שמור וחזור לתרומה ↵';
         saveNewBtn.onclick = saveDonorThenQD;
       }
-      const saveBtn = document.getElementById('saveDonorBtn');
+      const saveBtn = document.getElementById('saveDonorBtnTop');
       if (saveBtn) {
         saveBtn.textContent = '💾 שמור וחזור';
         saveBtn.onclick = saveDonorThenQD;
@@ -2376,7 +2500,7 @@ function saveCampaign() {
   const isActive=document.getElementById('cm_active').value==='true';
   if(isActive) DB.campaigns.forEach(c=>c.active=false);
   const editId=document.getElementById('cm_editId').value;
-  const obj={id:editId||'C'+Date.now(),name,year:document.getElementById('cm_year').value.trim(),goal:parseFloat(document.getElementById('cm_goal').value)||0,deadline:document.getElementById('cm_deadline').value,active:isActive,desc:document.getElementById('cm_desc').value.trim()};
+  const obj={id:editId||'C'+Date.now(),name,year:document.getElementById('cm_year').value.trim(),goal:parseFloat(document.getElementById('cm_goal').value)||0,deadline:document.getElementById('cm_deadline').value,deadlineTime:document.getElementById('cm_deadline_time')?.value||'23:59',active:isActive,desc:document.getElementById('cm_desc').value.trim()};
   if(editId){const idx=DB.campaigns.findIndex(x=>x.id===editId);if(idx>=0)DB.campaigns[idx]=obj;}
   else DB.campaigns.push(obj);
   saveDB(); closeModal('campaignModal'); renderCampaignPage();
@@ -2441,6 +2565,39 @@ function renderCampaignPage() {
     const pct=goal>0?Math.min((raised/goal)*100,100):0;
     const over=raised>=goal&&goal>0;
     const remaining=over?0:goal-raised;
+    // Build countdown string
+    let countdownHtml = '';
+    if(ac.deadline) {
+      const deadlineStr = ac.deadline + 'T' + (ac.deadlineTime||'23:59') + ':00';
+      const dl = new Date(deadlineStr);
+      const now = new Date();
+      const diff = dl - now;
+      if(diff > 0) {
+        const days = Math.floor(diff / 86400000);
+        const hrs = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        countdownHtml = `<div id="campCountdown" style="display:flex;align-items:center;gap:10px;background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:13px">
+          <span style="font-size:22px">⏳</span>
+          <div>
+            <div style="font-weight:700;color:var(--navy)">נותרו לסיום המגבית</div>
+            <div style="font-size:20px;font-weight:900;color:var(--gold)">${days} ימים, ${hrs} שעות, ${mins} דקות</div>
+            <div style="font-size:11px;color:var(--muted)">יעד: ${new Date(deadlineStr).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          </div>
+        </div>`;
+        // Start live update
+        if(window._countdownTimer) clearInterval(window._countdownTimer);
+        window._countdownTimer = setInterval(() => {
+          const el=document.getElementById('campCountdown');
+          if(!el){clearInterval(window._countdownTimer);return;}
+          const d2=new Date(deadlineStr)-new Date();
+          if(d2<=0){el.innerHTML='<span style="color:red;font-weight:700">⛔ המגבית הסתיימה</span>';clearInterval(window._countdownTimer);return;}
+          const dd=Math.floor(d2/86400000), hh=Math.floor((d2%86400000)/3600000), mm=Math.floor((d2%3600000)/60000);
+          el.querySelector('div > div:nth-child(2)').textContent=dd+' ימים, '+hh+' שעות, '+mm+' דקות';
+        }, 30000);
+      } else {
+        countdownHtml = '<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px;margin-bottom:12px;font-size:13px;color:#991b1b;font-weight:700">⛔ המגבית הסתיימה ב-'+dl.toLocaleDateString("he-IL")+'</div>';
+      }
+    }
     html+=`<div class="card" style="border:2px solid var(--gold)">
       <div class="card-header" style="background:linear-gradient(135deg,var(--navy),#2a3f6b)">
         <h3>🎯 ${ac.name} ${ac.year?'— '+ac.year:''} <span style="background:var(--gold);color:var(--navy);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:8px">פעילה</span></h3>
@@ -2939,7 +3096,7 @@ function printGroupReport(grpId) {
       .grp-title{font-size:18px;font-weight:700;margin-bottom:4px}
       .grp-code{font-size:13px;color:#888;margin-bottom:16px}
       .member{display:inline-block;background:#f0f4ff;border:1px solid #1a2744;border-radius:6px;padding:5px 14px;margin:4px;font-size:13px}
-      @media print{body{margin:20px}}
+      @media print{body{margin:20px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}
     </style></head><body>
     <div class="org">${ORG_NAME}</div>
     <div class="camp">${ac?'מגבית: '+ac.name+' '+( ac.year||''):''}</div>
@@ -3232,7 +3389,7 @@ function printReport() {
           width="100%" height="280" style="border:1px solid #ccc;border-radius:6px" loading="lazy"></iframe></div>` : '';
 
   const w = window.open('','_blank','width=1000,height=700');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d3\u05d5\u05d7 \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</title><style>body{font-family:Arial,sans-serif;margin:20px 30px;color:#1a2744;direction:rtl;font-size:11px}.org{font-size:18px;font-weight:900;border-bottom:3px solid #c9a84c;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top;font-size:10px}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:10px}}</style></head><body>');
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d3\u05d5\u05d7 \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</title><style>body{font-family:Arial,sans-serif;margin:20px 30px;color:#1a2744;direction:rtl;font-size:11px}.org{font-size:18px;font-weight:900;border-bottom:3px solid #c9a84c;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top;font-size:10px}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:10px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}</style></head><body>');
   w.document.write(`<div class="org">${ORG}</div>`);
   w.document.write(`<div class="sub">${ac?ac.name+' '+(ac.year||''):''} | ${rows.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd | ${new Date().toLocaleDateString('he-IL')}</div>`);
   w.document.write('<table><thead><tr><th>\u05e9\u05dd</th><th>\u05db\u05ea\u05d5\u05d1\u05ea</th><th>\u05d8\u05dc\u05e4\u05d5\u05df</th><th>\u05d4\u05e2\u05e8\u05d5\u05ea</th><th>\u05ea\u05e8\u05d5\u05de\u05d4 \u05d2\u05d1\u05d5\u05d4\u05d4</th>'+prev3.map(c=>`<th>${c.name}</th>`).join('')+'</tr></thead><tbody>');
@@ -3399,7 +3556,7 @@ function runFrPrint() {
     ? `<div style="margin-top:16px"><h3 style="font-size:12px">\u05de\u05e4\u05ea \u05d0\u05d9\u05e1\u05d5\u05e3</h3><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(mapCoords.slice(0,8).map(d=>d.address||'').join('|'))}&output=embed&z=14" width="100%" height="280" style="border:1px solid #ccc;border-radius:6px" loading="lazy"></iframe></div>` : '';
 
   const w = window.open('','_blank','width=1000,height=700');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d2\u05d9\u05dc\u05d9\u05d5\u05df \u05d4\u05ea\u05e8\u05de\u05d4</title><style>body{font-family:Arial,sans-serif;margin:25px 30px;color:#1a2744;direction:rtl;font-size:11px}.org{font-size:20px;font-weight:900;border-bottom:3px solid #c9a84c;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:10px}.mbrs{background:#f0f4ff;padding:6px 12px;border-radius:6px;font-size:10px;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}}</style></head><body>`);
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d2\u05d9\u05dc\u05d9\u05d5\u05df \u05d4\u05ea\u05e8\u05de\u05d4</title><style>body{font-family:Arial,sans-serif;margin:25px 30px;color:#1a2744;direction:rtl;font-size:11px}.org{font-size:20px;font-weight:900;border-bottom:3px solid #c9a84c;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:10px}.mbrs{background:#f0f4ff;padding:6px 12px;border-radius:6px;font-size:10px;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}td{max-height:none;word-break:break-word;overflow-wrap:break-word}}</style></head><body>`);
   w.document.write(`<div class="org">${ORG}</div>`);
   w.document.write(`<div class="sub">${ac?ac.name+' '+(ac.year||''):''} ${grp?'| \u05e7\u05d1\u05d5\u05e6\u05d4: '+grp.name+' ('+grp.code+')':''} | ${donors.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</div>`);
   if(members.length) w.document.write(`<div class="mbrs">\u05d7\u05d1\u05e8\u05d9 \u05d4\u05e7\u05d1\u05d5\u05e6\u05d4: ${members.join(' | ')}</div>`);
@@ -3421,7 +3578,7 @@ function printGroupsOverview() {
   const ac = activeCampaign();
   const ORG = '\u05e2\u05d6\u05e8 \u05ea\u05d5\u05e8\u05d4 \u2013 \u05ea\u05d5\u05e9\u05d9\u05d4 \u05ea\u05e4\u05e8\u05d7';
   const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</title><style>body{font-family:Arial,sans-serif;margin:25px;direction:rtl;font-size:12px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:6px 10px;text-align:right}td{padding:5px 10px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}}</style></head><body>`);
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</title><style>body{font-family:Arial,sans-serif;margin:25px;direction:rtl;font-size:12px}table{width:100%;border-collapse:collapse}th{background:#1a2744;color:white;padding:6px 10px;text-align:right}td{padding:5px 10px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}td{max-height:none;word-break:break-word;overflow-wrap:break-word}}</style></head><body>`);
   w.document.write(`<h2 style="color:#1a2744">${ORG}</h2><p style="color:#666">${ac?ac.name+' '+(ac.year||''):''} | ${DB.groups.length} \u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</p>`);
   w.document.write('<table><thead><tr><th>\u05e7\u05d5\u05d3</th><th>\u05e9\u05dd</th><th>\u05d5\u05d5\u05e2\u05d3</th><th>\u05d7\u05d1\u05e8\u05d9\u05dd</th><th>\u05d2\u05d9\u05d5\u05e1</th><th>\u05d9\u05e2\u05d3</th></tr></thead><tbody>');
   DB.groups.forEach(g => {
@@ -3441,7 +3598,7 @@ function printCampaignSummary() {
   const pct = target>0?Math.round(tot/target*100):0;
   const ORG = '\u05e2\u05d6\u05e8 \u05ea\u05d5\u05e8\u05d4 \u2013 \u05ea\u05d5\u05e9\u05d9\u05d4 \u05ea\u05e4\u05e8\u05d7';
   const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e1\u05d9\u05db\u05d5\u05dd</title><style>body{font-family:Arial,sans-serif;margin:40px;direction:rtl;text-align:center}.bar-bg{background:#eee;border-radius:8px;height:30px;margin:12px auto;max-width:450px}.bar-fg{background:#c9a84c;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1a2744;font-weight:700}@media print{body{margin:20px}}</style></head><body>`);
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e1\u05d9\u05db\u05d5\u05dd</title><style>body{font-family:Arial,sans-serif;margin:40px;direction:rtl;text-align:center}.bar-bg{background:#eee;border-radius:8px;height:30px;margin:12px auto;max-width:450px}.bar-fg{background:#c9a84c;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1a2744;font-weight:700}@media print{body{margin:20px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}</style></head><body>`);
   w.document.write(`<h1 style="color:#1a2744">${ORG}</h1><h2 style="color:#555">${ac.name} ${ac.year||''}</h2><div style="font-size:48px;font-weight:900;color:#1a2744">\u20aa${Math.round(tot).toLocaleString()}</div><div style="font-size:18px;color:#666">\u05de\u05ea\u05d5\u05da \u05d9\u05e2\u05d3 \u20aa${Math.round(target).toLocaleString()}</div><div class="bar-bg"><div class="bar-fg" style="width:${Math.min(pct,100)}%">${pct}%</div></div>`);
   w.document.write('<script>window.onload=()=>window.print();<\/script></body></html>');
   w.document.close();
@@ -4177,6 +4334,187 @@ function pickGroupInForm(prefix, grpId) {
       : 'אין חברים רשומים בקבוצה';
   }
 }
+
+// ══════════════════════════════════════
+// BULK SELECT & DELETE
+// ══════════════════════════════════════
+function toggleSelectAll(cb) {
+  const checked = cb.checked;
+  document.querySelectorAll('.donor-row-cb').forEach(el => el.checked = checked);
+  updateBulkBar();
+}
+
+function toggleSelectAllDonors(cb) {
+  document.querySelectorAll('.donor-row-cb').forEach(c => c.checked = cb.checked);
+  updateBulkBar();
+}
+function updateBulkBar() {
+  const selected = document.querySelectorAll('.donor-row-cb:checked');
+  const bar = document.getElementById('bulkActionBar');
+  const cnt = document.getElementById('bulkCount');
+  if (!bar) return;
+  if (selected.length > 0) {
+    bar.style.display = 'flex';
+    cnt.textContent = selected.length + ' נבחרו';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+function clearAllSelections() {
+  document.querySelectorAll('.donor-row-cb').forEach(el => el.checked = false);
+  const cb = document.getElementById('selectAllDonors');
+  if (cb) cb.checked = false;
+  updateBulkBar();
+}
+function deleteSelectedDonors() {
+  if (!can('admin')) { alert('אין הרשאה'); return; }
+  const ids = Array.from(document.querySelectorAll('.donor-row-cb:checked')).map(el => el.dataset.id);
+  if (!ids.length) return;
+  if (!confirm(`האם למחוק ${ids.length} תורמים? פעולה זו בלתי הפיכה!`)) return;
+  DB.donors = DB.donors.filter(d => !ids.includes(d.id));
+  saveDB();
+  renderDonorTable();
+  clearAllSelections();
+  renderGlobalStats();
+  toast(ids.length + ' תורמים נמחקו');
+}
+
+function toast(msg) {
+  let t = document.getElementById('toastMsg');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastMsg';
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2744;color:white;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+
+// ══════════════════════════════════════════════════════
+// PENDING BUFFER — for new donors not yet saved
+// ══════════════════════════════════════════════════════
+let _pendingDonations = [];
+let _pendingFuture = [];
+let _pendingRelations = [];
+
+function isNewDonor() {
+  // Returns true when we're adding a brand new (unsaved) donor
+  return !currentDonorId || currentDonorId === '__new__';
+}
+
+function flushPendingToNewDonor(donorId) {
+  const d = DB.donors.find(x => x.id === donorId); if (!d) return;
+  if (!d.donations) d.donations = [];
+  if (!d.futureDonations) d.futureDonations = [];
+  if (!d.relations) d.relations = [];
+  _pendingDonations.forEach(obj => d.donations.push(obj));
+  _pendingFuture.forEach(obj => d.futureDonations.push(obj));
+  _pendingRelations.forEach(obj => d.relations.push(obj));
+  _pendingDonations = [];
+  _pendingFuture = [];
+  _pendingRelations = [];
+}
+
+
+function confirmFutureDonation(donorId, futureIdx) {
+  // Open donor card, switch to donations tab, pre-fill amount from future donation
+  const d = DB.donors.find(x=>x.id===donorId); if(!d) return;
+  const fd = (d.futureDonations||[])[futureIdx];
+  currentDonorId = donorId;
+  fillDForm(d);
+  switchDTab('donations');
+  openModal('donorModal');
+  setTimeout(() => {
+    // Open the donation form pre-filled
+    const box = document.getElementById('donationFormBox');
+    if(box) box.style.display='';
+    // Pre-fill amount and notes from the future donation
+    if(fd) {
+      const amtEl = document.getElementById('nd_amount');
+      const notesEl = document.getElementById('nd_notes');
+      const campEl = document.getElementById('nd_campaign');
+      if(amtEl && fd.expectedAmount) amtEl.value = fd.expectedAmount;
+      if(notesEl && fd.notes) notesEl.value = fd.notes;
+      if(campEl && fd.campaignId) campEl.value = fd.campaignId;
+      // Set today as date
+      const dateEl = document.getElementById('nd_date');
+      if(dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+    }
+    // Mark that we should remove this future donation upon save
+    window._confirmFutureDonorId = donorId;
+    window._confirmFutureIdx = futureIdx;
+    // Show info banner
+    const banner = document.createElement('div');
+    banner.id = 'futurConfirmBanner';
+    banner.style.cssText = 'background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:8px';
+    banner.innerHTML = '✅ <strong>אישור תרומה עתידית</strong> — לאחר שמירה התרומה העתידית תוסר אוטומטית';
+    const fb = document.getElementById('donationFormBox');
+    if(fb && !document.getElementById('futurConfirmBanner')) fb.prepend(banner);
+  }, 150);
+}
+
+function renderPendingDonations() {
+  const body = document.getElementById('donorStatsBody');
+  if (!body) return;
+  if (_pendingDonations.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">אין תרומות עדיין</td></tr>';
+    return;
+  }
+  body.innerHTML = _pendingDonations.map((dn,i) => `
+    <tr>
+      <td>${fmt(dn.date)}</td>
+      <td style="font-size:11px">${toHeb(dn.date)}</td>
+      <td><strong style="color:var(--success)">₪${parseFloat(dn.amount||0).toLocaleString()}</strong></td>
+      <td>${dn.method||''}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePending('don',${i})">🗑️</button></td>
+    </tr>`).join('');
+}
+
+function renderPendingFuture() {
+  const body = document.getElementById('futureTabBody');
+  if (!body) return;
+  if (_pendingFuture.length === 0) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">אין תרומות עתידיות</td></tr>';
+    return;
+  }
+  body.innerHTML = _pendingFuture.map((f,i) => `
+    <tr>
+      <td>${fmt(f.date)}</td>
+      <td>${f.expectedAmount ? '₪'+parseFloat(f.expectedAmount).toLocaleString() : '—'}</td>
+      <td>${f.notes||''}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePending('future',${i})">🗑️</button></td>
+    </tr>`).join('');
+}
+
+function renderPendingRelations() {
+  const body = document.getElementById('relTabBody');
+  if (!body) return;
+  if (_pendingRelations.length === 0) {
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">אין התאמות</td></tr>';
+    return;
+  }
+  body.innerHTML = _pendingRelations.map((r,i) => {
+    const other = DB.donors.find(x=>x.id===r.relId);
+    return `<tr>
+      <td>${other ? donorName(other) : r.relId}</td>
+      <td>${r.relType||''}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePending('rel',${i})">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function removePending(type, idx) {
+  if(type==='don') _pendingDonations.splice(idx,1);
+  else if(type==='future') _pendingFuture.splice(idx,1);
+  else if(type==='rel') _pendingRelations.splice(idx,1);
+  if(type==='don') renderPendingDonations();
+  else if(type==='future') renderPendingFuture();
+  else renderPendingRelations();
+}
+
 // ── Donation attribution mode: FR vs Group ──
 function toggleDonMode(prefix) {
   const isGrp = document.querySelector(`input[name="${prefix}_mode"]:checked`)?.value === 'grp';
