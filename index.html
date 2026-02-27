@@ -505,6 +505,7 @@ tr:hover td{background:#f8f6ff}
     <button class="sb-item" id="sb-fundraisers" onclick="showPage('fundraisers')"><span class="sb-icon">🎓</span><span class="sb-label">מתרימים</span></button>
     <button class="sb-item" id="sb-messages" onclick="showPage('messages')"><span class="sb-icon">✉️</span><span class="sb-label">הודעות <span id="sbUnreadBadge" style="display:none;background:var(--danger);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></span></button>
     <hr class="sb-divider">
+    <button class="sb-item" id="sb-expenses" onclick="showPage('expenses')"><span class="sb-icon">💸</span><span class="sb-label">הוצאות</span></button>
     <button class="sb-item" id="sb-exportwiz" onclick="openExportWizard()"><span class="sb-icon">🖨️</span><span class="sb-label">ייצוא/הדפסה</span></button>
     <button class="sb-item" id="sb-admin" onclick="showPage('admin'); setTimeout(checkCloudStatus, 500);"><span class="sb-icon">⚙️</span><span class="sb-label">ניהול</span></button>
   </nav>
@@ -2497,7 +2498,17 @@ tr:hover td{background:#f8f6ff}
         <div id="qd_selected" style="display:none;margin-top:6px;padding:8px;background:var(--success-bg);border-radius:7px;font-size:13px"></div>
       </div>
       <div class="fg2" style="gap:10px;margin-bottom:10px">
-        <div class="fg"><label class="form-label">סכום (₪) <span class="req">*</span></label><input class="form-control" id="qd_amount" type="number" placeholder="0" min="0"></div>
+        <div class="fg"><label class="form-label">סכום <span class="req">*</span></label>
+          <div style="display:flex;gap:6px">
+            <input class="form-control" id="qd_amount" type="number" placeholder="0" min="0" style="flex:1" oninput="updateQDCurrencyConversion()">
+            <select class="form-control" id="qd_currency" onchange="updateQDCurrencyConversion()" style="max-width:80px">
+              <option value="ILS">₪</option>
+              <option value="USD">$</option>
+              <option value="EUR">€</option>
+            </select>
+          </div>
+          <div id="qd_converted_display" style="font-size:11px;color:var(--teal,#0891b2);margin-top:3px;display:none"></div>
+        </div>
         <div class="fg"><label class="form-label">תאריך</label><input class="form-control" id="qd_date" type="date"></div>
         <div class="fg"><label class="form-label">אופן תרומה</label>
           <select class="form-control" id="qd_method"><option>מזומן</option><option>אשראי</option><option>צ'ק</option><option>העברה בנקאית</option><option>אחר</option></select>
@@ -3952,6 +3963,8 @@ function openQuickDonationModal() {
   document.getElementById('qd_results').innerHTML='';
   document.getElementById('qd_selected').style.display='none';
   document.getElementById('qd_amount').value='';
+  const qdCurr = document.getElementById('qd_currency'); if(qdCurr) qdCurr.value='ILS';
+  const qdDisp = document.getElementById('qd_converted_display'); if(qdDisp) qdDisp.style.display='none';
   document.getElementById('qd_date').value=today();
   document.getElementById('qd_method').value='מזומן';
   document.getElementById('qd_notes').value='';
@@ -4054,16 +4067,44 @@ function pickQDDonor(id) {
 
 function saveQuickDonation() {
   if(!qd_selectedId){alert('יש לבחור תורם');return;}
-  const amount=parseFloat(document.getElementById('qd_amount').value);
-  if(!amount||amount<=0){alert('יש להזין סכום תקין');return;}
+  const rawAmount=parseFloat(document.getElementById('qd_amount').value);
+  if(!rawAmount||rawAmount<=0){alert('יש להזין סכום תקין');return;}
+  const currency = document.getElementById('qd_currency')?.value || 'ILS';
+  const amount = currency === 'ILS' ? rawAmount : getQDILSAmount();
   const d=DB.donors.find(x=>x.id===qd_selectedId); if(!d) return;
   if(!d.donations) d.donations=[];
   const qdAttrib = getDonAttribution('qd');
-  d.donations.push({amount,date:document.getElementById('qd_date').value,method:document.getElementById('qd_method').value,campaignId:document.getElementById('qd_campaign').value||'',fundraiserId:qdAttrib.fundraiserId,groupId:qdAttrib.groupId,notes:document.getElementById('qd_notes').value.trim()});
-  auditLog('create', `תרומה מהירה ₪${amount} ל${donorName(d)}`);
+  const don = {amount,date:document.getElementById('qd_date').value,method:document.getElementById('qd_method').value,campaignId:document.getElementById('qd_campaign').value||'',fundraiserId:qdAttrib.fundraiserId,groupId:qdAttrib.groupId,notes:document.getElementById('qd_notes').value.trim()};
+  if(currency !== 'ILS') { don.originalAmount = rawAmount; don.originalCurrency = currency; }
+  d.donations.push(don);
+  const dispAmt = currency !== 'ILS' ? `${currency} ${rawAmount.toLocaleString()} (≈₪${Math.round(amount).toLocaleString()})` : `₪${amount.toLocaleString()}`;
+  auditLog('create', `תרומה מהירה ${dispAmt} ל${donorName(d)}`);
   saveDB(); renderGlobalStats(); closeModal('quickDonModal');
   if(document.getElementById('pageDash').classList.contains('active')) renderDash();
-  alert(`התרומה של ₪${amount.toLocaleString()} נשמרה עבור ${donorName(d)}`);
+  alert(`התרומה של ${dispAmt} נשמרה עבור ${donorName(d)}`);
+}
+function getQDILSAmount() {
+  const amount = parseFloat(document.getElementById('qd_amount').value) || 0;
+  const currency = document.getElementById('qd_currency')?.value || 'ILS';
+  if(currency === 'ILS' || !amount) return amount;
+  const rates = window._fxRates || {};
+  if(currency === 'USD' && rates.USD) return amount / rates.USD;
+  if(currency === 'EUR' && rates.EUR) return amount / rates.EUR;
+  return amount;
+}
+async function updateQDCurrencyConversion() {
+  const amount = parseFloat(document.getElementById('qd_amount')?.value) || 0;
+  const currency = document.getElementById('qd_currency')?.value || 'ILS';
+  const display = document.getElementById('qd_converted_display');
+  if(!display) return;
+  if(currency === 'ILS' || !amount) { display.style.display='none'; return; }
+  const rates = await fetchFXRates();
+  if(!rates) { display.style.display='none'; return; }
+  let ilsAmount = amount;
+  if(currency === 'USD' && rates.USD) ilsAmount = amount / rates.USD;
+  else if(currency === 'EUR' && rates.EUR) ilsAmount = amount / rates.EUR;
+  display.textContent = `≈ ₪${Math.round(ilsAmount).toLocaleString()} (שער: 1 ${currency} = ₪${(1/rates[currency]).toFixed(2)})`;
+  display.style.display = '';
 }
 
 function saveQuickDonationAndNew() {
