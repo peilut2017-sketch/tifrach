@@ -18,14 +18,15 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap');
 
 :root {
   /* Core Palette - Slate/Zinc */
-  --bg:#f4f5f7; --bg-2:#ffffff; --bg-3:#f0f1f3;
-  --navy:#0f172a; --navy-l:#1e293b; --navy-h:#020617;
-  --gold:#b8922a; --gold-l:#d4a843; --gold-bg:#fefce8;
+  --bg:#f0f3ff; --bg-2:#ffffff; --bg-3:#eaedfa;
+  --navy:#3f52d1; --navy-l:#5168de; --navy-h:#2e3fb8;
+  --gold:#d07526; --gold-l:#e8912e; --gold-bg:#fff7ed;
   --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1;
   --slate-400:#94a3b8; --slate-500:#64748b; --slate-600:#475569;
   --slate-700:#334155; --slate-800:#1e293b; --slate-900:#0f172a;
@@ -41,7 +42,7 @@ function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;')
   --teal:#0891b2; --teal-bg:#ecfeff;
   
   /* Border */
-  --border:var(--zinc-200); --border-focus:#6366f1;
+  --border:var(--zinc-200); --border-focus:var(--navy);
   
   /* Shadows - very subtle */
   --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
@@ -60,20 +61,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 
 /* LOGIN */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--slate-900);background-image:radial-gradient(ellipse at 20% 50%,rgba(99,102,241,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(184,146,42,.1) 0%,transparent 60%)}
-.login-box{background:rgba(255,255,255,.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);box-shadow:0 25px 50px rgba(0,0,0,.4);padding:48px 40px;width:420px;max-width:95vw;text-align:center}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3f52d1 0%,#5b6ee8 50%,#7c54d4 100%);background-image:radial-gradient(ellipse at 20% 50%,rgba(255,255,255,.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,200,100,.12) 0%,transparent 60%)}
+.login-box{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);box-shadow:0 25px 50px rgba(0,0,0,.4);padding:48px 40px;width:420px;max-width:95vw;text-align:center}
 .login-logo{font-family:'Frank Ruhl Libre',serif;font-size:28px;color:#fff;margin-bottom:4px;letter-spacing:-.5px}
-.login-sub{color:rgba(255,255,255,.45);font-size:13px;margin-bottom:32px}
+.login-sub{color:rgba(255,255,255,.7);font-size:13px;margin-bottom:32px}
 .login-form{display:flex;flex-direction:column;gap:12px;text-align:right}
 .login-error{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;padding:10px 14px;border-radius:var(--r);font-size:13px;display:none}
 .login-box .form-control{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:white}
 .login-box .form-control:focus{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.09)}
 .login-box .form-control::placeholder{color:rgba(255,255,255,.3)}
-.login-box .btn-navy{background:var(--gold);color:var(--slate-900);font-weight:700}
-.login-box .btn-navy:hover{background:var(--gold-l)}
+.login-box .btn-navy{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);font-weight:700;backdrop-filter:blur(4px)}
+.login-box .btn-navy:hover{background:rgba(255,255,255,.25)}
 
 /* TOPBAR */
-.topbar{background:rgba(15,23,42,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);color:var(--white);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-wrap:wrap;gap:6px}
+.topbar{background:rgba(63,82,209,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);color:var(--white);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-wrap:wrap;gap:6px}
 .topbar-brand{font-family:'Frank Ruhl Libre',serif;font-size:18px;font-weight:700;color:var(--gold-l);letter-spacing:-.3px}
 .topbar-brand span{color:rgba(255,255,255,.4);font-weight:300;font-size:14px}
 .topbar-right{display:flex;align-items:center;gap:12px}
@@ -82,9 +83,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .topbar-nav{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
 .topbar-nav::-webkit-scrollbar{display:none}
 .nav-btn{background:transparent;border:1px solid transparent;color:rgba(255,255,255,.55);padding:5px 12px;border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px}
-.nav-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.1)}
-.nav-btn.active{background:rgba(184,146,42,.15);color:var(--gold-l);border-color:rgba(184,146,42,.3)}
-.logout-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:color var(--tr);display:flex;align-items:center;gap:5px}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
+.nav-btn.active{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4)}
+.logout-btn{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:color var(--tr);display:flex;align-items:center;gap:5px}
 .logout-btn:hover{color:rgba(255,255,255,.8)}
 
 /* PAGES */
@@ -93,7 +94,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* BUTTONS */
 .btn{padding:7px 14px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px;letter-spacing:-.1px}
-.btn-navy{background:var(--slate-900);color:white;border-color:var(--slate-900)}.btn-navy:hover{background:var(--slate-700);border-color:var(--slate-700)}
+.btn-navy{background:var(--navy);color:white;border-color:var(--navy)}.btn-navy:hover{background:var(--navy-l);border-color:var(--navy-l)}
 .btn-gold{background:var(--gold);color:var(--slate-900);border-color:var(--gold);font-weight:600}.btn-gold:hover{background:var(--gold-l);border-color:var(--gold-l)}
 .btn-outline{background:var(--white);color:var(--slate-700);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--slate-400);background:var(--slate-100)}
 .btn-danger{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}.btn-danger:hover{background:var(--danger);color:white;border-color:var(--danger)}
@@ -107,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* CARDS */
 .card{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;border:1px solid var(--border)}
-.card-header{background:var(--slate-900);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.card-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
 .card-header h3{font-family:'Frank Ruhl Libre',serif;font-size:16px;font-weight:500}
 .card-body{padding:18px}
 
@@ -153,20 +154,20 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 /* TOOLBAR */
 .toolbar{background:var(--white);border-radius:var(--r-lg);padding:12px 16px;box-shadow:var(--sh);margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border:1px solid var(--border)}
 .search-input{flex:1;min-width:200px;padding:7px 12px;border:1px solid var(--border);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all var(--tr);color:var(--text);background:var(--bg)}
-.search-input:focus{border-color:var(--border-focus);background:white;box-shadow:0 0 0 3px rgba(99,102,241,.08)}
+.search-input:focus{border-color:var(--border-focus);background:white;box-shadow:0 0 0 3px rgba(63,82,209,.12)}
 .filter-select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:white;cursor:pointer;color:var(--text)}
 .filter-select:focus{border-color:var(--border-focus)}
 .filter-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;text-decoration:underline}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay{position:fixed;inset:0;background:rgba(63,82,209,.35);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--white);border-radius:var(--r-xl);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);border:1px solid var(--border);width:700px;max-width:96vw;max-height:90vh;overflow:hidden;transform:translateY(20px) scale(.98);transition:transform .2s;display:flex;flex-direction:column}
 .modal-body{overflow-y:auto;flex:1}
 .modal-footer{flex-shrink:0}
 .modal-overlay.open .modal{transform:translateY(0) scale(1)}
 .modal-sm{width:460px}.modal-lg{width:920px}
-.modal-header{background:var(--slate-900);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.modal-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .modal-header h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:500}
 .modal-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--r-sm);transition:all var(--tr)}
 .modal-close:hover{color:white;background:rgba(255,255,255,.1)}
@@ -177,14 +178,14 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;gap:2px}
 .tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);border-radius:var(--r-sm) var(--r-sm) 0 0}
 .tab:hover{color:var(--slate-700);background:var(--slate-50,#f8fafc)}
-.tab.active{color:var(--slate-900);border-bottom-color:var(--slate-900);font-weight:600}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:600}
 
 /* FORM */
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg.full{grid-column:1/-1}.fg.half{grid-column:span 2}
 .form-label{font-size:11px;font-weight:600;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px}
 .form-control{padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:all var(--tr);width:100%}
-.form-control:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
+.form-control:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(63,82,209,.12)}
 .form-control[readonly]{background:var(--bg);cursor:not-allowed;color:var(--muted)}
 .ig{display:flex;gap:5px;align-items:center}.ig .form-control{flex:1}
 .req{color:var(--danger)}
@@ -328,13 +329,13 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .add-opt-row{display:none;gap:5px;margin-top:4px;align-items:center}
 .add-opt-row input{flex:1}
 .add-opt-row.visible{display:flex}
-.card-header{background:var(--slate-900)!important}
-.sub-modal-header{background:var(--slate-800);color:white;padding:10px 16px;border-radius:var(--r-md) var(--r-md) 0 0;display:flex;align-items:center;justify-content:space-between}
+.card-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%)!important}
+.sub-modal-header{background:var(--navy);color:white;padding:10px 16px;border-radius:var(--r-md) var(--r-md) 0 0;display:flex;align-items:center;justify-content:space-between}
 
 /* ══ SIDEBAR NAV ══ */
 #appWrapper { display:flex; flex-direction:row; min-height:100vh; }
 #sidebar {
-  width:220px; min-height:100vh; background:var(--slate-900);
+  width:220px; min-height:100vh; background:var(--navy);
   display:flex; flex-direction:column; transition:width .25s;
   position:fixed; right:0; top:0; z-index:200; overflow:hidden;
   border-left:1px solid rgba(255,255,255,.06);
@@ -423,7 +424,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .wiz-col-cb{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;transition:background var(--tr)}
 .wiz-col-cb:hover{background:var(--bg)}
 .quick-export-bar{display:flex;align-items:center;gap:8px;padding:5px 0 8px}
-.re-btn:hover{background:var(--slate-900);color:white}
+.re-btn:hover{background:var(--navy);color:white}
 .re-btn.re-field{background:var(--gold-bg);border-color:var(--gold);color:var(--slate-900);font-size:11px}
 .re-btn.re-field:hover{background:var(--gold);color:white}
 [contenteditable]:empty:before{content:attr(data-placeholder);color:#aaa;pointer-events:none}
@@ -559,12 +560,30 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
   <!-- Income vs Expenses Widget -->
   <div class="card" id="dashExpWidget" style="margin-bottom:16px"></div>
 
+  <!-- Smart Alerts -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><h3>🔔 התראות חכמות</h3></div>
+    <div class="card-body" style="padding:12px;display:flex;flex-direction:column;gap:8px" id="smartAlerts"></div>
+  </div>
+
+  <!-- Charts Row -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div class="card-header"><h3>📊 תרומות חודשיות (12 חודשים אחרונים)</h3></div>
+      <div class="card-body"><canvas id="chartMonthly" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>🥇 גבאים מובילים</h3></div>
+      <div class="card-body"><canvas id="chartFR" height="200"></canvas></div>
+    </div>
+  </div>
+
   <!-- Recent donations -->
   <div class="card">
     <div class="card-header"><h3>⏱️ תרומות אחרונות</h3><button class="btn btn-outline btn-sm" onclick="showPage('donors')">כל התורמים</button></div>
     <div class="card-body" style="padding:0;overflow-x:auto">
       <table style="width:100%;min-width:500px;border-collapse:collapse">
-        <thead style="background:var(--slate-900);color:white">
+        <thead style="background:var(--navy);color:white">
           <tr>
             <th style="padding:8px 10px;text-align:right;font-size:11px;white-space:nowrap">תורם</th>
             <th style="padding:8px 10px;text-align:right;font-size:11px;white-space:nowrap">מגבית</th>
@@ -576,6 +595,21 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
         </thead>
         <tbody id="recentDonations"></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GLOBAL SEARCH OVERLAY ════ -->
+<div class="modal-overlay" id="globalSearchOverlay" onclick="if(event.target===this)closeGlobalSearch()" style="align-items:flex-start;padding-top:80px">
+  <div class="modal-box" style="max-width:560px;width:100%">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px">🔍</span>
+      <input id="globalSearchInput" class="form-control" placeholder="חיפוש תורמים, גבאים, תרומות... (Ctrl+K)" 
+        oninput="runGlobalSearch()" style="border:none;box-shadow:none;font-size:15px;padding:4px 0" autofocus>
+      <kbd style="font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px">Esc</kbd>
+    </div>
+    <div id="globalSearchResults" style="max-height:360px;overflow-y:auto;padding:8px">
+      <div style="text-align:center;color:var(--muted);padding:30px;font-size:13px">הקלד לחיפוש תורמים, גבאים ותרומות...</div>
     </div>
   </div>
 </div>
@@ -1018,7 +1052,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 </div>
 
 <!-- EXPENSE MODAL -->
-<div class="modal-overlay" id="expModal" style="display:none" onclick="if(event.target===this)closeExpenseModal()">
+<div class="modal-overlay" id="expModal" onclick="if(event.target===this)closeExpenseModal()">
   <div class="modal-box" style="max-width:660px">
     <div class="modal-header">
       <h3 id="expModalTitle">הוצאה חדשה</h3>
@@ -1160,7 +1194,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 <!-- ════ EXPORT WIZARD MODAL ════ -->
 <div class="modal-overlay" id="exportWizardModal">
   <div class="modal" style="width:760px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column">
-    <div class="modal-header" style="background:var(--slate-900);color:white;border-radius:14px 14px 0 0">
+    <div class="modal-header" style="background:var(--navy);color:white;border-radius:14px 14px 0 0">
       <h3 style="color:white"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> אשף ייצוא והדפסה</h3>
       <button class="modal-close" style="color:white;opacity:.8" onclick="closeModal('exportWizardModal')">✕</button>
     </div>
@@ -1739,7 +1773,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       </div>
       <div id="bulkEmailProgress" style="display:none;margin-top:12px">
         <div style="background:var(--cream-d,#e5e7eb);border-radius:4px;overflow:hidden;height:8px">
-          <div id="bulkEmailProgressBar" style="background:var(--slate-900);height:100%;width:0%;transition:width .4s"></div>
+          <div id="bulkEmailProgressBar" style="background:var(--navy);height:100%;width:0%;transition:width .4s"></div>
         </div>
         <div id="bulkEmailStatus" style="font-size:12px;color:var(--muted);margin-top:6px;text-align:center"></div>
       </div>
@@ -2056,7 +2090,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <div id="rpt_count" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
       <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
         <table id="rpt_table" style="width:100%;min-width:600px;border-collapse:collapse;font-size:12px">
-          <thead style="background:var(--slate-900);color:white;position:sticky;top:0">
+          <thead style="background:var(--navy);color:white;position:sticky;top:0">
             <tr>
               <th style="padding:7px 10px;text-align:right">שם</th>
               <th style="padding:7px 10px;text-align:right">כתובת</th>
@@ -2263,6 +2297,8 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
         <div class="tab" id="dt-donations" onclick="switchDTab('donations')"><i data-lucide="coins" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תרומות</div>
         <div class="tab" id="dt-future" onclick="switchDTab('future')">⭐ עתידיות</div>
         <div class="tab" id="dt-relations" onclick="switchDTab('relations')">🔗 התאמות</div>
+        <div class="tab" id="dt-bond" onclick="switchDTab('bond')">💪 חוזק קשר</div>
+        <div class="tab" id="dt-history" onclick="switchDTab('history')">📋 היסטוריה</div>
       </div>
 
       <!-- DETAILS TAB -->
@@ -2453,6 +2489,16 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
           </div>
         </div>
         <div id="relList"></div>
+      </div>
+
+      <!-- BOND STRENGTH TAB -->
+      <div id="dc-bond" style="display:none">
+        <div id="bondScoreContent"></div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="dc-history" style="display:none">
+        <div id="donorHistoryContent"></div>
       </div>
     </div>
     <!-- footer replaced: buttons in header -->
@@ -3465,7 +3511,7 @@ function fillForm(d) {
 
 function switchDTab(tab) {
   currentDTab=tab;
-  ['details','donations','future','relations'].forEach(t=>{
+  ['details','donations','future','relations','bond','history'].forEach(t=>{
     const el=document.getElementById('dc-'+t);
     if(el) el.style.display=t===tab?'':'none';
     document.getElementById('dt-'+t)?.classList.toggle('active',t===tab);
@@ -3478,6 +3524,8 @@ function switchDTab(tab) {
   if(tab==='donations') renderDonationsTab();
   if(tab==='future') renderFutureTab();
   if(tab==='relations'&&currentDonorId) renderRelTab();
+  if(tab==='bond'&&currentDonorId) renderBondScore(currentDonorId);
+  if(tab==='history'&&currentDonorId) renderDonorHistory(currentDonorId);
 }
 
 function saveDonor() {
@@ -8343,7 +8391,7 @@ function wizGeneratePreview() {
     const LABELS={code:'קוד',firstName:'שם פרטי',lastName:'שם משפחה',affiliation:'שיוך',prefTime:'מועד תרמה',notes:'הערות',street:'רחוב',city:'עיר',zip:'מיקוד',phone:'טלפון',mobile:'פלאפון',email:'מייל',totalDonations:'סך תרומות',lastDonation:'תרומה אחרונה',maxDonation:'מקסימלי',donationCount:'מספר תרומות',lastCampaign:'מגבית אחרונה'};
     const cols=[...document.querySelectorAll('input[name="exc_col"]:checked')].map(c=>c.value);
     let html=`<div style="font-size:11px;color:var(--muted);margin-bottom:8px">מציג 20 מתוך ${wizFilteredDonors.length} רשומות</div><table style="border-collapse:collapse;width:100%;font-size:11px">`;
-    html+='<tr style="background:var(--slate-900);color:white">'+cols.map(c=>`<th style="padding:4px 8px;border:1px solid #444">${LABELS[c]||c}</th>`).join('')+'</tr>';
+    html+='<tr style="background:var(--navy);color:white">'+cols.map(c=>`<th style="padding:4px 8px;border:1px solid #444">${LABELS[c]||c}</th>`).join('')+'</tr>';
     wizFilteredDonors.slice(0,20).forEach((d,i)=>{
       const dons=(window.donations||[]).filter(dn=>dn.donorId===d.id);
       const total=dons.reduce((s,dn)=>s+(parseFloat(dn.amount)||0),0);
@@ -8862,11 +8910,11 @@ function openExpenseModal(id) {
     const msel = document.getElementById('exp_method'); if(msel) msel.value = 'מזומן';
     const ssel = document.getElementById('exp_status'); if(ssel) ssel.value = 'לתשלום';
   }
-  document.getElementById('expModal').style.display = '';
+  document.getElementById('expModal').classList.add('open');
 }
 
 function closeExpenseModal() {
-  document.getElementById('expModal').style.display = 'none';
+  document.getElementById('expModal').classList.remove('open');
 }
 
 function saveExpense() {
@@ -9072,6 +9120,354 @@ function renderDashExpWidget() {
     </div>`;
 }
 
+// ════════════════════════════════════════════════════
+// V19: BOND STRENGTH SCORE
+// ════════════════════════════════════════════════════
+function renderBondScore(id) {
+  const d = DB.donors.find(x=>x.id===id);
+  const el = document.getElementById('bondScoreContent');
+  if(!d||!el) return;
+  const dons = (d.donations||[]).filter(dn=>dn.amount>0);
+  if(dons.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">אין תרומות לחישוב ציון חוזק קשר</div>`;
+    return;
+  }
+  const total = dons.reduce((s,dn)=>s+parseFloat(dn.amount||0),0);
+  const count = dons.length;
+  // Average donation
+  const avg = total/count;
+  // Time between donations (days)
+  const sortedDates = dons.map(dn=>dn.date||'').filter(Boolean).sort();
+  let avgGap = 0, lastDonDate = sortedDates[sortedDates.length-1];
+  if(sortedDates.length>1){
+    let gaps=[];
+    for(let i=1;i<sortedDates.length;i++){
+      gaps.push((new Date(sortedDates[i])-new Date(sortedDates[i-1]))/86400000);
+    }
+    avgGap = gaps.reduce((a,b)=>a+b,0)/gaps.length;
+  }
+  // Days since last donation
+  const daysSinceLast = lastDonDate ? Math.floor((Date.now()-new Date(lastDonDate))/86400000) : 9999;
+  // Score components (0-25 each = 100 total)
+  // 1. Frequency score: more donations = better, cap at 20
+  const freqScore = Math.min(25, Math.round((count/20)*25));
+  // 2. Amount score: based on average donation, cap at 5000
+  const amtScore = Math.min(25, Math.round((Math.min(avg,5000)/5000)*25));
+  // 3. Recency score: donated recently = good; >365 days = 0
+  const recencyScore = daysSinceLast<30?25:daysSinceLast<90?20:daysSinceLast<180?14:daysSinceLast<365?7:0;
+  // 4. Consistency score: shorter avg gap = better (if only 1 donation, give partial)
+  const consistencyScore = count===1?10:avgGap===0?25:Math.min(25, Math.round((1-(Math.min(avgGap,365)/365))*25));
+  const total4 = freqScore+amtScore+recencyScore+consistencyScore;
+  const grade = total4>=85?{l:'מצוין',c:'#22c55e'}:total4>=65?{l:'טוב',c:'#3f52d1'}:total4>=45?{l:'ממוצע',c:'#d07526'}:total4>=25?{l:'חלש',c:'#f97316'}:{l:'דורש טיפול',c:'#ef4444'};
+  // Nedarim link
+  const nedarimId = d.nedarimId||d.idNumber||'';
+  const nedarimHtml = nedarimId ? `<a href="https://app.nedarimplus.co.il/Reports/DonorReceipts?id=${encodeURIComponent(nedarimId)}" target="_blank" class="btn btn-outline btn-sm" style="margin-top:10px;display:inline-block">🧾 קבלות נדרים פלוס</a>` : '';
+
+  el.innerHTML = `
+    <div style="text-align:center;padding:20px 10px 10px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">ציון חוזק קשר</div>
+      <div style="position:relative;display:inline-block;margin-bottom:10px">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="54" fill="none" stroke="#e5e7eb" stroke-width="14"/>
+          <circle cx="65" cy="65" r="54" fill="none" stroke="${grade.c}" stroke-width="14"
+            stroke-dasharray="${2*Math.PI*54}" stroke-dashoffset="${2*Math.PI*54*(1-total4/100)}"
+            stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+          <div style="font-size:30px;font-weight:900;color:${grade.c}">${total4}</div>
+          <div style="font-size:10px;color:var(--muted)">מתוך 100</div>
+        </div>
+      </div>
+      <div style="font-size:18px;font-weight:700;color:${grade.c};margin-bottom:4px">${grade.l}</div>
+      ${nedarimHtml}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+      ${[
+        {label:'תדירות תרומות',score:freqScore,max:25,icon:'📅',detail:`${count} תרומות`},
+        {label:'גובה תרומה ממוצעת',score:amtScore,max:25,icon:'💰',detail:`₪${Math.round(avg).toLocaleString()}`},
+        {label:'עדכניות',score:recencyScore,max:25,icon:'🕐',detail:daysSinceLast<9999?`לפני ${daysSinceLast} ימים`:'אין נתון'},
+        {label:'עקביות',score:consistencyScore,max:25,icon:'📊',detail:count>1?`ממוצע ${Math.round(avgGap)} ימים בין תרומות`:'תרומה בודדת'}
+      ].map(c=>`<div style="background:var(--bg);border-radius:10px;padding:12px">
+        <div style="font-size:16px;margin-bottom:4px">${c.icon}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${c.label}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="flex:1;background:#e5e7eb;border-radius:4px;height:6px">
+            <div style="width:${(c.score/c.max)*100}%;background:${grade.c};height:6px;border-radius:4px;transition:width 0.8s"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${grade.c}">${c.score}/${c.max}</span>
+        </div>
+        <div style="font-size:11px;color:var(--slate-900)">${c.detail}</div>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:14px;background:var(--bg);border-radius:10px;padding:12px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">📈 סיכום תרומות</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px;text-align:center">
+        <div><div style="font-weight:700;font-size:15px;color:var(--navy)">₪${total.toLocaleString()}</div><div style="color:var(--muted)">סך הכל</div></div>
+        <div><div style="font-weight:700;font-size:15px;color:var(--navy)">${count}</div><div style="color:var(--muted)">תרומות</div></div>
+        <div><div style="font-weight:700;font-size:15px;color:var(--navy)">₪${Math.round(avg).toLocaleString()}</div><div style="color:var(--muted)">ממוצע</div></div>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════
+// V19: DONOR CHANGE HISTORY TAB
+// ════════════════════════════════════════════════════
+function renderDonorHistory(id) {
+  const el = document.getElementById('donorHistoryContent');
+  if(!el) return;
+  const d = DB.donors.find(x=>x.id===id);
+  const name = d ? donorName(d) : id;
+  const log = (DB.auditLog||[]).filter(e=>
+    e.description && (e.description.includes(name) || (e.undoData && JSON.stringify(e.undoData).includes(id)))
+  ).slice(0,50);
+  if(log.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">אין רשומות היסטוריה עבור תורם זה</div>`;
+    return;
+  }
+  const typeIcon={'create':'✅','edit':'✏️','delete':'🗑️','import':'📥','login':'🔑','logout':'🚪','export':'📤','print':'🖨️'};
+  el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px">נמצאו ${log.length} רשומות</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+    ${log.map(e=>{
+      const dt=new Date(e.ts);
+      const dtStr=dt.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const icon=typeIcon[e.type]||'📋';
+      return `<div style="display:flex;gap:10px;background:var(--bg);border-radius:8px;padding:10px;align-items:flex-start">
+        <div style="font-size:18px;flex-shrink:0">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-900)">${escHtml(e.description)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${dtStr} • ${escHtml(e.user||'מערכת')}</div>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════
+// V19: DASHBOARD CHARTS (Chart.js)
+// ════════════════════════════════════════════════════
+let _chartMonthly=null, _chartFR=null;
+
+function renderDashCharts() {
+  renderMonthlyChart();
+  renderFRChart();
+}
+
+function renderMonthlyChart() {
+  const canvas = document.getElementById('chartMonthly');
+  if(!canvas) return;
+  // Collect last 12 months of donations
+  const months={};
+  const now=new Date();
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.toISOString().slice(0,7);
+    months[key]=0;
+  }
+  DB.donors.forEach(d=>(d.donations||[]).forEach(dn=>{
+    const k=(dn.date||'').slice(0,7);
+    if(k in months) months[k]+=parseFloat(dn.amount||0);
+  }));
+  const labels=Object.keys(months).map(k=>{const d=new Date(k+'-01');return d.toLocaleDateString('he-IL',{month:'short',year:'2-digit'});});
+  const data=Object.values(months);
+  if(_chartMonthly) _chartMonthly.destroy();
+  _chartMonthly = new Chart(canvas,{
+    type:'bar',
+    data:{labels,datasets:[{label:'תרומות (₪)',data,backgroundColor:'rgba(63,82,209,0.7)',borderColor:'rgba(63,82,209,1)',borderWidth:1,borderRadius:5}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₪'+ctx.parsed.y.toLocaleString()}}},scales:{y:{ticks:{callback:v=>'₪'+v.toLocaleString()},grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}
+  });
+}
+
+function renderFRChart() {
+  const canvas=document.getElementById('chartFR');
+  if(!canvas) return;
+  // Top 6 fundraisers by amount
+  const frMap={};
+  DB.donors.forEach(d=>(d.donations||[]).forEach(dn=>{
+    const fId=dn.fundraiserId||'_none';
+    frMap[fId]=(frMap[fId]||0)+parseFloat(dn.amount||0);
+  }));
+  const sorted=Object.entries(frMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(sorted.length===0) return;
+  const labels=sorted.map(([id])=>id==='_none'?'ללא מתרים':frNameById(id)||id);
+  const data=sorted.map(([,v])=>v);
+  const colors=['#3f52d1','#d07526','#22c55e','#8b5cf6','#f97316','#0891b2'];
+  if(_chartFR) _chartFR.destroy();
+  _chartFR=new Chart(canvas,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ₪${ctx.parsed.toLocaleString()}`}}}}
+  });
+}
+
+// ════════════════════════════════════════════════════
+// V19: SMART ALERTS
+// ════════════════════════════════════════════════════
+function renderSmartAlerts() {
+  const el=document.getElementById('smartAlerts');
+  if(!el) return;
+  const alerts=[];
+  const now=new Date();
+  // 1. Donors who haven't donated in 1+ year
+  const lapseThreshold=365;
+  const lapsedCount=DB.donors.filter(d=>{
+    const dons=d.donations||[];
+    if(dons.length===0) return false;
+    const last=dons.map(dn=>dn.date||'').filter(Boolean).sort().pop();
+    return last && (now-new Date(last))/86400000>lapseThreshold;
+  }).length;
+  if(lapsedCount>0) alerts.push({icon:'⏰',color:'#f97316',bg:'#fff7ed',text:`${lapsedCount} תורמים לא תרמו מעל שנה`,action:`applyLapseFilter()`,btnText:'הצג'});
+  // 2. Donors with no email
+  const noEmail=DB.donors.filter(d=>!d.email).length;
+  if(noEmail>0) alerts.push({icon:'📧',color:'#8b5cf6',bg:'#f5f3ff',text:`${noEmail} תורמים ללא כתובת מייל`,action:null,btnText:null});
+  // 3. Active campaign nearing deadline at low %
+  const ac=activeCampaign();
+  if(ac&&ac.deadline&&ac.goal){
+    const daysLeft=Math.floor((new Date(ac.deadline)-now)/86400000);
+    const raised=DB.donors.reduce((s,d)=>s+(d.donations||[]).filter(dn=>dn.campaignId===ac.id).reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0),0);
+    const pct=(raised/parseFloat(ac.goal))*100;
+    if(daysLeft>=0&&daysLeft<14&&pct<60) alerts.push({icon:'🎯',color:'#ef4444',bg:'#fef2f2',text:`המגבית "${ac.name}" ב-${Math.round(pct)}% מהיעד, נותרו ${daysLeft} ימים`,action:`showPage('campaign')`,btnText:'לפאנל'});
+  }
+  // 4. Future donations due this week
+  const weekAhead=new Date(now); weekAhead.setDate(weekAhead.getDate()+7);
+  let futureCount=0;
+  DB.donors.forEach(d=>(d.futureDonations||[]).forEach(f=>{
+    if(f.date&&new Date(f.date)<=weekAhead&&new Date(f.date)>=now) futureCount++;
+  }));
+  if(futureCount>0) alerts.push({icon:'⭐',color:'#3f52d1',bg:'#e8ecff',text:`${futureCount} תרומות עתידיות בשבוע הקרוב`,action:`showPage('future')`,btnText:'הצג'});
+
+  if(alerts.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:12px;color:var(--muted);font-size:13px">✅ אין התראות פעילות</div>`;
+    return;
+  }
+  el.innerHTML=alerts.map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;background:${a.bg};border-radius:8px;padding:10px 14px;border-right:3px solid ${a.color}">
+      <span style="font-size:18px">${a.icon}</span>
+      <span style="flex:1;font-size:12px;color:var(--slate-900)">${a.text}</span>
+      ${a.action?`<button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px" onclick="${a.action}">${a.btnText}</button>`:''}
+    </div>`).join('');
+}
+
+function applyLapseFilter() {
+  // Go to donors page and filter — set a special filter flag
+  showPage('donors');
+  window._lapseFilter=true;
+  applyFilters();
+  window._lapseFilter=false;
+}
+
+// ════════════════════════════════════════════════════
+// V19: GLOBAL SEARCH (Cmd+K)
+// ════════════════════════════════════════════════════
+function initGlobalSearch() {
+  document.addEventListener('keydown', e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openGlobalSearch();}
+    if(e.key==='Escape'){const gs=document.getElementById('globalSearchOverlay');if(gs&&gs.classList.contains('open'))closeGlobalSearch();}
+  });
+}
+
+function openGlobalSearch() {
+  document.getElementById('globalSearchOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('globalSearchInput').focus(),50);
+  runGlobalSearch();
+}
+function closeGlobalSearch() {
+  document.getElementById('globalSearchOverlay').classList.remove('open');
+  document.getElementById('globalSearchInput').value='';
+}
+
+function runGlobalSearch() {
+  const q=(document.getElementById('globalSearchInput').value||'').trim().toLowerCase();
+  const out=document.getElementById('globalSearchResults');
+  if(!q){out.innerHTML=`<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px">הקלד לחיפוש תורמים, גבאים ותרומות...</div>`;return;}
+  const results=[];
+  // Donors
+  DB.donors.filter(d=>{
+    const n=donorName(d).toLowerCase();
+    return n.includes(q)||(d.phone||'').includes(q)||(d.mobile||'').includes(q)||(d.code||'').toLowerCase().includes(q)||(d.email||'').toLowerCase().includes(q);
+  }).slice(0,5).forEach(d=>{
+    const total=getTotal(d);
+    results.push({type:'donor',icon:'👤',title:donorName(d),sub:`${d.phone||d.mobile||''} • ₪${total.toLocaleString()}`,action:`closeGlobalSearch();openDonorModal('${d.id}')`});
+  });
+  // Fundraisers
+  (DB.fundraisers||[]).filter(f=>{
+    const n=((f.firstName||'')+' '+(f.lastName||'')).toLowerCase();
+    return n.includes(q)||(f.phone||'').includes(q);
+  }).slice(0,3).forEach(f=>{
+    results.push({type:'fr',icon:'🎗️',title:(f.firstName||'')+' '+(f.lastName||''),sub:`מתרים • ${f.phone||''}`,action:`closeGlobalSearch();showPage('fundraisers')`});
+  });
+  // Recent donations matching amount
+  if(/^\d+/.test(q)){
+    const amt=parseFloat(q);
+    DB.donors.forEach(d=>(d.donations||[]).filter(dn=>parseFloat(dn.amount||0)===amt).forEach(dn=>{
+      results.push({type:'donation',icon:'💰',title:`₪${amt.toLocaleString()} — ${donorName(d)}`,sub:`${fmt(dn.date)} • ${dn.method||''}`,action:`closeGlobalSearch();openDonorModal('${d.id}')`});
+    }));
+  }
+  if(results.length===0){
+    out.innerHTML=`<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px">לא נמצאו תוצאות עבור "${escHtml(q)}"</div>`;return;
+  }
+  out.innerHTML=results.map(r=>`
+    <div onclick="${r.action}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;cursor:pointer;transition:background .15s" 
+      onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <span style="font-size:20px">${r.icon}</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--slate-900)">${escHtml(r.title)}</div>
+        <div style="font-size:11px;color:var(--muted)">${escHtml(r.sub)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════
+// V19: AMOUNT RANGE FILTER (Donors & Donations)
+// ════════════════════════════════════════════════════
+// Injected into applyFilters – hook into existing filter logic
+const _origApplyFilters = typeof applyFilters === 'function' ? applyFilters : null;
+
+function getAmountRange() {
+  const min=parseFloat(document.getElementById('filterAmtMin')?.value)||0;
+  const max=parseFloat(document.getElementById('filterAmtMax')?.value)||Infinity;
+  return{min,max};
+}
+
+// ════════════════════════════════════════════════════
+// V19: PATCH renderDash to include charts + alerts
+// ════════════════════════════════════════════════════
+const _origRenderDash = renderDash;
+function renderDash() {
+  _origRenderDash();
+  renderSmartAlerts();
+  // Defer charts slightly to allow DOM to settle
+  setTimeout(renderDashCharts, 200);
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', ()=>{
+  initGlobalSearch();
+  // Patch applyFilters for amount range
+  const _base = applyFilters;
+  applyFilters = function() {
+    _base();
+    const range = getAmountRange();
+    if(range.min>0 || range.max<Infinity) {
+      const now=new Date();
+      filteredRows = filteredRows.filter(d=>{
+        const total=getTotal(d);
+        return total>=range.min && total<=range.max;
+      });
+      sortAndRender();
+    }
+    // Lapse filter
+    if(window._lapseFilter) {
+      const now=new Date();
+      filteredRows=filteredRows.filter(d=>{
+        const dons=d.donations||[];
+        if(dons.length===0)return false;
+        const last=dons.map(dn=>dn.date||'').filter(Boolean).sort().pop();
+        return last&&(now-new Date(last))/86400000>365;
+      });
+      sortAndRender();
+    }
+  };
+});
 
 </script>
 </body>
