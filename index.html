@@ -160,23 +160,32 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .filter-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;text-decoration:underline}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(63,82,209,.35);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay{position:fixed;inset:0;background:rgba(49,46,129,.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--white);border-radius:var(--r-xl);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);border:1px solid var(--border);width:700px;max-width:96vw;max-height:90vh;overflow:hidden;transform:translateY(20px) scale(.98);transition:transform .2s;display:flex;flex-direction:column}
-.modal-body{overflow-y:auto;flex:1}
+.modal{background:var(--white);border-radius:var(--r-xl);box-shadow:0 25px 50px -12px rgba(0,0,0,.3);border:1px solid var(--border);width:700px;max-width:96vw;max-height:88vh;overflow:hidden;transform:translateY(20px) scale(.98);transition:transform .2s;display:flex;flex-direction:column}
+.modal-body{overflow-y:auto;flex:1;min-height:0}
 .modal-footer{flex-shrink:0}
 .modal-overlay.open .modal{transform:translateY(0) scale(1)}
-.modal-sm{width:460px}.modal-lg{width:920px}
-.modal-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.modal-sm{width:460px;max-height:85vh}.modal-lg{width:940px}
+.modal-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .modal-header h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:500}
 .modal-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--r-sm);transition:all var(--tr)}
 .modal-close:hover{color:white;background:rgba(255,255,255,.1)}
 .modal-body{padding:20px}
-.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg);border-radius:0 0 var(--r-xl) var(--r-xl)}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg);border-radius:0 0 var(--r-xl) var(--r-xl);flex-shrink:0}
 
-/* TABS */
-.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;gap:2px}
-.tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);border-radius:var(--r-sm) var(--r-sm) 0 0}
+/* DONOR MODAL SPECIFIC — tabs sticky above, content scrolls below */
+.donor-tabs-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 8px}
+.donor-tabs-bar::-webkit-scrollbar{display:none}
+.donor-tabs-bar .tab{flex-shrink:0;white-space:nowrap;border-radius:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:11px 15px;font-size:13px;font-weight:500}
+.donor-tabs-bar .tab:hover{background:var(--bg);color:var(--slate-700)}
+.donor-tabs-bar .tab.active{border-bottom-color:var(--navy);color:var(--navy);font-weight:600;background:transparent}
+.donor-tab-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 20px;min-height:0}
+
+/* TABS (general) */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr);border-radius:var(--r-sm) var(--r-sm) 0 0;white-space:nowrap}
 .tab:hover{color:var(--slate-700);background:var(--slate-50,#f8fafc)}
 .tab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:600}
 
@@ -2282,7 +2291,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 
 <!-- DONOR MODAL -->
 <div class="modal-overlay" id="donorModal">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg" style="height:88vh">
     <div class="modal-header">
       <h3 id="donorModalTitle">תורם חדש</h3>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2295,15 +2304,17 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
         <button class="modal-close" onclick="closeModal('donorModal')">✕</button>
       </div>
     </div>
-    <div class="modal-body">
-      <div class="tabs">
-        <div class="tab active" id="dt-details" onclick="switchDTab('details')"><i data-lucide="user" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תורם</div>
-        <div class="tab" id="dt-donations" onclick="switchDTab('donations')"><i data-lucide="coins" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תרומות</div>
-        <div class="tab" id="dt-future" onclick="switchDTab('future')">⭐ עתידיות</div>
-        <div class="tab" id="dt-relations" onclick="switchDTab('relations')">🔗 התאמות</div>
-        <div class="tab" id="dt-bond" onclick="switchDTab('bond')">💪 חוזק קשר</div>
-        <div class="tab" id="dt-history" onclick="switchDTab('history')">📋 היסטוריה</div>
-      </div>
+    <!-- Sticky tabs bar — outside scrollable area -->
+    <div class="donor-tabs-bar">
+      <div class="tab active" id="dt-details" onclick="switchDTab('details')">👤 תורם</div>
+      <div class="tab" id="dt-donations" onclick="switchDTab('donations')">💰 תרומות</div>
+      <div class="tab" id="dt-future" onclick="switchDTab('future')">⭐ עתידיות</div>
+      <div class="tab" id="dt-relations" onclick="switchDTab('relations')">🔗 התאמות</div>
+      <div class="tab" id="dt-bond" onclick="switchDTab('bond')">💪 חוזק קשר</div>
+      <div class="tab" id="dt-history" onclick="switchDTab('history')">📋 היסטוריה</div>
+    </div>
+    <!-- Scrollable tab content -->
+    <div class="donor-tab-content">
 
       <!-- DETAILS TAB -->
       <div id="dc-details">
@@ -2377,7 +2388,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             </div>
             <div style="display:flex;gap:8px;align-items:center">
               <div id="detailsTabNedarim" style="display:none"></div>
-              <button class="btn btn-gold" onclick="switchDTab('donations');setTimeout(toggleDonForm,100)" style="font-size:13px;font-weight:700">+ הוסף תרומה</button>
+              <button class="btn btn-gold" onclick="openDonorAddDonation()" style="font-size:13px;font-weight:700">+ הוסף תרומה</button>
             </div>
           </div>
         </div>
@@ -2394,7 +2405,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
           </div>
         </div>
         <div id="donationFormBox" style="display:none;transition:all .2s;background:var(--bg);border-radius:10px;padding:16px;margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--slate-900);margin-bottom:10px">💰 <span id="donFormTitle">הוספת תרומה</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:13px;font-weight:700;color:var(--slate-900)">💰 <span id="donFormTitle">הוספת תרומה</span></div><div style="display:flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="cancelDonForm()" title="ביטול">✕</button><button class="btn btn-gold btn-sm" onclick="saveDonation()" title="שמור תרומה">✔ שמור</button></div></div>
           <div class="fg2" style="gap:10px;margin-bottom:10px">
             <div class="fg">
               <label class="form-label">סכום <span class="req">*</span></label>
@@ -2444,10 +2455,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             </div>
             <div class="fg full"><label class="form-label">הערות</label><input class="form-control" id="nd_notes" placeholder="הערות" onkeydown="if(event.key==='Enter')saveDonation()"></div>
           </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn btn-outline btn-sm" onclick="cancelDonForm()">ביטול</button>
-            <button class="btn btn-gold btn-sm" onclick="saveDonation()">שמור תרומה</button>
-          </div>
+
           <input type="hidden" id="nd_editIdx" value="">
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -2560,8 +2568,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <div id="dc-history" style="display:none">
         <div id="donorHistoryContent"></div>
       </div>
-    </div>
-    <!-- footer replaced: buttons in header -->
+    </div><!-- /donor-tab-content -->
   </div>
 </div>
 
@@ -3771,8 +3778,9 @@ function renderDonationsTab() {
 
 function toggleDonForm() {
   const box=document.getElementById('donationFormBox');
-  const open=box.style.display!=='none'&&box.style.display!=='';
-  if(open){cancelDonForm();return;}
+  const isOpen = box.style.display === 'block';
+  if(isOpen){cancelDonForm();return;}
+  // Open the form
   document.getElementById('nd_editIdx').value='';
   document.getElementById('donFormTitle').textContent='הוספת תרומה';
   document.getElementById('nd_amount').value='';
@@ -3787,11 +3795,16 @@ function toggleDonForm() {
   const ac=activeCampaign();
   populateCampaignSelect('nd_campaign');
   if(ac) document.getElementById('nd_campaign').value=ac.id;
-  box.style.display='';
+  box.style.display='block';
+  const btn=document.getElementById('donFormBtn');
+  if(btn) btn.textContent='✕ סגור';
+  setTimeout(()=>{ document.getElementById('nd_amount').focus(); box.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 80);
 }
 function cancelDonForm() {
   const box = document.getElementById('donationFormBox');
-  if(box) { box.style.display='none'; box.style.opacity='0'; }
+  if(box) { box.style.display='none'; }
+  const btn=document.getElementById('donFormBtn');
+  if(btn) btn.textContent='+ הוסף תרומה';
   const ei = document.getElementById('nd_editIdx');
   if(ei) ei.value='';
   // Reset form fields
@@ -3829,7 +3842,9 @@ function editDonation(idx) {
     document.getElementById('nd_grp_id').value=dn.groupId;
     document.getElementById('nd_grp_search').value=grpNameById(dn.groupId);
   }
-  document.getElementById('donationFormBox').style.display='';
+  document.getElementById('donationFormBox').style.display='block';
+  const btn=document.getElementById('donFormBtn');
+  if(btn) btn.textContent='✕ סגור';
 }
 
 function saveDonation() {
@@ -3867,6 +3882,8 @@ function saveDonation() {
   if(editIdx!=='') d.donations[parseInt(editIdx)]=obj;
   else d.donations.push(obj);
   cancelDonForm(); saveDB(); renderDonationsTab(); renderGlobalStats();
+  // Briefly highlight the new row
+  setTimeout(()=>{const rows=document.querySelectorAll('#donationsBody tr');if(rows.length)rows[0].style.background='#fef9c3';setTimeout(()=>{if(rows.length)rows[0].style.background='';},1200);},100);
   const d2=DB.donors.find(x=>x.id===currentDonorId);
   auditLog('create', `תרומת ${obj.method||''} ₪${amount} נוספה${d2?' ל'+donorName(d2):''}`);
   toast('✓ תרומה נשמרה');
@@ -8219,17 +8236,14 @@ function printDonationsPanel() {
 
 
 function openDonorAddDonation() {
-  // Switch to donations tab, then open the form
   switchDTab('donations');
-  // Wait for tab render, then open form
   requestAnimationFrame(() => {
     setTimeout(() => {
       const box = document.getElementById('donationFormBox');
-      if (!box || box.style.display === '') return; // already open
+      if (!box) return;
+      if (box.style.display === 'block') return; // already open
       toggleDonForm();
-      // Scroll the form into view
-      setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    }, 80);
+    }, 100);
   });
 }
 
