@@ -23,34 +23,34 @@ function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;')
 @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap');
 
 :root {
-  /* Core Palette - Slate/Zinc */
-  --bg:#f0f3ff; --bg-2:#ffffff; --bg-3:#eaedfa;
-  --navy:#3f52d1; --navy-l:#5168de; --navy-h:#2e3fb8;
-  --gold:#d07526; --gold-l:#e8912e; --gold-bg:#fff7ed;
-  --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1;
+  /* ── Modern Indigo/Violet Palette ── */
+  --bg:#f4f6ff; --bg-2:#ffffff; --bg-3:#eceffe;
+  --navy:#4f46e5; --navy-l:#6366f1; --navy-h:#3730a3;
+  --gold:#f59e0b; --gold-l:#fbbf24; --gold-bg:#fffbeb;
+  --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1;
   --slate-400:#94a3b8; --slate-500:#64748b; --slate-600:#475569;
   --slate-700:#334155; --slate-800:#1e293b; --slate-900:#0f172a;
-  --zinc-100:#f4f4f5; --zinc-200:#e4e4e7; --zinc-300:#d4d4d8;
+  --zinc-100:#f4f4f5; --zinc-200:#e8e8ed; --zinc-300:#d4d4d8;
   
   /* Semantic */
   --text:var(--slate-900); --muted:var(--slate-500);
-  --white:#fff; 
-  --danger:#dc2626; --danger-bg:#fef2f2; --danger-border:#fecaca;
-  --success:#16a34a; --success-bg:#f0fdf4; --success-border:#bbf7d0;
-  --warn:#d97706; --warn-bg:#fffbeb;
-  --purple:#7c3aed; --purple-bg:#f5f3ff;
-  --teal:#0891b2; --teal-bg:#ecfeff;
+  --white:#fff;
+  --danger:#ef4444; --danger-bg:#fef2f2; --danger-border:#fecaca;
+  --success:#10b981; --success-bg:#ecfdf5; --success-border:#a7f3d0;
+  --warn:#f59e0b; --warn-bg:#fffbeb;
+  --purple:#8b5cf6; --purple-bg:#f5f3ff;
+  --teal:#06b6d4; --teal-bg:#ecfeff;
   
   /* Border */
-  --border:var(--zinc-200); --border-focus:var(--navy);
+  --border:#e2e5f1; --border-focus:var(--navy);
   
-  /* Shadows - very subtle */
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh-md:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
-  --sh-lg:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.05);
+  /* Shadows */
+  --sh:0 1px 3px rgba(79,70,229,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 12px rgba(79,70,229,.1),0 2px 4px rgba(0,0,0,.04);
+  --sh-lg:0 12px 24px rgba(79,70,229,.12),0 4px 8px rgba(0,0,0,.04);
   
   /* Radius */
-  --r-sm:4px; --r:6px; --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --r-sm:5px; --r:7px; --r-md:10px; --r-lg:14px; --r-xl:18px;
   
   /* Transitions */
   --tr:150ms ease;
@@ -61,7 +61,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 
 /* LOGIN */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3f52d1 0%,#5b6ee8 50%,#7c54d4 100%);background-image:radial-gradient(ellipse at 20% 50%,rgba(255,255,255,.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,200,100,.12) 0%,transparent 60%)}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#312e81 0%,#4f46e5 50%,#7c3aed 100%);background-image:radial-gradient(ellipse at 20% 50%,rgba(255,255,255,.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(251,191,36,.12) 0%,transparent 60%)}
 .login-box{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-xl);box-shadow:0 25px 50px rgba(0,0,0,.4);padding:48px 40px;width:420px;max-width:95vw;text-align:center}
 .login-logo{font-family:'Frank Ruhl Libre',serif;font-size:28px;color:#fff;margin-bottom:4px;letter-spacing:-.5px}
 .login-sub{color:rgba(255,255,255,.7);font-size:13px;margin-bottom:32px}
@@ -74,7 +74,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .login-box .btn-navy:hover{background:rgba(255,255,255,.25)}
 
 /* TOPBAR */
-.topbar{background:rgba(63,82,209,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);color:var(--white);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-wrap:wrap;gap:6px}
+.topbar{background:linear-gradient(90deg,#312e81 0%,#4f46e5 60%,#6366f1 100%);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);color:var(--white);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-wrap:wrap;gap:6px;box-shadow:0 2px 12px rgba(79,70,229,.3)}
 .topbar-brand{font-family:'Frank Ruhl Libre',serif;font-size:18px;font-weight:700;color:var(--gold-l);letter-spacing:-.3px}
 .topbar-brand span{color:rgba(255,255,255,.4);font-weight:300;font-size:14px}
 .topbar-right{display:flex;align-items:center;gap:12px}
@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* CARDS */
 .card{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;border:1px solid var(--border)}
-.card-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.card-header{background:linear-gradient(135deg,#312e81 0%,#4f46e5 100%);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
 .card-header h3{font-family:'Frank Ruhl Libre',serif;font-size:16px;font-weight:500}
 .card-body{padding:18px}
 
@@ -648,6 +648,8 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <label class="col-pick-cb"><input type="checkbox" value="createdAt" onchange="applyColVis()"> תאריך יצירה</label>
       <label class="col-pick-cb"><input type="checkbox" value="updatedAt" onchange="applyColVis()"> עדכון אחרון</label>
       <label class="col-pick-cb"><input type="checkbox" value="idNumber" onchange="applyColVis()"> ת"ז</label>
+      <label class="col-pick-cb"><input type="checkbox" value="status" onchange="applyColVis()"> סטטוס</label>
+      <label class="col-pick-cb"><input type="checkbox" value="rating" onchange="applyColVis()"> דירוג</label>
     </div>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="selectAllCols(true)">בחר הכל</button>
@@ -751,6 +753,8 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             <th data-col="createdAt" style="display:none" onclick="sortTable('createdAt')"><span class="si">⇅</span>יצירה</th>
             <th data-col="updatedAt" style="display:none" onclick="sortTable('updatedAt')"><span class="si">⇅</span>עדכון</th>
             <th data-col="idNumber" style="display:none">ת"ז</th>
+            <th data-col="status" style="display:none">סטטוס</th>
+            <th data-col="rating" style="display:none">דירוג</th>
             <th>פעולות</th>
           </tr>
         </thead>
@@ -2293,7 +2297,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
     </div>
     <div class="modal-body">
       <div class="tabs">
-        <div class="tab active" id="dt-details" onclick="switchDTab('details')"><i data-lucide="clipboard" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> פרטים</div>
+        <div class="tab active" id="dt-details" onclick="switchDTab('details')"><i data-lucide="user" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תורם</div>
         <div class="tab" id="dt-donations" onclick="switchDTab('donations')"><i data-lucide="coins" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תרומות</div>
         <div class="tab" id="dt-future" onclick="switchDTab('future')">⭐ עתידיות</div>
         <div class="tab" id="dt-relations" onclick="switchDTab('relations')">🔗 התאמות</div>
@@ -2344,16 +2348,37 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
           <div class="fg"><label class="form-label">מחזור (שנה עברית)</label><input class="form-control" id="f_cohort" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_createdAt').focus()}"></div>
           <div class="fg"><label class="form-label">תאריך יצירה</label><input class="form-control" id="f_createdAt" type="date" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_notes').focus()}"></div>
           <div class="fg"><label class="form-label">עדכון אחרון</label><input class="form-control" id="f_updatedAt" type="text" readonly style="background:var(--bg);font-size:12px;color:var(--muted)" placeholder="טרם עודכן"></div>
+          <div class="fg"><label class="form-label">סטטוס תורם</label>
+            <select class="form-control" id="f_status">
+              <option value="active">פעיל ✅</option>
+              <option value="inactive">לא פעיל ⏸</option>
+              <option value="deceased">נפטר 🕯️</option>
+              <option value="low">דירוג נמוך 📉</option>
+            </select>
+          </div>
+          <div class="fg"><label class="form-label">דירוג תורם (1-5)</label>
+            <select class="form-control" id="f_rating">
+              <option value="">לא מוגדר</option>
+              <option value="5">⭐⭐⭐⭐⭐ מצוין</option>
+              <option value="4">⭐⭐⭐⭐ טוב מאוד</option>
+              <option value="3">⭐⭐⭐ טוב</option>
+              <option value="2">⭐⭐ בינוני</option>
+              <option value="1">⭐ חלש</option>
+            </select>
+          </div>
           <div class="fg full"><label class="form-label">הערות</label><textarea class="form-control" id="f_notes" rows="2" placeholder="הערות..."></textarea></div>
         </div>
         <!-- Quick add donation button at bottom of details tab -->
-        <div id="detailsTabDonSummary" style="margin-top:16px;padding:12px 14px;background:linear-gradient(135deg,#1a2744,#243358);border-radius:10px;color:white;display:none">
+        <div id="detailsTabDonSummary" style="margin-top:16px;padding:14px 18px;background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;color:white;display:none;box-shadow:0 4px 16px rgba(79,70,229,.3)">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div>
               <div style="font-size:11px;opacity:.7;margin-bottom:2px">סך תרומות</div>
-              <div id="detailsTabTotal" style="font-size:20px;font-weight:700;color:#c9a84c"></div>
+              <div id="detailsTabTotal" style="font-size:22px;font-weight:800;color:#fbbf24;letter-spacing:-.5px"></div>
             </div>
-            <button class="btn btn-gold" onclick="openDonorAddDonation()" style="font-size:13px">+ הוסף תרומה</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div id="detailsTabNedarim" style="display:none"></div>
+              <button class="btn btn-gold" onclick="switchDTab('donations');setTimeout(toggleDonForm,100)" style="font-size:13px;font-weight:700">+ הוסף תרומה</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2361,9 +2386,12 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <!-- DONATIONS TAB -->
       <div id="dc-donations" style="display:none">
         <div class="d-stats" id="donorStatsBox"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <strong style="font-size:14px">היסטוריית תרומות</strong>
-          <button class="btn btn-gold btn-sm" onclick="toggleDonForm()" id="donFormBtn">+ הוסף תרומה</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div id="donationsNedarimLink" style="display:none"></div>
+            <button class="btn btn-gold btn-sm" onclick="toggleDonForm()" id="donFormBtn">+ הוסף תרומה</button>
+          </div>
         </div>
         <div id="donationFormBox" style="display:none;transition:all .2s;background:var(--bg);border-radius:10px;padding:16px;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:var(--slate-900);margin-bottom:10px">💰 <span id="donFormTitle">הוספת תרומה</span></div>
@@ -2464,31 +2492,63 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <div id="dc-relations" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:6px">
           <strong>התאמות — קשרים עם תורמים ומתרימים</strong>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-outline btn-sm" onclick="showRelSearch('donor')">🔗 הוסף תורם</button>
-            <button class="btn btn-gold btn-sm" onclick="showRelSearch('fr')">👤 הוסף מתרים</button>
-          </div>
+          <button class="btn btn-gold btn-sm" onclick="openAddRelPanel()">🔗 הוסף התאמה</button>
         </div>
-        <div id="relSearchBox" style="display:none;background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+        
+        <!-- Add Relation Panel -->
+        <div id="addRelPanel" style="display:none;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">הוספת התאמה חדשה</div>
+          
+          <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="radio" name="relAddType" value="donor" checked onchange="switchRelAddType('donor')"> התאמה מרשימת תורמים
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="radio" name="relAddType" value="fr" onchange="switchRelAddType('fr')"> התאמה מרשימת מתרימים
+            </label>
+          </div>
+          
           <div class="fg" style="margin-bottom:10px">
-            <label class="form-label" id="relSearchLabel">חיפוש תורם</label>
-            <input class="form-control" id="relSearch" placeholder="חפש לפי שם או קוד..." oninput="searchRelDonors()">
+            <label class="form-label" id="relAddSearchLabel">חיפוש תורם</label>
+            <input class="form-control" id="relAddSearch" placeholder="חפש לפי שם או קוד..." oninput="searchRelAddItems()">
+            <div id="relAddResults" style="max-height:160px;overflow-y:auto;margin-top:6px;border:1px solid var(--border);border-radius:8px;display:none"></div>
+            <div id="relAddSelected" style="margin-top:6px;font-size:12px;color:var(--navy);font-weight:600;display:none"></div>
           </div>
-          <div id="relResults" style="max-height:160px;overflow-y:auto;margin-bottom:8px"></div>
-          <div id="relSelected" style="display:none">
-            <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--slate-900)">נבחרו:</div>
-            <div id="relSelectedList" style="margin-bottom:10px"></div>
-            <div class="fg" style="margin-bottom:10px">
-              <label class="form-label">סיבת שיוך</label>
-              <select class="form-control" id="relType"><option>הורה</option><option>סבא</option><option>בן</option><option>שווער</option><option>אח</option><option>קרוב</option><option>מתרים</option></select>
-            </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end">
-              <button class="btn btn-outline btn-sm" onclick="cancelRel()">ביטול</button>
-              <button class="btn btn-gold btn-sm" onclick="confirmRel()">הוסף שיוך</button>
-            </div>
+          
+          <div class="fg" style="margin-bottom:12px">
+            <label class="form-label">סיבת ההתאמה</label>
+            <select class="form-control" id="relAddType2">
+              <option value="הורה">הורה</option>
+              <option value="סבא">סבא</option>
+              <option value="בן">בן</option>
+              <option value="שווער">שווער</option>
+              <option value="אח">אח</option>
+              <option value="קרוב">קרוב</option>
+              <option value="מתרים">מתרים</option>
+              <option value="אחר">אחר</option>
+            </select>
           </div>
+          
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-outline btn-sm" onclick="closeAddRelPanel()">ביטול</button>
+            <button class="btn btn-gold btn-sm" onclick="confirmNewRel()">הוסף התאמה</button>
+          </div>
+          <input type="hidden" id="relAddSelId" value="">
         </div>
+        
         <div id="relList"></div>
+        
+        <!-- Towns associated with this donor -->
+        <div id="donorTownsList" style="margin-top:16px;display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--slate-700);margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">🏘️ ישובים משויכים לתורם זה</div>
+          <div id="donorTownsContent" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+        
+        <!-- Reverse relations -->
+        <div id="donorReverseRelList" style="margin-top:12px;display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--slate-700);margin-bottom:8px">🔄 תורם זה מופיע בהתאמות של</div>
+          <div id="donorReverseRelContent"></div>
+        </div>
       </div>
 
       <!-- BOND STRENGTH TAB -->
@@ -2813,6 +2873,16 @@ function _showSyncStatus(status) {
   el.title = s.title;
 }
 function donorName(d){return dName(d);}
+
+function statusBadge(s) {
+  const map={active:`<span style="color:#10b981;font-size:11px">✅ פעיל</span>`,inactive:`<span style="color:#64748b;font-size:11px">⏸ לא פעיל</span>`,deceased:`<span style="color:#94a3b8;font-size:11px">🕯️ נפטר</span>`,low:`<span style="color:#f59e0b;font-size:11px">📉 נמוך</span>`};
+  return map[s||'active']||map.active;
+}
+function ratingStars(r) {
+  if(!r) return '';
+  const n=parseInt(r)||0;
+  return '<span style="color:#f59e0b;font-size:12px">'+'⭐'.repeat(n)+'</span>';
+}
 function genCode() { return 'T'+String(DB.nextCode++).padStart(4,'0'); }
 
 // Global Enter key = Save in open modal (save-and-new as default for new records)
@@ -3420,6 +3490,8 @@ function sortAndRender() {
       <td data-col="createdAt">${dateCell(d.createdAt?.split('T')[0]||'')}</td>
       <td data-col="updatedAt">${d.updatedAt ? dateCell(d.updatedAt.split('T')[0]) : '—'}</td>
       <td data-col="idNumber">${d.idNumber||''}</td>
+      <td data-col="status">${statusBadge(d.status)}</td>
+      <td data-col="rating">${ratingStars(d.rating)}</td>
       <td onclick="event.stopPropagation()"><div class="row-actions">
         ${ce ? `<button class="btn btn-outline btn-sm" onclick="openDonorModal('${d.id}')">✏️</button>` : ''}
         ${ce ? `<button class="btn btn-danger btn-sm" onclick="deleteDonorRow('${d.id}')">🗑️</button>` : ''}
@@ -3470,20 +3542,31 @@ function openDonorModal(id) {
   document.getElementById('donorModalTitle').textContent=donorName(d);
   document.getElementById('deleteDonorBtn').style.display=can('edit')?'':'none';
   document.getElementById('saveDonorBtnTop').style.display=can('edit')?'':'none';
-  // Show credit/self-service buttons for existing donors
   document.getElementById('donorCreditBtn').style.display = '';
   document.getElementById('donorSelfLinkBtn').style.display = '';
   document.getElementById('donorEmailBtn').style.display = getEmailSettings().publicKey ? '' : 'none';
   fillForm(d);
+  
+  // Nedarim Plus links
+  const nedarimId = d.nedarimId||d.idNumber||'';
+  const nedarimHtml = nedarimId ? `<a href="https://app.nedarimplus.co.il/Reports/DonorReceipts?id=${encodeURIComponent(nedarimId)}" target="_blank" class="btn btn-outline btn-sm" style="font-size:11px">🧾 קבלות נדרים פלוס</a>` : '';
+  const detailsNed=document.getElementById('detailsTabNedarim');
+  if(detailsNed){detailsNed.innerHTML=nedarimHtml;detailsNed.style.display=nedarimId?'':'none';}
+  const donationsNed=document.getElementById('donationsNedarimLink');
+  if(donationsNed){donationsNed.innerHTML=nedarimHtml;donationsNed.style.display=nedarimId?'':'none';}
+  
   switchDTab('details');
   updateDetailsTabSummary();
   openModal('donorModal');
 }
 
 function fillForm(d) {
-  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes'].forEach(k=>{
+  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes','status','rating'].forEach(k=>{
     const e=document.getElementById('f_'+k); if(e) e.value=d[k]||'';
   });
+  // Default status to 'active' if not set
+  const statusEl=document.getElementById('f_status');
+  if(statusEl&&!d.status) statusEl.value='active';
   document.getElementById('f_createdAt').value=d.createdAt?d.createdAt.split('T')[0]:today();
   const updEl=document.getElementById('f_updatedAt');
   if(updEl) {
@@ -3534,7 +3617,7 @@ function saveDonor() {
   const ln=document.getElementById('f_lastName').value.trim();
   if(!fn&&!ln){alert('חובה להזין שם');return;}
   const data={};
-  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes'].forEach(k=>{
+  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes','status','rating'].forEach(k=>{
     const e=document.getElementById('f_'+k);if(e)data[k]=e.value.trim();
   });
   // Save geo data if available
@@ -3544,17 +3627,32 @@ function saveDonor() {
   data.createdAt=ca?ca+'T00:00:00':new Date().toISOString();
   data.updatedAt=new Date().toISOString();
   data.updatedBy=currentUser?(currentUser.displayName||currentUser.username):'מערכת';
+  
+  const fieldLabels={firstName:'שם פרטי',lastName:'שם משפחה',phone:'טלפון',mobile:'סלולרי',email:'מייל',address:'כתובת',idNumber:'תעודת זהות',status:'סטטוס',rating:'דירוג',notes:'הערות',affil:'שיוך',code:'קוד',title:'תואר',prefTime:'מועד תרמה',cohort:'מחזור'};
+  
   if(currentDonorId){
     const idx=DB.donors.findIndex(x=>x.id===currentDonorId);
-    if(idx>=0) DB.donors[idx]={...DB.donors[idx],...data};
+    if(idx>=0){
+      // Build change description
+      const old=DB.donors[idx];
+      const changes=[];
+      Object.keys(fieldLabels).forEach(k=>{
+        const ov=(old[k]||'').toString().trim();
+        const nv=(data[k]||'').toString().trim();
+        if(ov!==nv) changes.push(`${fieldLabels[k]}: "${ov}"→"${nv}"`);
+      });
+      DB.donors[idx]={...DB.donors[idx],...data};
+      if(changes.length>0) auditLog('edit',`עריכת נתון — ${fn} ${ln}: ${changes.slice(0,3).join(', ')}${changes.length>3?` (+${changes.length-3} נוספים)`:''}`);
+      else auditLog('edit',`שמירת תורם: ${fn} ${ln}`);
+    }
   } else {
     const nd={id:'D'+Date.now(),...data,donations:[],futureDonations:[],relations:[]};
     DB.donors.push(nd); currentDonorId=nd.id;
     document.getElementById('donorModalTitle').textContent=donorName(nd);
     document.getElementById('deleteDonorBtn').style.display='';
+    auditLog('create',`הוספת תורם: ${fn} ${ln}`);
   }
   flushPendingToNewDonor(currentDonorId); saveDB(); renderAll(); renderGlobalStats();
-  auditLog('edit', `שמירת תורם: ${fn} ${ln}`);
   toast('✓ תורם נשמר');
   setTimeout(() => closeModal('donorModal'), 300);
 }
@@ -3565,7 +3663,7 @@ function saveDonorAndNew() {
   const ln=document.getElementById('f_lastName').value.trim();
   if(!fn&&!ln){alert('חובה להזין שם');return;}
   const data={};
-  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes'].forEach(k=>{
+  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes','status','rating'].forEach(k=>{
     const e=document.getElementById('f_'+k);if(e)data[k]=e.value.trim();
   });
   if(window._lastGeoLat) data.lat = window._lastGeoLat;
@@ -3956,9 +4054,9 @@ function renderRelTab() {
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   const rels=d.relations||[];
   document.getElementById('relList').innerHTML=rels.length===0
-    ?'<p style="color:var(--muted);font-size:13px">אין שיוכים</p>'
+    ?'<p style="color:var(--muted);font-size:13px;padding:8px 0">אין שיוכים עדיין — לחץ "הוסף התאמה"</p>'
     :rels.map((r,i)=>{
-        let name='', code='', badge='';
+        let name='', code='', badge='', onclick='';
         if (r.donorId && r.donorId.startsWith('fr_')) {
           const f=DB.fundraisers.find(x=>x.id===r.donorId.slice(3));
           if(!f) return '';
@@ -3966,13 +4064,47 @@ function renderRelTab() {
         } else {
           const rel=DB.donors.find(x=>x.id===r.donorId); if(!rel) return '';
           name=donorName(rel); code=rel.code||''; badge='';
+          onclick=`onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${r.donorId}'),100)"`;
         }
-        return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:8px;padding:10px 13px;margin-bottom:7px">
-          <div><strong>${name}</strong> <span class="badge" style="background:var(--zinc-200);color:var(--muted);margin-right:8px">${r.type}</span>${badge?`<span class="badge" style="background:var(--teal-bg);color:var(--teal);font-size:10px;margin-right:4px">${badge}</span>`:''}<span style="font-size:11px;color:var(--muted)">${code}</span></div>
+        return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:7px">
+          <div style="cursor:${onclick?'pointer':'default'}" ${onclick}>
+            <strong style="color:var(--navy)">${name}</strong>
+            <span class="badge" style="background:var(--purple-bg);color:var(--purple);margin-right:8px;font-size:11px">${r.type}</span>
+            ${badge?`<span class="badge" style="background:var(--teal-bg);color:var(--teal);font-size:10px">${badge}</span>`:''}
+            <span style="font-size:11px;color:var(--muted);margin-right:4px">${code}</span>
+          </div>
           ${can('edit')?`<button class="btn btn-danger btn-sm" onclick="deleteRel(${i})">הסר</button>`:''}
         </div>`;
       }).join('');
-  document.getElementById('relSearchBox').style.display='none';
+  
+  // Towns associated with this donor
+  const towns=[];
+  (DB.towns||[]).forEach(t=>{
+    if((t.donorIds||[]).includes(currentDonorId)) towns.push(t.name||t.id);
+  });
+  const townEl=document.getElementById('donorTownsList');
+  const townContent=document.getElementById('donorTownsContent');
+  if(towns.length>0 && townEl){
+    townContent.innerHTML=towns.map(t=>`<span style="display:inline-block;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin:2px;font-size:12px">🏘 ${t}</span>`).join('');
+    townEl.style.display='';
+  } else if(townEl) townEl.style.display='none';
+  
+  // Reverse relations - other donors that have this donor in their relations
+  const reverseRels=DB.donors.filter(od=>od.id!==currentDonorId&&(od.relations||[]).some(r=>r.donorId===currentDonorId));
+  const revEl=document.getElementById('donorReverseRelList');
+  const revContent=document.getElementById('donorReverseRelContent');
+  if(reverseRels.length>0 && revEl){
+    revContent.innerHTML=reverseRels.map(od=>{
+      const myRel=(od.relations||[]).find(r=>r.donorId===currentDonorId);
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;margin-bottom:6px;font-size:12px">
+        <span style="cursor:pointer;color:var(--navy);font-weight:600" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${od.id}'),100)">${donorName(od)}</span>
+        <span class="badge" style="background:var(--slate-100);color:var(--slate-600)">${myRel?myRel.type:''}</span>
+      </div>`;
+    }).join('');
+    revEl.style.display='';
+  } else if(revEl) revEl.style.display='none';
+  
+  document.getElementById('relSearchBox')&&(document.getElementById('relSearchBox').style.display='none');
 }
 // ════════════════════════════════════════════════════
 // QUICK DONATION MODAL
@@ -7621,8 +7753,67 @@ function confirmRel() {
   saveDB(); renderRelTab();
   toast(`✓ ${added} שיוכים נוספו`);
 }
-function cancelRel(){document.getElementById('relSearchBox').style.display='none';_relSelectedIds=[];}
+function cancelRel(){document.getElementById('relSearchBox')&&(document.getElementById('relSearchBox').style.display='none');_relSelectedIds=[];}
 function deleteRel(idx){const d=DB.donors.find(x=>x.id===currentDonorId);if(!d||!confirm('להסיר?'))return;d.relations.splice(idx,1);saveDB();renderRelTab();}
+
+// ── New Relation Panel functions ──────────────────────────────
+let _relAddMode='donor', _relAddSelId=null;
+function openAddRelPanel(){
+  _relAddMode='donor'; _relAddSelId=null;
+  document.getElementById('addRelPanel').style.display='';
+  document.getElementById('relAddSearch').value='';
+  document.getElementById('relAddResults').style.display='none';
+  document.getElementById('relAddResults').innerHTML='';
+  document.getElementById('relAddSelected').style.display='none';
+  document.getElementById('relAddSelId').value='';
+  document.querySelector('input[name="relAddType"][value="donor"]').checked=true;
+  document.getElementById('relAddSearchLabel').textContent='חיפוש תורם';
+}
+function closeAddRelPanel(){document.getElementById('addRelPanel').style.display='none';}
+function switchRelAddType(mode){
+  _relAddMode=mode; _relAddSelId=null;
+  document.getElementById('relAddSearch').value='';
+  document.getElementById('relAddResults').style.display='none';
+  document.getElementById('relAddResults').innerHTML='';
+  document.getElementById('relAddSelected').style.display='none';
+  document.getElementById('relAddSelId').value='';
+  document.getElementById('relAddSearchLabel').textContent=mode==='fr'?'חיפוש מתרים':'חיפוש תורם';
+}
+function searchRelAddItems(){
+  const q=document.getElementById('relAddSearch').value.trim().toLowerCase();
+  const res=document.getElementById('relAddResults');
+  if(!q){res.style.display='none';res.innerHTML='';return;}
+  let items;
+  if(_relAddMode==='fr'){
+    items=(DB.fundraisers||[]).filter(f=>(f.firstName+' '+f.lastName).toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)).slice(0,8);
+    res.innerHTML=items.map(f=>`<div class="pick-item" onclick="selectRelAddItem('fr_${f.id}','${escHtml((f.firstName||'')+' '+(f.lastName||''))}')">${(f.firstName||'')+' '+(f.lastName||'')} <span style="color:var(--muted);font-size:11px">${f.code||''} 👤 מתרים</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
+  } else {
+    items=DB.donors.filter(d=>d.id!==currentDonorId&&(donorName(d).toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q))).slice(0,8);
+    res.innerHTML=items.map(d=>`<div class="pick-item" onclick="selectRelAddItem('${d.id}','${escHtml(donorName(d))}')">${donorName(d)} <span style="color:var(--muted);font-size:11px">${d.code||''}</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
+  }
+  res.style.display='';
+}
+function selectRelAddItem(id,name){
+  _relAddSelId=id;
+  document.getElementById('relAddSelId').value=id;
+  document.getElementById('relAddSearch').value=name;
+  document.getElementById('relAddResults').style.display='none';
+  document.getElementById('relAddSelected').textContent='✓ נבחר: '+name;
+  document.getElementById('relAddSelected').style.display='';
+}
+function confirmNewRel(){
+  const id=document.getElementById('relAddSelId').value;
+  if(!id){toast('בחר תורם/מתרים תחילה');return;}
+  const relType=document.getElementById('relAddType2').value;
+  const baseDonor=DB.donors.find(x=>x.id===currentDonorId);
+  if(!baseDonor.relations)baseDonor.relations=[];
+  if(!baseDonor.relations.find(r=>r.donorId===id)){
+    baseDonor.relations.push({donorId:id,type:relType});
+    saveDB(); renderRelTab();
+    toast('✓ התאמה נוספה');
+    closeAddRelPanel();
+  } else { toast('כבר קיים שיוך זה'); }
+}
 
 // ════════════════════════════════════════════════════
 // ITEM 11 — Print with interactive Leaflet map + "תרומה נוכחית" column
@@ -9158,10 +9349,9 @@ function renderBondScore(id) {
   // 4. Consistency score: shorter avg gap = better (if only 1 donation, give partial)
   const consistencyScore = count===1?10:avgGap===0?25:Math.min(25, Math.round((1-(Math.min(avgGap,365)/365))*25));
   const total4 = freqScore+amtScore+recencyScore+consistencyScore;
-  const grade = total4>=85?{l:'מצוין',c:'#22c55e'}:total4>=65?{l:'טוב',c:'#3f52d1'}:total4>=45?{l:'ממוצע',c:'#d07526'}:total4>=25?{l:'חלש',c:'#f97316'}:{l:'דורש טיפול',c:'#ef4444'};
-  // Nedarim link
-  const nedarimId = d.nedarimId||d.idNumber||'';
-  const nedarimHtml = nedarimId ? `<a href="https://app.nedarimplus.co.il/Reports/DonorReceipts?id=${encodeURIComponent(nedarimId)}" target="_blank" class="btn btn-outline btn-sm" style="margin-top:10px;display:inline-block">🧾 קבלות נדרים פלוס</a>` : '';
+  const grade = total4>=85?{l:'מצוין',c:'#10b981'}:total4>=65?{l:'טוב',c:'#4f46e5'}:total4>=45?{l:'ממוצע',c:'#f59e0b'}:total4>=25?{l:'חלש',c:'#f97316'}:{l:'דורש טיפול',c:'#ef4444'};
+  // Nedarim link moved to donations tab
+  const nedarimHtml = '';
 
   el.innerHTML = `
     <div style="text-align:center;padding:20px 10px 10px">
@@ -9219,23 +9409,31 @@ function renderDonorHistory(id) {
   const name = d ? donorName(d) : id;
   const log = (DB.auditLog||[]).filter(e=>
     e.description && (e.description.includes(name) || (e.undoData && JSON.stringify(e.undoData).includes(id)))
-  ).slice(0,50);
+  ).slice(0,80);
   if(log.length===0){
-    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">אין רשומות היסטוריה עבור תורם זה</div>`;
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">📋</div>אין רשומות היסטוריה עבור תורם זה</div>`;
     return;
   }
   const typeIcon={'create':'✅','edit':'✏️','delete':'🗑️','import':'📥','login':'🔑','logout':'🚪','export':'📤','print':'🖨️'};
-  el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px">נמצאו ${log.length} רשומות</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
+  const typeColor={'create':'#10b981','edit':'#4f46e5','delete':'#ef4444','import':'#06b6d4','print':'#8b5cf6'};
+  el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px">נמצאו <strong>${log.length}</strong> רשומות היסטוריה</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
     ${log.map(e=>{
       const dt=new Date(e.ts);
       const dtStr=dt.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
       const icon=typeIcon[e.type]||'📋';
-      return `<div style="display:flex;gap:10px;background:var(--bg);border-radius:8px;padding:10px;align-items:flex-start">
-        <div style="font-size:18px;flex-shrink:0">${icon}</div>
+      const color=typeColor[e.type]||'#64748b';
+      // Extract what changed from description if it contains "→"
+      const desc=e.description||'';
+      const hasChanges=desc.includes('→');
+      return `<div style="display:flex;gap:10px;background:var(--bg);border:1px solid var(--border);border-right:3px solid ${color};border-radius:10px;padding:10px 12px;align-items:flex-start">
+        <div style="font-size:18px;flex-shrink:0;margin-top:1px">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;color:var(--slate-900)">${escHtml(e.description)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">${dtStr} • ${escHtml(e.user||'מערכת')}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--slate-900);line-height:1.4">${escHtml(desc)}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap">
+            <span style="font-size:10px;color:var(--muted)">⏰ ${dtStr}</span>
+            ${e.user?`<span style="font-size:10px;color:var(--muted)">👤 ${escHtml(e.user)}</span>`:''}
+          </div>
         </div>
       </div>`;
     }).join('')}
