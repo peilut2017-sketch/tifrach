@@ -93,14 +93,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .page.active{display:block}
 
 /* BUTTONS */
-.btn{padding:7px 14px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px;letter-spacing:-.1px}
-.btn-navy{background:var(--navy);color:white;border-color:var(--navy)}.btn-navy:hover{background:var(--navy-l);border-color:var(--navy-l)}
-.btn-gold{background:var(--gold);color:var(--slate-900);border-color:var(--gold);font-weight:600}.btn-gold:hover{background:var(--gold-l);border-color:var(--gold-l)}
-.btn-outline{background:var(--white);color:var(--slate-700);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--slate-400);background:var(--slate-100)}
-.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-border)}.btn-danger:hover{background:var(--danger);color:white;border-color:var(--danger)}
-.btn-purple{background:var(--purple);color:white;border-color:var(--purple)}.btn-purple:hover{background:#6d28d9;border-color:#6d28d9}
-.btn-success{background:var(--success);color:white;border-color:var(--success)}
-.btn-sm{padding:4px 10px;font-size:12px;border-radius:var(--r-sm)}
+.btn{padding:8px 16px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px;letter-spacing:-.1px}
+.btn-navy{background:var(--navy);color:white;border-color:var(--navy);box-shadow:0 2px 6px rgba(79,70,229,.35)}.btn-navy:hover{background:var(--navy-h);border-color:var(--navy-h);box-shadow:0 4px 12px rgba(79,70,229,.45)}
+.btn-gold{background:var(--gold);color:#1a1500;border-color:var(--gold);font-weight:700;box-shadow:0 2px 6px rgba(245,158,11,.35)}.btn-gold:hover{background:#d97706;border-color:#d97706;box-shadow:0 4px 12px rgba(245,158,11,.45)}
+.btn-outline{background:var(--white);color:var(--slate-800);border:1.5px solid var(--slate-300);font-weight:500}.btn-outline:hover{border-color:var(--navy);color:var(--navy);background:#f0f0ff}
+.btn-danger{background:#fef2f2;color:#dc2626;border-color:#fca5a5;font-weight:600}.btn-danger:hover{background:#dc2626;color:white;border-color:#dc2626}
+.btn-purple{background:var(--purple);color:white;border-color:var(--purple);box-shadow:0 2px 6px rgba(139,92,246,.35)}.btn-purple:hover{background:#6d28d9;border-color:#6d28d9}
+.btn-success{background:var(--success);color:white;border-color:var(--success);box-shadow:0 2px 6px rgba(16,185,129,.35)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:var(--r-sm)}
 .btn-icon{width:30px;height:30px;border-radius:var(--r);border:1px solid var(--border);background:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:all var(--tr);color:var(--slate-600)}
 .btn-icon:hover{background:var(--slate-100);border-color:var(--slate-300)}
 .btn-icon.wa{background:#f0fdf4;border-color:#bbf7d0;color:#16a34a}.btn-icon.wa:hover{background:#16a34a;color:white;border-color:#16a34a}
@@ -174,12 +174,16 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .modal-body{padding:20px}
 .modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg);border-radius:0 0 var(--r-xl) var(--r-xl);flex-shrink:0}
 
+/* Duplicate field warning */
+#fieldDupWarning{animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
 /* DONOR MODAL SPECIFIC — tabs sticky above, content scrolls below */
 .donor-tabs-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 8px}
 .donor-tabs-bar::-webkit-scrollbar{display:none}
 .donor-tabs-bar .tab{flex-shrink:0;white-space:nowrap;border-radius:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:11px 15px;font-size:13px;font-weight:500}
 .donor-tabs-bar .tab:hover{background:var(--bg);color:var(--slate-700)}
-.donor-tabs-bar .tab.active{border-bottom-color:var(--navy);color:var(--navy);font-weight:600;background:transparent}
+.donor-tabs-bar .tab.active{border-bottom-color:var(--navy);color:var(--navy);font-weight:700;background:rgba(79,70,229,.06)}
 .donor-tab-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 20px;min-height:0}
 
 /* TABS (general) */
@@ -2321,7 +2325,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
         <div class="fg3">
           <div class="fg"><label class="form-label">קוד תורם</label><input class="form-control" id="f_code" readonly></div>
           <div class="fg"><label class="form-label">ת"ז / דרכון <span style="font-size:10px;color:var(--muted)">(לא חובה)</span></label>
-            <div class="ig"><input class="form-control" id="f_idNumber" placeholder="מספר ת״ז (9 ספרות)" maxlength="9" inputmode="numeric" oninput="validateIdField(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_title').focus()}"><span id="f_idValidIcon" style="padding:0 8px;font-size:14px;line-height:36px"></span></div>
+            <div class="ig"><input class="form-control" id="f_idNumber" placeholder="מספר ת״ז (9 ספרות)" maxlength="9" inputmode="numeric" oninput="validateIdField(this);checkFieldDuplicate('idNumber',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_title').focus()}"><span id="f_idValidIcon" style="padding:0 8px;font-size:14px;line-height:36px"></span></div>
             <div id="f_idError" style="color:var(--danger);font-size:11px;margin-top:2px;display:none">מספר תעודת זהות לא תקין</div>
           </div>
 
@@ -2344,12 +2348,12 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             <div id="addressMapPreview" style="margin-top:6px;display:none;border-radius:8px;overflow:hidden;height:120px"></div>
           </div>
           <div class="fg"><label class="form-label">כניסה / קומה</label><input class="form-control" id="f_entrance" placeholder="כניסה א', קומה 3" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_phone').focus()}"></div>
-          <div class="fg"><label class="form-label">טלפון</label><input class="form-control" id="f_phone" placeholder="02-..." onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_mobile').focus()}"></div>
+          <div class="fg"><label class="form-label">טלפון</label><input class="form-control" id="f_phone" placeholder="02-..." oninput="checkFieldDuplicate('phone',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_mobile').focus()}"></div>
           <div class="fg"><label class="form-label">סלולרי</label>
-            <div class="ig"><input class="form-control" id="f_mobile" placeholder="05X-..." onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_email').focus()}"><button class="btn-icon wa" onclick="openWA()" title="WhatsApp">💬</button></div>
+            <div class="ig"><input class="form-control" id="f_mobile" placeholder="05X-..." oninput="checkFieldDuplicate('mobile',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_email').focus()}"><button class="btn-icon wa" onclick="openWA()" title="WhatsApp">💬</button></div>
           </div>
           <div class="fg"><label class="form-label">מייל</label>
-            <div class="ig"><input class="form-control" id="f_email" placeholder="email@example.com" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_prefTime').focus()}"><button class="btn-icon em" onclick="openMail()" title="שלח מייל">✉️</button></div>
+            <div class="ig"><input class="form-control" id="f_email" placeholder="email@example.com" oninput="checkFieldDuplicate('email',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_prefTime').focus()}"><button class="btn-icon em" onclick="openMail()" title="שלח מייל">✉️</button></div>
           </div>
 
           <div class="fg"><label class="form-label">מועד תרמה רצוי</label>
@@ -2379,6 +2383,11 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
           </div>
           <div class="fg full"><label class="form-label">הערות</label><textarea class="form-control" id="f_notes" rows="2" placeholder="הערות..."></textarea></div>
         </div>
+        <!-- Real-time duplicate warning -->
+        <div id="fieldDupWarning" style="display:none;margin-top:10px;padding:10px 14px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;font-size:13px;color:#92400e">
+          <div style="font-weight:700;margin-bottom:4px">⚠️ <span id="fieldDupTitle">כפילות נמצאה</span></div>
+          <div id="fieldDupList"></div>
+        </div>
         <!-- Quick add donation button at bottom of details tab -->
         <div id="detailsTabDonSummary" style="margin-top:16px;padding:14px 18px;background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;color:white;display:none;box-shadow:0 4px 16px rgba(79,70,229,.3)">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -2388,7 +2397,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             </div>
             <div style="display:flex;gap:8px;align-items:center">
               <div id="detailsTabNedarim" style="display:none"></div>
-              <button class="btn btn-gold" onclick="openDonorAddDonation()" style="font-size:13px;font-weight:700">+ הוסף תרומה</button>
+              <button class="btn btn-gold" onclick="openDonorAddDonation()" style="font-size:13px;font-weight:700">💰 הוסף תרומה</button>
             </div>
           </div>
         </div>
@@ -2401,7 +2410,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
           <strong style="font-size:14px">היסטוריית תרומות</strong>
           <div style="display:flex;gap:8px;align-items:center">
             <div id="donationsNedarimLink" style="display:none"></div>
-            <button class="btn btn-gold btn-sm" onclick="toggleDonForm()" id="donFormBtn">+ הוסף תרומה</button>
+            <button class="btn btn-gold btn-sm" onclick="openDonorAddDonation()" id="donFormBtn">💰 הוסף תרומה</button>
           </div>
         </div>
         <div id="donationFormBox" style="display:none;transition:all .2s;background:var(--bg);border-radius:10px;padding:16px;margin-bottom:14px">
@@ -2574,7 +2583,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 <!-- QUICK DONATION MODAL -->
 <div class="modal-overlay" id="quickDonModal">
   <div class="modal modal-sm">
-    <div class="modal-header"><h3>💰 הוספת תרומה מהירה</h3><button class="modal-close" onclick="closeModal('quickDonModal')">✕</button></div>
+    <div class="modal-header"><h3 id="quickDonModalTitle">💰 הוספת תרומה מהירה</h3><button class="modal-close" onclick="closeModal('quickDonModal')">✕</button></div>
     <div class="modal-body">
       <div class="fg" style="margin-bottom:12px">
         <label class="form-label">חיפוש תורם <span class="req">*</span></label>
@@ -3533,6 +3542,7 @@ function openNewDonorModal() {
   if(!can('edit')) return;
   currentDonorId=null; currentDTab='details';
   document.getElementById('donorModalTitle').textContent='תורם חדש';
+  const _dw=document.getElementById('fieldDupWarning'); if(_dw) _dw.style.display='none';
   document.getElementById('deleteDonorBtn').style.display='none';
   document.getElementById('saveDonorBtnTop').style.display='';
   fillForm({});
@@ -3552,6 +3562,8 @@ function openDonorModal(id) {
   document.getElementById('donorSelfLinkBtn').style.display = '';
   document.getElementById('donorEmailBtn').style.display = getEmailSettings().publicKey ? '' : 'none';
   fillForm(d);
+  // Clear any lingering duplicate warnings
+  const dw=document.getElementById('fieldDupWarning'); if(dw) dw.style.display='none';
   
   // Nedarim Plus links
   const nedarimId = d.nedarimId||d.idNumber||'';
@@ -4125,10 +4137,49 @@ function renderRelTab() {
 // ════════════════════════════════════════════════════
 // QUICK DONATION MODAL
 // ════════════════════════════════════════════════════
+function openDonorAddDonation() {
+  // Opens quick donation modal pre-filled with current donor
+  if(!can('edit') || !currentDonorId) return;
+  const d = DB.donors.find(x=>x.id===currentDonorId);
+  if(!d) return;
+  openQuickDonationModalForDonor(d);
+}
+function openQuickDonationModalForDonor(d) {
+  if(!can('edit')) return;
+  qd_selectedId = d ? d.id : null;
+  const searchEl = document.getElementById('qd_search');
+  const resultsEl = document.getElementById('qd_results');
+  const selEl = document.getElementById('qd_selected');
+  if(searchEl) {
+    searchEl.value = d ? donorName(d) : '';
+    searchEl.disabled = !!d;
+    searchEl.style.opacity = d ? '0.6' : '';
+    searchEl.style.background = d ? 'var(--bg)' : '';
+  }
+  if(resultsEl) resultsEl.innerHTML = '';
+  if(selEl) {
+    selEl.style.display = d ? '' : 'none';
+    if(d) selEl.innerHTML = `✓ <strong>${donorName(d)}</strong> <span style="color:var(--muted);font-size:11px">${d.code||''} | ${d.affil||''}</span>`;
+  }
+  document.getElementById('qd_amount').value='';
+  const qdCurr = document.getElementById('qd_currency'); if(qdCurr) qdCurr.value='ILS';
+  const qdDisp = document.getElementById('qd_converted_display'); if(qdDisp) qdDisp.style.display='none';
+  document.getElementById('qd_date').value=today();
+  document.getElementById('qd_method').value='מזומן';
+  document.getElementById('qd_notes').value='';
+  populateCampaignSelect('qd_campaign');
+  const ac=activeCampaign(); if(ac) document.getElementById('qd_campaign').value=ac.id;
+  // update modal title
+  const titleEl = document.getElementById('quickDonModalTitle');
+  if(titleEl) titleEl.textContent = d ? `💰 הוספת תרומה — ${donorName(d)}` : '💰 הוספת תרומה מהירה';
+  openModal('quickDonModal'); setTimeout(initSelectsAddable, 100);
+  setTimeout(()=>{const amt=document.getElementById('qd_amount');if(amt)amt.focus();},200);
+}
 function openQuickDonationModal() {
   if(!can('edit')) return;
   qd_selectedId=null;
-  document.getElementById('qd_search').value='';
+  const searchEl = document.getElementById('qd_search');
+  if(searchEl) { searchEl.value=''; searchEl.disabled=false; searchEl.style.opacity=''; }
   document.getElementById('qd_results').innerHTML='';
   document.getElementById('qd_selected').style.display='none';
   document.getElementById('qd_amount').value='';
@@ -4249,8 +4300,11 @@ function saveQuickDonation() {
   const dispAmt = currency !== 'ILS' ? `${currency} ${rawAmount.toLocaleString()} (≈₪${Math.round(amount).toLocaleString()})` : `₪${amount.toLocaleString()}`;
   auditLog('create', `תרומה מהירה ${dispAmt} ל${donorName(d)}`);
   saveDB(); renderGlobalStats(); closeModal('quickDonModal');
+  // Re-render donor donations tab if that donor's modal is open
+  if(currentDonorId === qd_selectedId && currentDTab === 'donations') renderDonationsTab();
+  else if(currentDonorId === qd_selectedId) updateDetailsTabSummary();
   if(document.getElementById('pageDash').classList.contains('active')) renderDash();
-  alert(`התרומה של ${dispAmt} נשמרה עבור ${donorName(d)}`);
+  toast('✓ תרומה נשמרה — ' + dispAmt);
 }
 function getQDILSAmount() {
   const amount = parseFloat(document.getElementById('qd_amount').value) || 0;
@@ -4763,7 +4817,15 @@ function generateReport(){
 // MODALS
 // ════════════════════════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='quickDonModal'){
+    const s=document.getElementById('qd_search');
+    if(s){s.disabled=false;s.style.opacity='';s.style.background='';}
+    const t=document.getElementById('quickDonModalTitle');
+    if(t) t.textContent='💰 הוספת תרומה מהירה';
+  }
+}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // ════════════════════════════════════════════════════
@@ -7528,6 +7590,33 @@ function validateIdField(input) {
   else { icon.textContent=''; if(err)err.style.display='none'; }
 }
 
+function checkFieldDuplicate(field, value) {
+  const warn = document.getElementById('fieldDupWarning');
+  const list = document.getElementById('fieldDupList');
+  const title = document.getElementById('fieldDupTitle');
+  if (!warn || !list) return;
+  const v = (value||'').trim();
+  if (!v || v.length < 3) { warn.style.display='none'; return; }
+  const fieldLabels = { idNumber: 'ת"ז', phone: 'טלפון', mobile: 'סלולרי', email: 'מייל' };
+  const matches = DB.donors.filter(d => {
+    if (d.id === currentDonorId) return false; // skip self
+    if (field === 'idNumber') return d.idNumber && d.idNumber === v;
+    if (field === 'phone')    return d.phone    && d.phone === v;
+    if (field === 'mobile')   return d.mobile   && d.mobile === v;
+    if (field === 'email')    return d.email    && d.email.toLowerCase() === v.toLowerCase();
+    return false;
+  });
+  if (!matches.length) { warn.style.display='none'; return; }
+  title.textContent = `⚠️ ${fieldLabels[field]} "${v}" כבר קיים אצל תורם אחר!`;
+  list.innerHTML = matches.map(d =>
+    `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px">
+      <span><strong>${donorName(d)}</strong> <span style="color:var(--muted);font-size:11px">${d.code||''}</span></span>
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${d.id}'),100)">פתח כרטיס</button>
+    </div>`
+  ).join('');
+  warn.style.display = 'block';
+}
+
 // ════════════════════════════════════════════════════
 // ITEM 7 — Duplicate Detection
 // ════════════════════════════════════════════════════
@@ -7539,13 +7628,15 @@ function openDuplicateDetection() {
 }
 function findDuplicateDonors() {
   const groups=[], seen=new Set(), donors=DB.donors;
-  const phoneMap={}, mobileMap={}, emailMap={};
+  const phoneMap={}, mobileMap={}, emailMap={}, idMap={};
   donors.forEach(d => {
-    if(d.phone)  { if(!phoneMap[d.phone])   phoneMap[d.phone]=[];  phoneMap[d.phone].push(d.id);  }
-    if(d.mobile) { if(!mobileMap[d.mobile]) mobileMap[d.mobile]=[]; mobileMap[d.mobile].push(d.id); }
-    if(d.email)  { const k=d.email.toLowerCase(); if(!emailMap[k]) emailMap[k]=[]; emailMap[k].push(d.id); }
+    if(d.phone)    { if(!phoneMap[d.phone])     phoneMap[d.phone]=[];    phoneMap[d.phone].push(d.id);    }
+    if(d.mobile)   { if(!mobileMap[d.mobile])   mobileMap[d.mobile]=[];  mobileMap[d.mobile].push(d.id);  }
+    if(d.email)    { const k=d.email.toLowerCase(); if(!emailMap[k]) emailMap[k]=[]; emailMap[k].push(d.id); }
+    if(d.idNumber) { if(!idMap[d.idNumber])     idMap[d.idNumber]=[];    idMap[d.idNumber].push(d.id);    }
   });
   const addGroup=(ids,reason)=>{ const key=ids.slice().sort().join(','); if(seen.has(key))return; seen.add(key); groups.push({ids,reason}); };
+  Object.entries(idMap).forEach(([v,ids])     =>{ if(ids.length>1) addGroup(ids,'ת"ז: '+v); });
   Object.entries(phoneMap).forEach(([v,ids])  =>{ if(ids.length>1) addGroup(ids,'טלפון: '+v); });
   Object.entries(mobileMap).forEach(([v,ids]) =>{ if(ids.length>1) addGroup(ids,'סלולרי: '+v); });
   Object.entries(emailMap).forEach(([v,ids])  =>{ if(ids.length>1) addGroup(ids,'מייל: '+v); });
@@ -8232,19 +8323,6 @@ function printDonationsPanel() {
   w.document.close();
 }
 
-
-
-function openDonorAddDonation() {
-  switchDTab('donations');
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      const box = document.getElementById('donationFormBox');
-      if (!box) return;
-      if (box.style.display === 'block') return; // already open
-      toggleDonForm();
-    }, 100);
-  });
-}
 
 // ══ Rich Email Editor Helpers ══
 function execRichFmt(editorId, cmd) {
