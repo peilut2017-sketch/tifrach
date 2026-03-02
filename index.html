@@ -178,6 +178,19 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 #fieldDupWarning{animation:slideDown .2s ease}
 @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
+
+/* ══ ROUTES ══ */
+.route-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)}
+.route-card-header{background:linear-gradient(135deg,#1e3a5f 0%,#2d5986 100%);color:white;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.route-code{font-family:'Frank Ruhl Libre',serif;font-size:16px;font-weight:700;letter-spacing:.5px}
+.route-meta{font-size:11px;opacity:.8}
+.route-donor-row{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);gap:10px;cursor:grab;background:white;transition:background .15s}
+.route-donor-row:last-child{border-bottom:none}
+.route-donor-row:hover{background:var(--bg)}
+.route-donor-row.dragging{opacity:.4;background:var(--slate-100)}
+.route-drag-handle{color:var(--muted);cursor:grab;font-size:16px;flex-shrink:0;user-select:none}
+.route-nbh-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600}
+.route-gen-progress{background:var(--bg);border-radius:10px;padding:16px;text-align:center;margin-bottom:16px}
 /* DONOR MODAL SPECIFIC — tabs sticky above, content scrolls below */
 .donor-tabs-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 8px}
 .donor-tabs-bar::-webkit-scrollbar{display:none}
@@ -492,6 +505,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
     <button class="sb-item" id="sb-fundraisers" onclick="showPage('fundraisers')"><span class="sb-icon"><i data-lucide="briefcase" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">מתרימים</span></button>
     <button class="sb-item" id="sb-messages" onclick="showPage('messages')"><span class="sb-icon"><i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">הודעות <span id="sbUnreadBadge" style="display:none;background:var(--danger);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></span></button>
     <hr class="sb-divider">
+    <button class="sb-item" id="sb-routes" onclick="showPage('routes')"><span class="sb-icon"><i data-lucide="map-pin" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">מסלולים</span></button>
     <button class="sb-item" id="sb-expenses" onclick="showPage('expenses')"><span class="sb-icon"><i data-lucide="receipt" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">הוצאות</span></button>
     <button class="sb-item" id="sb-exportwiz" onclick="openExportWizard()"><span class="sb-icon"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">ייצוא/הדפסה</span></button>
     <button class="sb-item" id="sb-admin" onclick="showPage('admin'); setTimeout(checkCloudStatus, 500);"><span class="sb-icon"><i data-lucide="settings" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">ניהול</span></button>
@@ -663,6 +677,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <label class="col-pick-cb"><input type="checkbox" value="idNumber" onchange="applyColVis()"> ת"ז</label>
       <label class="col-pick-cb"><input type="checkbox" value="status" onchange="applyColVis()"> סטטוס</label>
       <label class="col-pick-cb"><input type="checkbox" value="rating" onchange="applyColVis()"> דירוג</label>
+      <label class="col-pick-cb"><input type="checkbox" value="bond" onchange="applyColVis()"> חוזק קשר</label>
     </div>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="selectAllCols(true)">בחר הכל</button>
@@ -768,6 +783,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
             <th data-col="idNumber" style="display:none">ת"ז</th>
             <th data-col="status" style="display:none">סטטוס</th>
             <th data-col="rating" style="display:none">דירוג</th>
+            <th data-col="bond" style="display:none" onclick="sortTable('bond')"><span class="si">⇅</span>חוזק קשר</th>
             <th>פעולות</th>
           </tr>
         </thead>
@@ -994,7 +1010,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
   </div>
 
   <!-- Stats row -->
-  <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px" id="donsPanelStats"></div>
+  <div id="donsPanelStats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;align-items:center"></div>
 
   <!-- Table -->
   <div class="table-wrap">
@@ -2639,6 +2655,121 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
   </div>
 </div>
 
+
+<!-- ════ ROUTES PAGE ════ -->
+<div class="page" id="pageRoutes">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <h2 style="font-family:'Frank Ruhl Libre',serif;font-size:24px">🗺️ מסלולים</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="openCreateRoutesModal()">✨ צור מסלולים חדשים</button>
+      <button class="btn btn-outline btn-sm" onclick="openNeighborhoodsEditor()">🏘️ ניהול שכונות</button>
+      <button class="btn btn-outline btn-sm" onclick="printRoutes()">🖨️ הדפס</button>
+    </div>
+  </div>
+
+  <!-- Active campaign banner -->
+  <div id="routesCampaignBanner" style="background:linear-gradient(135deg,#312e81,#4f46e5);color:white;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:13px;display:none">
+    <span id="routesCampaignName"></span>
+  </div>
+
+  <!-- Routes list -->
+  <div id="routesContainer">
+    <div style="text-align:center;padding:60px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">🗺️</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">אין מסלולים עדיין</div>
+      <div style="font-size:13px">לחץ "צור מסלולים חדשים" כדי לבנות מסלולים אוטומטית לפי מיקום</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CREATE ROUTES MODAL ════ -->
+<div class="modal-overlay" id="createRoutesModal">
+  <div class="modal modal-sm" style="max-width:500px">
+    <div class="modal-header">
+      <h3>✨ יצירת מסלולים אוטומטית</h3>
+      <button class="modal-close" onclick="closeModal('createRoutesModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg" style="margin-bottom:14px">
+        <label class="form-label">עיר / שכונה לסינון <span style="font-size:11px;color:var(--muted)">(השאר ריק לכל התורמים)</span></label>
+        <input class="form-control" id="rte_city_filter" placeholder="ירושלים, בני ברק, רמות..." list="rte_city_list" oninput="updateRoutePreview()">
+        <datalist id="rte_city_list"></datalist>
+      </div>
+      <div class="fg" style="margin-bottom:14px">
+        <label class="form-label">תורמים לכל מסלול <span class="req">*</span></label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input class="form-control" id="rte_per_route" type="number" value="10" min="2" max="50" style="max-width:90px" oninput="updateRoutePreview()">
+          <span style="font-size:12px;color:var(--muted)">תורמים מקסימום לכל מסלול (פיצול לאחר 500 מ')</span>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:14px">
+        <label class="form-label">מרחק מקסימלי לאיחוד</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input class="form-control" id="rte_max_dist" type="number" value="500" min="100" max="2000" style="max-width:90px" oninput="updateRoutePreview()">
+          <span style="font-size:12px;color:var(--muted)">מטר (תורם רחוק יותר יעבור למסלול נפרד)</span>
+        </div>
+      </div>
+      <div id="rtePreviewBox" style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;color:var(--muted);margin-bottom:4px">
+        טוען נתוני תצוגה מקדימה...
+      </div>
+      <div style="color:var(--danger);font-size:12px;margin-top:8px" id="rteWarning"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('createRoutesModal')">ביטול</button>
+      <button class="btn btn-navy" onclick="generateRoutes()">🚀 צור מסלולים</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ NEIGHBORHOODS EDITOR MODAL ════ -->
+<div class="modal-overlay" id="neighborhoodsModal">
+  <div class="modal modal-sm" style="max-width:560px">
+    <div class="modal-header">
+      <h3>🏘️ עריכת שכונות</h3>
+      <button class="modal-close" onclick="closeModal('neighborhoodsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">
+        כל תורם מקבל שכונה אוטומטית מ-Google Geocode. ניתן לעקוף ידנית. פורמט: כתובת → שכונה מותאמת.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="form-control" id="nbh_address" placeholder="חלק מהכתובת (למשל: רחוב לוי)">
+        <input class="form-control" id="nbh_name" placeholder="שם שכונה מותאם" style="max-width:160px">
+        <button class="btn btn-navy btn-sm" onclick="addNeighborhoodRule()">הוסף</button>
+      </div>
+      <div id="nbhRulesList" style="max-height:250px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('neighborhoodsModal')">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ROUTE EDIT MODAL (single route) ════ -->
+<div class="modal-overlay" id="routeEditModal">
+  <div class="modal" style="max-width:700px;max-height:92vh">
+    <div class="modal-header">
+      <h3 id="routeEditTitle">✏️ עריכת מסלול</h3>
+      <button class="modal-close" onclick="closeModal('routeEditModal')">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;gap:14px;padding:14px;overflow:hidden;max-height:calc(92vh - 100px)">
+      <!-- Drag list -->
+      <div style="flex:1;min-width:0;overflow-y:auto">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">גרור לשינוי סדר ↕</div>
+        <div id="routeEditList" style="min-height:100px"></div>
+      </div>
+      <!-- Map -->
+      <div style="width:280px;flex-shrink:0">
+        <div id="routeEditMap" style="height:350px;border-radius:10px;border:1px solid var(--border)"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('routeEditModal')">ביטול</button>
+      <button class="btn btn-navy" onclick="saveRouteEdit()">💾 שמור שינויים</button>
+    </div>
+  </div>
+</div>
+
 <!-- CAMPAIGN MODAL -->
 <div class="modal-overlay" id="campaignModal">
   <div class="modal modal-sm">
@@ -2815,6 +2946,8 @@ async function loadDB() {
   if (!DB.nextGrpSeq) DB.nextGrpSeq = {};
   if (!DB.settings)  DB.settings  = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   if (!DB.expenses)  DB.expenses  = [];
+  if (!DB.routes)    DB.routes    = [];
+  if (!DB.neighborhoods) DB.neighborhoods = {};
   if (!DB.expenseDepts) DB.expenseDepts = ['מגבית פורים','מענק פסח','חתן','בחור תלמיד מהישיבה','אחר'];
   if (!DB.expenseMethods) DB.expenseMethods = ['מזומן','אשראי','צ\'ק','העברה','אחר'];
   if (!DB.expenseStatuses) DB.expenseStatuses = ['לתשלום','שולם','אחר'];
@@ -3344,6 +3477,7 @@ function showPage(name) {
   if(name==='campaign') { setTimeout(startCampaignCountdown, 200); }
   if(name==='messages') _initMessagesPage();
   if(name==='admin') { setTimeout(checkCloudStatus, 300); updatePendingEditsCount(); }
+  if(name==='routes') { renderRoutesPage(); }
   setSidebarActive(name);
 }
 
@@ -3477,6 +3611,7 @@ function sortAndRender() {
       case 'lastDon':   av=(a.donations||[]).map(dn=>dn.date||'').sort().pop()||''; bv=(b.donations||[]).map(dn=>dn.date||'').sort().pop()||''; break;
       case 'createdAt': av=a.createdAt||''; bv=b.createdAt||''; break;
       case 'updatedAt': av=a.updatedAt||''; bv=b.updatedAt||''; break;
+      case 'bond':      av=calcBondScore(a); bv=calcBondScore(b); break;
       default:          av=donorName(a); bv=donorName(b);
     }
     if (typeof av === 'number' && typeof bv === 'number') return sortDir * (av - bv);
@@ -3507,6 +3642,7 @@ function sortAndRender() {
       <td data-col="idNumber">${d.idNumber||''}</td>
       <td data-col="status">${statusBadge(d.status)}</td>
       <td data-col="rating">${ratingStars(d.rating)}</td>
+      <td data-col="bond">${bondBadge(calcBondScore(d))}</td>
       <td onclick="event.stopPropagation()"><div class="row-actions">
         ${ce ? `<button class="btn btn-outline btn-sm" onclick="openDonorModal('${d.id}')">✏️</button>` : ''}
         ${ce ? `<button class="btn btn-danger btn-sm" onclick="deleteDonorRow('${d.id}')">🗑️</button>` : ''}
@@ -4926,12 +5062,29 @@ function renderDonationsPanel() {
   const avgAmt   = rows.length ? totalAmt/rows.length : 0;
   const maxAmt_  = rows.reduce((m,r) => Math.max(m,parseFloat(r.amount||0)), 0);
   const uniqueDonors = new Set(rows.map(r => r.donorId)).size;
-  document.getElementById('donsPanelStats').innerHTML = [
-    {v:'₪'+Math.round(totalAmt).toLocaleString(), l:'סה"כ', cl:'green'},
-    {v:rows.length, l:'מספר תרומות', cl:''},
-    {v:uniqueDonors, l:'תורמים שונים', cl:''},
-    {v:'₪'+Math.round(avgAmt).toLocaleString(), l:'ממוצע', cl:''},
-  ].map(s=>`<div class="stat-card ${s.cl}" style="padding:12px 14px"><div class="stat-val">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
+  document.getElementById('donsPanelStats').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:0;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh);overflow:hidden;flex:1">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-left:1px solid var(--border);flex:1;min-width:130px">
+        <span style="font-size:18px;font-weight:800;color:var(--success)">₪${Math.round(totalAmt).toLocaleString()}</span>
+        <span style="font-size:11px;color:var(--muted);font-weight:500">סה"כ</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-left:1px solid var(--border);flex:1;min-width:110px">
+        <span style="font-size:16px;font-weight:700;color:var(--navy)">${rows.length.toLocaleString()}</span>
+        <span style="font-size:11px;color:var(--muted)">תרומות</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-left:1px solid var(--border);flex:1;min-width:110px">
+        <span style="font-size:16px;font-weight:700;color:var(--purple)">${uniqueDonors.toLocaleString()}</span>
+        <span style="font-size:11px;color:var(--muted)">תורמים</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-left:1px solid var(--border);flex:1;min-width:130px">
+        <span style="font-size:16px;font-weight:700;color:var(--gold)">₪${Math.round(avgAmt).toLocaleString()}</span>
+        <span style="font-size:11px;color:var(--muted)">ממוצע</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;flex:1;min-width:130px">
+        <span style="font-size:16px;font-weight:700;color:var(--danger)">₪${Math.round(maxAmt_).toLocaleString()}</span>
+        <span style="font-size:11px;color:var(--muted)">גבוהה</span>
+      </div>
+    </div>`;
 
   document.getElementById('donsPanelCount').textContent = rows.length + ' תרומות';
 
@@ -7617,6 +7770,265 @@ function checkFieldDuplicate(field, value) {
   warn.style.display = 'block';
 }
 
+
+// ════════════════════════════════════════════
+// ROUTES SYSTEM (v23)
+// ════════════════════════════════════════════
+
+function haversineM(lat1,lng1,lat2,lng2) {
+  const R=6371000, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+async function geocodeDonor(d) {
+  if (d._lat && d._lng) return {lat:d._lat,lng:d._lng};
+  if (!d.address) return null;
+  const key = 'geo_'+btoa(unescape(encodeURIComponent((d.address||'').slice(0,60)))).slice(0,50);
+  try { const c=sessionStorage.getItem(key); if(c){const p=JSON.parse(c);if(p&&p.lat){d._lat=p.lat;d._lng=p.lng;d._geocodedNbh=p.nbh||'';d._geocodedCity=p.city||'';return p;}} } catch(e){}
+  const GKEY='AIzaSyBqBPXNjMiQVRPiqK0GBHNNe0Bg8yMI3pM';
+  const url=`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(d.address)}&language=he&region=il&key=${GKEY}`;
+  try {
+    const r=await fetch(url); const j=await r.json();
+    if(j.status==='OK'&&j.results[0]){
+      const loc=j.results[0].geometry.location;
+      const comps=j.results[0].address_components;
+      const nbhComp=comps.find(c=>c.types.includes('neighborhood')||c.types.includes('sublocality_level_1')||c.types.includes('sublocality'));
+      const cityComp=comps.find(c=>c.types.includes('locality'));
+      const p={lat:loc.lat,lng:loc.lng,nbh:nbhComp?.long_name||'',city:cityComp?.long_name||''};
+      d._lat=p.lat; d._lng=p.lng; d._geocodedNbh=p.nbh; d._geocodedCity=p.city;
+      try{sessionStorage.setItem(key,JSON.stringify(p));}catch(e){}
+      return p;
+    }
+  } catch(e){ console.warn('Geocode error',e); }
+  return null;
+}
+
+function getDonorNeighborhood(d) {
+  const rules=DB.neighborhoods||{};
+  const addr=(d.address||'').toLowerCase();
+  for(const [pattern,name] of Object.entries(rules)){
+    if(addr.includes(pattern.toLowerCase())) return name;
+  }
+  return d._geocodedNbh||d._geocodedCity||'לא ידוע';
+}
+
+function sortByProximity(donors) {
+  if(donors.length<=1) return donors;
+  const rem=[...donors], sorted=[rem.splice(0,1)[0]];
+  while(rem.length){
+    const last=sorted[sorted.length-1];
+    let bi=0, bd=Infinity;
+    rem.forEach((d,i)=>{ const dist=haversineM(last._lat,last._lng,d._lat,d._lng); if(dist<bd){bd=dist;bi=i;} });
+    sorted.push(rem.splice(bi,1)[0]);
+  }
+  return sorted;
+}
+
+function splitByDistance(donors, maxDist) {
+  if(donors.length<=1) return [donors];
+  const lat=donors.reduce((s,d)=>s+d._lat,0)/donors.length;
+  const lng=donors.reduce((s,d)=>s+d._lng,0)/donors.length;
+  const close=[],far=[];
+  donors.forEach(d=>{ if(haversineM(lat,lng,d._lat,d._lng)<=maxDist) close.push(d); else far.push(d); });
+  const result=[close];
+  if(far.length) result.push(...splitByDistance(sortByProximity(far),maxDist));
+  return result.filter(g=>g.length>0);
+}
+
+let _routeSeq={};
+function nextRouteCode(city) {
+  const c=(city||'כללי').replace(/\s+/g,'-');
+  if(!_routeSeq[c]) _routeSeq[c]=1;
+  return c+'-'+String(_routeSeq[c]++).padStart(3,'0');
+}
+
+async function generateRoutes() {
+  const cityFilter=(document.getElementById('rte_city_filter')?.value||'').trim().toLowerCase();
+  const perRoute=parseInt(document.getElementById('rte_per_route')?.value)||10;
+  const maxDist=parseInt(document.getElementById('rte_max_dist')?.value)||500;
+  closeModal('createRoutesModal');
+  const cont=document.getElementById('routesContainer');
+  cont.innerHTML='<div class="route-gen-progress"><div style="font-size:14px;font-weight:600;margin-bottom:8px">⏳ מגיאוקוד כתובות...</div><div id="rteProgText" style="font-size:12px;color:var(--muted)">0 / 0</div></div>';
+  let pool=DB.donors.filter(d=>d.address);
+  let done=0;
+  for(const d of pool){ await geocodeDonor(d); done++; const el=document.getElementById('rteProgText'); if(el) el.textContent=done+' / '+pool.length; }
+  pool=pool.filter(d=>d._lat&&d._lng);
+  if(cityFilter){ pool=pool.filter(d=>{ const city=(d._geocodedCity||'').toLowerCase(); const nbh=(d._geocodedNbh||'').toLowerCase(); const addr=(d.address||'').toLowerCase(); return city.includes(cityFilter)||nbh.includes(cityFilter)||addr.includes(cityFilter); }); }
+  if(!pool.length){ cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">לא נמצאו תורמים עם כתובת מאומתת בסינון הנוכחי</div>'; return; }
+  const el=cont.querySelector('.route-gen-progress'); if(el) el.innerHTML='<div style="font-size:14px;font-weight:600">⚙️ מחשב מסלולים...</div>';
+  const byNbh={};
+  pool.forEach(d=>{ const nbh=getDonorNeighborhood(d); if(!byNbh[nbh]) byNbh[nbh]=[]; byNbh[nbh].push(d); });
+  _routeSeq={};
+  const routes=[];
+  for(const [nbh,donors] of Object.entries(byNbh)){
+    const sorted=sortByProximity(donors);
+    const distGroups=splitByDistance(sorted,maxDist);
+    for(const dg of distGroups){
+      for(let i=0;i<dg.length;i+=perRoute){
+        const chunk=dg.slice(i,i+perRoute);
+        const city=chunk[0]._geocodedCity||'כללי';
+        routes.push({id:'route_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),code:nextRouteCode(city),neighborhood:nbh,city,donors:chunk.map(d=>d.id),createdAt:new Date().toISOString()});
+      }
+    }
+  }
+  DB.routes=routes; saveDB(); renderRoutesPage();
+  toast('✅ נוצרו '+routes.length+' מסלולים ל-'+pool.length+' תורמים');
+}
+
+function renderRoutesPage() {
+  const ac=activeCampaign();
+  const banner=document.getElementById('routesCampaignBanner');
+  if(banner){ if(ac){banner.style.display='';document.getElementById('routesCampaignName').textContent='🎯 מסלולים למגבית: '+ac.name;}else banner.style.display='none'; }
+  const container=document.getElementById('routesContainer'); if(!container) return;
+  const routes=DB.routes||[];
+  if(!routes.length){
+    container.innerHTML='<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">🗺️</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">אין מסלולים עדיין</div><div style="font-size:13px">לחץ "צור מסלולים חדשים" כדי לבנות מסלולים אוטומטית לפי מיקום</div></div>';
+    return;
+  }
+  const byNbh={};
+  routes.forEach(r=>{ if(!byNbh[r.neighborhood]) byNbh[r.neighborhood]=[]; byNbh[r.neighborhood].push(r); });
+  container.innerHTML=Object.entries(byNbh).map(([nbh,rtList])=>`
+    <div style="margin-bottom:24px">
+      <div style="font-family:'Frank Ruhl Libre',serif;font-size:15px;font-weight:700;color:var(--slate-800);margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid var(--navy);display:inline-block">
+        🏘️ ${nbh} &nbsp;<span style="font-size:12px;font-weight:400;color:var(--muted)">${rtList.reduce((s,r)=>s+r.donors.length,0)} תורמים · ${rtList.length} מסלולים</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px">
+        ${rtList.map(r=>renderRouteCard(r)).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderRouteCard(r) {
+  const donors=(r.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
+  return `<div class="route-card" id="rc_${r.id}">
+    <div class="route-card-header">
+      <div><div class="route-code">📍 ${r.code}</div><div class="route-meta">${r.neighborhood} · ${donors.length} תורמים</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:white;border-color:rgba(255,255,255,.3)" onclick="openRouteEdit('${r.id}')">✏️</button>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.2);color:#fca5a5;border-color:rgba(239,68,68,.4)" onclick="deleteRoute('${r.id}')">🗑️</button>
+      </div>
+    </div>
+    <div style="max-height:220px;overflow-y:auto">
+      ${donors.map((d,i)=>`<div class="route-donor-row">
+        <span style="width:20px;height:20px;background:var(--navy);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${i+1}</span>
+        <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">${donorName(d)}</div><div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.address||''}</div></div>
+        <span style="font-size:11px;color:var(--muted);white-space:nowrap">${d.mobile||d.phone||''}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function deleteRoute(id) { if(!confirm('למחוק מסלול זה?')) return; DB.routes=(DB.routes||[]).filter(r=>r.id!==id); saveDB(); renderRoutesPage(); }
+
+let _editingRouteId=null,_dragSrcIdx=null,_editMap=null,_editMapMarkers=[];
+
+function openRouteEdit(id) {
+  const route=(DB.routes||[]).find(r=>r.id===id); if(!route) return;
+  _editingRouteId=id;
+  document.getElementById('routeEditTitle').textContent='✏️ מסלול '+route.code;
+  renderRouteEditList(route);
+  openModal('routeEditModal');
+  setTimeout(()=>initRouteEditMap(route),350);
+}
+
+function renderRouteEditList(route) {
+  const donors=(route.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
+  document.getElementById('routeEditList').innerHTML=donors.map((d,i)=>`
+    <div class="route-donor-row" draggable="true" data-idx="${i}" data-id="${d.id}"
+      ondragstart="routeDragStart(event,${i})" ondragover="routeDragOver(event)"
+      ondrop="routeDrop(event,${i})" ondragend="routeDragEnd()">
+      <span class="route-drag-handle">⠿</span>
+      <span style="width:20px;height:20px;background:var(--navy);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${donorName(d)}</div>
+        <div style="font-size:11px;color:var(--muted)">${d.address||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function routeDragStart(e,idx){ _dragSrcIdx=idx; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; }
+function routeDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+function routeDragEnd(){ document.querySelectorAll('.route-donor-row').forEach(el=>el.classList.remove('dragging')); }
+function routeDrop(e,toIdx){
+  e.preventDefault(); if(_dragSrcIdx===null||_dragSrcIdx===toIdx) return;
+  const route=(DB.routes||[]).find(r=>r.id===_editingRouteId); if(!route) return;
+  const arr=[...route.donors]; const [moved]=arr.splice(_dragSrcIdx,1); arr.splice(toIdx,0,moved);
+  route.donors=arr; _dragSrcIdx=null; renderRouteEditList(route); updateRouteEditMap(route);
+}
+
+function initRouteEditMap(route) {
+  if(_editMap){_editMap.remove();_editMap=null;} 
+  if(typeof L==='undefined') return;
+  _editMap=L.map('routeEditMap',{zoomControl:true});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(_editMap);
+  updateRouteEditMap(route);
+}
+
+function updateRouteEditMap(route) {
+  if(!_editMap) return;
+  _editMapMarkers.forEach(m=>m.remove()); _editMapMarkers=[];
+  const donors=(route.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(d=>d&&d._lat&&d._lng);
+  if(!donors.length) return;
+  const coords=donors.map((d,i)=>{
+    const m=L.marker([d._lat,d._lng]).addTo(_editMap).bindTooltip(`${i+1}. ${donorName(d)}`,{permanent:false,direction:'top'});
+    _editMapMarkers.push(m); return [d._lat,d._lng];
+  });
+  if(coords.length>1) L.polyline(coords,{color:'#4f46e5',weight:2.5,opacity:.75}).addTo(_editMap);
+  try{_editMap.fitBounds(L.latLngBounds(coords),{padding:[24,24]});}catch(e){}
+}
+
+function saveRouteEdit(){ saveDB(); renderRoutesPage(); closeModal('routeEditModal'); toast('✅ מסלול עודכן'); }
+
+function openCreateRoutesModal(){
+  const cities=[...new Set(DB.donors.map(d=>d._geocodedCity||'').filter(Boolean))];
+  const dl=document.getElementById('rte_city_list'); if(dl) dl.innerHTML=cities.map(c=>`<option value="${c}">`).join('');
+  updateRoutePreview(); openModal('createRoutesModal');
+}
+
+function updateRoutePreview(){
+  const cityFilter=(document.getElementById('rte_city_filter')?.value||'').trim().toLowerCase();
+  const perRoute=parseInt(document.getElementById('rte_per_route')?.value)||10;
+  const pool=DB.donors.filter(d=>d.address&&d._lat&&d._lng);
+  const filtered=cityFilter?pool.filter(d=>{ const city=(d._geocodedCity||'').toLowerCase(); return city.includes(cityFilter)||(d.address||'').toLowerCase().includes(cityFilter); }):pool;
+  const notGeo=DB.donors.filter(d=>d.address&&!d._lat).length;
+  const box=document.getElementById('rtePreviewBox');
+  if(box) box.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:14px;color:var(--slate-700)"><div><strong>${filtered.length}</strong> תורמים${cityFilter?' (מסוננים)':''}</div><div><strong>~${Math.ceil(filtered.length/Math.max(1,perRoute))}</strong> מסלולים צפויים</div>${notGeo?'<div style="color:var(--warn)">⚠️ '+notGeo+' תורמים עדיין ללא גיאוקוד (יגיאוקדו בעת יצירה)</div>':''}</div>`;
+}
+
+function openNeighborhoodsEditor(){ renderNbhRules(); openModal('neighborhoodsModal'); }
+
+function renderNbhRules(){
+  const rules=DB.neighborhoods||{};
+  const list=document.getElementById('nbhRulesList'); if(!list) return;
+  const entries=Object.entries(rules);
+  if(!entries.length){list.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">אין חוקים ידניים עדיין</div>';return;}
+  list.innerHTML=entries.map(([addr,name])=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:5px;font-size:12px"><span style="flex:1"><strong>${escHtml(addr)}</strong> → ${escHtml(name)}</span><button class="btn btn-danger btn-sm" onclick="deleteNbhRule('${escHtml(addr).replace(/'/g,"\\'") }')">✕</button></div>`).join('');
+}
+
+function addNeighborhoodRule(){
+  const addr=(document.getElementById('nbh_address')?.value||'').trim();
+  const name=(document.getElementById('nbh_name')?.value||'').trim();
+  if(!addr||!name){toast('נא למלא כתובת ושם שכונה');return;}
+  if(!DB.neighborhoods) DB.neighborhoods={};
+  DB.neighborhoods[addr]=name; saveDB();
+  document.getElementById('nbh_address').value=''; document.getElementById('nbh_name').value='';
+  renderNbhRules();
+}
+
+function deleteNbhRule(addr){ if(!DB.neighborhoods) return; delete DB.neighborhoods[addr]; saveDB(); renderNbhRules(); }
+
+function printRoutes(){
+  const routes=DB.routes||[]; if(!routes.length){toast('אין מסלולים להדפסה');return;}
+  const w=window.open('','_blank');
+  w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><title>מסלולים</title><style>body{font-family:Arial,sans-serif;font-size:13px}h2{color:#1e3a5f;margin:0 0 6px}table{width:100%;border-collapse:collapse;margin-bottom:20px}td,th{border:1px solid #ccc;padding:5px 8px;text-align:right}th{background:#1e3a5f;color:white}.pb{page-break-after:always}</style></head><body>
+  <h1 style="color:#1e3a5f;margin-bottom:16px">מסלולים — ${new Date().toLocaleDateString('he-IL')}</h1>
+  ${routes.map((r,ri)=>{ const donors=(r.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
+    return `<div class="${ri<routes.length-1?'pb':''}"><h2>📍 ${r.code} — ${r.neighborhood}</h2><table><thead><tr><th>#</th><th>שם</th><th>כתובת</th><th>טלפון</th></tr></thead><tbody>${donors.map((d,i)=>`<tr><td>${i+1}</td><td>${donorName(d)}</td><td>${d.address||''}</td><td>${d.mobile||d.phone||''}</td></tr>`).join('')}</tbody></table></div>`;
+  }).join('')}</body></html>`);
+  w.document.close(); w.print();
+}
+
 // ════════════════════════════════════════════════════
 // ITEM 7 — Duplicate Detection
 // ════════════════════════════════════════════════════
@@ -8014,7 +8426,7 @@ ${mapHtml}
 // ITEM 7+9 — Column visibility & Multi-filter (Donors page)
 // ════════════════════════════════════════════════════
 
-const COL_DEFS = ['code','name','address','phones','email','affil','prefTime','total','lastDon','maxDon','createdAt','updatedAt','idNumber'];
+const COL_DEFS = ['code','name','address','phones','email','affil','prefTime','total','lastDon','maxDon','createdAt','updatedAt','idNumber','bond'];
 
 function toggleColPicker() {
   const d = document.getElementById('colPickerDropdown');
@@ -9402,6 +9814,35 @@ function renderDashExpWidget() {
     </div>`;
 }
 
+function calcBondScore(d) {
+  const dons = (d.donations||[]).filter(dn=>dn.amount>0);
+  if(!dons.length) return 0;
+  const total = dons.reduce((s,dn)=>s+parseFloat(dn.amount||0),0);
+  const count = dons.length;
+  const avg = total/count;
+  const sortedDates = dons.map(dn=>dn.date||'').filter(Boolean).sort();
+  let avgGap=0;
+  const lastDonDate = sortedDates[sortedDates.length-1];
+  if(sortedDates.length>1){
+    let gaps=[];
+    for(let i=1;i<sortedDates.length;i++) gaps.push((new Date(sortedDates[i])-new Date(sortedDates[i-1]))/86400000);
+    avgGap=gaps.reduce((a,b)=>a+b,0)/gaps.length;
+  }
+  const daysSinceLast = lastDonDate ? Math.floor((Date.now()-new Date(lastDonDate))/86400000) : 9999;
+  const freqScore       = Math.min(25, Math.round((count/20)*25));
+  const amtScore        = Math.min(25, Math.round((Math.min(avg,5000)/5000)*25));
+  const recencyScore    = daysSinceLast<30?25:daysSinceLast<90?20:daysSinceLast<180?14:daysSinceLast<365?7:0;
+  const consistencyScore= count===1?10:avgGap===0?25:Math.min(25, Math.round((1-(Math.min(avgGap,365)/365))*25));
+  return freqScore+amtScore+recencyScore+consistencyScore;
+}
+function bondBadge(score) {
+  const g = score>=85?{l:'מצוין',bg:'#d1fae5',c:'#065f46'}
+           :score>=65?{l:'טוב',bg:'#dbeafe',c:'#1e40af'}
+           :score>=45?{l:'ממוצע',bg:'#fef3c7',c:'#92400e'}
+           :score>=25?{l:'חלש',bg:'#fee2e2',c:'#991b1b'}
+           :{l:'נמוך',bg:'#f3f4f6',c:'#374151'};
+  return `<span style="background:${g.bg};color:${g.c};border-radius:20px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap">${score} ${g.l}</span>`;
+}
 // ════════════════════════════════════════════════════
 // V19: BOND STRENGTH SCORE
 // ════════════════════════════════════════════════════
