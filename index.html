@@ -92,7 +92,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* PAGES */
 .page{display:none;padding:20px 24px;min-height:calc(100vh - 90px)}
-.page.active{display:block}
+.page.active{display:block}#pageRoutes.active{display:flex!important;flex-direction:column}
 
 /* BUTTONS */
 .btn{padding:8px 16px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all var(--tr);display:inline-flex;align-items:center;gap:6px;letter-spacing:-.1px}
@@ -184,19 +184,25 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 
 
 /* ════════════════ ROUTES (v24) ════════════════ */
-.rp-wrap{display:flex;flex-direction:column;gap:0;height:calc(100vh - 148px);min-height:500px;border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-md);background:var(--white)}
+.rp-wrap{display:flex;flex-direction:column;gap:0;height:calc(100vh - 58px);min-height:500px;overflow:hidden;background:var(--white)}
+/* Stats bar across the top */
 .rp-topbar{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0;overflow-x:auto}
 .rp-stat{padding:8px 18px;border-left:1px solid var(--border);display:flex;flex-direction:column;align-items:flex-start;min-width:90px}
 .rp-stat:last-child{border-left:none}
 .rp-stat-v{font-size:17px;font-weight:800;color:var(--navy);line-height:1.1}
 .rp-stat-l{font-size:10px;color:var(--muted);font-weight:500;margin-top:1px}
-.rp-body{display:grid;grid-template-columns:340px 1fr;flex:1;min-height:0;overflow:hidden}
-.rp-sidebar{display:flex;flex-direction:column;border-left:1.5px solid var(--border);overflow:hidden;background:var(--slate-50)}
-.rp-sid-head{padding:10px 12px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:8px}
+/* Map takes top 55%, sidebar accordion below */
+.rp-body{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.rp-map-wrap{position:relative;flex:0 0 58%;min-height:280px;overflow:hidden;border-bottom:2px solid var(--border)}
+#rpMainMap{width:100%;height:100%}
+/* Sidebar is a horizontal scrollable strip at the bottom */
+.rp-sidebar{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;background:var(--slate-50)}
+.rp-sid-head{padding:8px 12px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:8px}
 .rp-sid-search{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;outline:none}
 .rp-sid-search:focus{border-color:var(--navy)}
-.rp-sid-body{flex:1;overflow-y:auto;padding:6px}
-.rp-nbh{margin-bottom:5px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--white)}
+.rp-sid-body{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+/* Neighborhood card in sidebar strip */
+.rp-nbh{flex:0 0 auto;min-width:200px;max-width:260px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--white)}
 .rp-nbh-hd{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer;user-select:none;background:var(--white);transition:background .12s}
 .rp-nbh-hd:hover{background:var(--bg)}
 .rp-nbh-hd.open{background:#eef2ff}
@@ -204,22 +210,21 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .rp-nbh-hd.open .rp-nbh-arrow{transform:rotate(90deg)}
 .rp-nbh-name{font-size:12px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rp-nbh-cnt{font-size:10px;color:var(--muted);white-space:nowrap}
-.rp-routes-list{display:none;padding:4px 4px 6px}
+.rp-routes-list{display:none;padding:4px 4px 6px;max-height:140px;overflow-y:auto}
 .rp-routes-list.open{display:block}
-.rp-ri{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;cursor:pointer;margin-bottom:3px;border:1.5px solid transparent;transition:all .12s}
+.rp-ri{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;cursor:pointer;margin-bottom:3px;border:1.5px solid transparent;transition:all .12s}
 .rp-ri:hover{background:var(--bg);border-color:var(--slate-300)}
 .rp-ri.active{background:#eef2ff;border-color:var(--navy)}
-.rp-ri-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.rp-ri-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .rp-ri-code{font-size:11px;font-weight:700;flex:1}
 .rp-ri-cnt{font-size:10px;color:var(--muted)}
 .rp-ri-btns{display:flex;gap:3px;opacity:0;transition:opacity .12s}
 .rp-ri:hover .rp-ri-btns,.rp-ri.active .rp-ri-btns{opacity:1}
-.rp-ri-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;line-height:1.3}
+.rp-ri-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 5px;font-size:11px;cursor:pointer;line-height:1.3}
 .rp-ri-btn:hover{background:var(--bg)}
 .rp-ri-btn.danger:hover{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-.rp-map-wrap{position:relative;overflow:hidden}
-#rpMainMap{width:100%;height:100%}
-.rp-detail-panel{position:absolute;top:10px;right:10px;width:210px;background:rgba(255,255,255,.96);border:1.5px solid var(--border);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:500;max-height:calc(100% - 20px);overflow-y:auto;font-size:12px;display:none}
+/* Detail panel overlaid on the map */
+.rp-detail-panel{position:absolute;top:10px;right:10px;width:220px;background:rgba(255,255,255,.97);border:1.5px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:500;max-height:calc(100% - 20px);overflow-y:auto;font-size:12px;display:none}
 .rp-detail-head{padding:8px 12px;background:linear-gradient(135deg,#1e3a5f,#4f46e5);color:white;border-radius:8px 8px 0 0;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:space-between}
 .rp-detail-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:14px;line-height:1;padding:0}
 .rp-detail-body{padding:8px}
@@ -232,11 +237,11 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 .rp-drow-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
 .rp-drow-addr{color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rp-drow-drag{color:var(--slate-400);font-size:12px;cursor:grab;flex-shrink:0;line-height:1;margin-top:2px}
-.rp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--muted);text-align:center;padding:32px}
-.rp-gen-cover{position:absolute;inset:0;background:rgba(255,255,255,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:700;border-radius:var(--r-lg)}
+.rp-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center;padding:32px;background:rgba(255,255,255,.9);z-index:10}
+.rp-gen-cover{position:absolute;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:700}
 .rp-prog-bar{width:260px;height:7px;background:var(--border);border-radius:99px;overflow:hidden}
 .rp-prog-fill{height:100%;background:var(--navy);border-radius:99px;transition:width .25s ease}
-@media(max-width:860px){.rp-body{grid-template-columns:1fr;grid-template-rows:260px 1fr}.rp-sidebar{border-left:none;border-top:1.5px solid var(--border)}}
+@media(max-width:700px){.rp-map-wrap{flex:0 0 45%}.rp-nbh{min-width:160px}}
 /* DONOR MODAL SPECIFIC — tabs sticky above, content scrolls below */
 .donor-tabs-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 8px}
 .donor-tabs-bar::-webkit-scrollbar{display:none}
@@ -703,6 +708,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
     <button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></button>
     <button class="btn btn-outline btn-sm" onclick="openLabelsModal()"><i data-lucide="tag" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> מדבקות</button>
     <button class="btn btn-gold btn-sm" onclick="toggleColPicker()" id="colPickerBtn" title="בחר עמודות להצגה"><i data-lucide="sliders-horizontal" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> עמודות</button>
+    <button class="btn btn-outline btn-sm" onclick="openGeocodeBatchModal()" title="גיאוקוד תורמים ללא קואורדינטות">📍 גיאוקוד</button>
   </div>
 
   <!-- Column picker dropdown -->
@@ -2706,7 +2712,7 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 
 
 <!-- ════ ROUTES PAGE (v24) ════ -->
-<div class="page" id="pageRoutes">
+<div class="page" id="pageRoutes" style="padding:0">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
     <h2 style="font-family:'Frank Ruhl Libre',serif;font-size:22px">🗺️ מסלולים</h2>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -2726,12 +2732,12 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
       <div class="rp-stat" style="flex:1" id="rpStatCamp"></div>
     </div>
 
-    <!-- Split: sidebar + map -->
+    <!-- Body: map top 58%, sidebar strip below -->
     <div class="rp-body">
-      <!-- Map -->
+      <!-- Map area (top section) -->
       <div class="rp-map-wrap" id="rpMapWrap">
         <div id="rpMainMap"></div>
-        <!-- Detail panel overlay -->
+        <!-- Detail panel overlaid on map -->
         <div class="rp-detail-panel" id="rpDetailPanel">
           <div class="rp-detail-head">
             <span id="rpDetailTitle">מסלול</span>
@@ -2758,12 +2764,15 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
         </div>
       </div>
 
-      <!-- Sidebar -->
+      <!-- Sidebar strip (bottom section) -->
       <div class="rp-sidebar">
         <div class="rp-sid-head">
-          <input class="rp-sid-search" id="rpSearch" placeholder="חיפוש מסלול / תורם..." oninput="rpFilterSidebar()">
+          <input class="rp-sid-search" id="rpSearch" placeholder="חיפוש מסלול / שכונה..." oninput="rpFilterSidebar()">
+          <span id="rpSidebarInfo" style="font-size:11px;color:var(--muted);white-space:nowrap"></span>
         </div>
-        <div class="rp-sid-body" id="rpSidebar"></div>
+        <div class="rp-sid-body" id="rpSidebar">
+          <div style="color:var(--muted);font-size:12px;padding:12px">צור מסלולים כדי לראות אותם כאן</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2820,6 +2829,28 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeModal('rpNbhModal')">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GEOCODE BATCH MODAL ════ -->
+<div class="modal-overlay" id="geocodeBatchModal">
+  <div class="modal modal-sm" style="max-width:480px">
+    <div class="modal-header">
+      <h3>📍 גיאוקוד תורמים</h3>
+      <button class="modal-close" onclick="closeModal('geocodeBatchModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="geoSummary" style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px"></div>
+      <div class="rp-prog-bar" style="margin-bottom:8px"><div class="rp-prog-fill" id="geoBatchFill" style="width:0%"></div></div>
+      <div style="font-size:12px;color:var(--muted);text-align:center" id="geoBatchText"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px;background:var(--bg);border-radius:8px;padding:10px">
+        ⏱️ Nominatim מאפשר קריאה אחת לשנייה. עבור כמות גדולה התהליך לוקח כמה דקות.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('geocodeBatchModal')">סגור</button>
+      <button class="btn btn-navy" id="geoBatchBtn" onclick="runGeocodeBatch()">🚀 התחל גיאוקוד</button>
     </div>
   </div>
 </div>
@@ -2890,26 +2921,53 @@ tr:hover td{background:var(--slate-50,#f8fafc)}
 </div>
 
 <!-- IMPORT MODAL -->
+<!-- ════ IMPORT MODAL (with column mapper) ════ -->
 <div class="modal-overlay" id="importModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><h3>📥 ייבוא מאקסל</h3><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px">
-        <strong style="font-size:13px">📋 מבנה קובץ האקסל לייבוא תורמים:</strong>
-        <div style="margin-top:8px;font-family:monospace;font-size:11px;background:white;border-radius:6px;padding:10px;overflow-x:auto;white-space:nowrap;border:1px solid var(--border)">
-          קוד תורם | תואר | שם פרטי | שם משפחה | שם סגירה | שיוך | כתובת | כניסה קומה | טלפון | סלולרי | מייל | שנת נישואין | מחזור | מועד תרמה | הערות
+  <div class="modal" style="max-width:740px">
+    <div class="modal-header"><h3>📥 ייבוא תורמים מאקסל</h3><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
+    <div class="modal-body" style="padding:18px 20px">
+      <div id="impStep1">
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px">
+          <strong style="display:block;margin-bottom:6px">📋 ייבוא חכם — מיפוי עמודות אוטומטי</strong>
+          <span style="color:var(--muted)">לאחר טעינת הקובץ תוכל לשייך כל עמודה לשדה הנכון. שדות חובה: שם פרטי ו/או שם משפחה.</span>
         </div>
-        <div style="margin-top:8px;color:var(--muted)">
-          <strong>שדות חובה:</strong> שם פרטי ו/או שם משפחה<br>
-          <strong>קוד תורם:</strong> ייווצר אוטומטית אם ריק<br>
-          <strong>שיוך:</strong> תלמיד / בוגר / הורה תלמיד / הורה בוגר / מכר / עסקי / אחר
-        </div>
+        <label class="btn btn-navy" style="cursor:pointer;display:block;text-align:center;padding:22px;font-size:14px">
+          📂 בחר קובץ Excel (.xlsx / .xls)
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="impLoadFile(this)">
+        </label>
+        <div id="importStatus" style="margin-top:12px;font-size:13px"></div>
       </div>
-      <label class="btn btn-outline" style="cursor:pointer;display:block;text-align:center;padding:20px">
-        📂 בחר קובץ Excel (.xlsx / .xls)
-        <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
-      </label>
-      <div id="importStatus" style="margin-top:12px;font-size:13px"></div>
+      <div id="impStep2" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <strong id="impFileName" style="font-size:13px"></strong>
+            <span id="impRowCount" style="font-size:12px;color:var(--muted);margin-right:8px"></span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="impReset()">↩ קובץ אחר</button>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:11px;margin-bottom:14px;overflow-x:auto">
+          <strong style="display:block;margin-bottom:6px;font-size:12px">תצוגה מקדימה — שורה ראשונה:</strong>
+          <div id="impPreviewRow" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px">מיפוי עמודות:</div>
+        <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead style="position:sticky;top:0">
+              <tr style="background:var(--navy);color:white">
+                <th style="padding:7px 10px;text-align:right;font-weight:600">עמודה בקובץ</th>
+                <th style="padding:7px 10px;text-align:right;font-weight:600">ערך לדוגמה</th>
+                <th style="padding:7px 10px;text-align:right;font-weight:600">שדה מערכת</th>
+              </tr>
+            </thead>
+            <tbody id="impMapperBody"></tbody>
+          </table>
+        </div>
+        <div id="impMapWarn" style="color:var(--danger);font-size:12px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer" id="impFooter" style="display:none">
+      <button class="btn btn-outline btn-sm" onclick="impReset()">ביטול</button>
+      <button class="btn btn-navy" onclick="impDoImport()">📥 ייבא תורמים</button>
     </div>
   </div>
 </div>
@@ -4905,39 +4963,258 @@ function populateSelectFromSettings(id, key, emptyLabel) {
 // IMPORT / EXPORT
 // ════════════════════════════════════════════════════
 function openImportModal(){openModal('importModal');document.getElementById('importStatus').innerHTML='';}
-function importExcel(input){
+// ════ IMPORT SYSTEM v25 — column mapper ════
+
+// Field definitions: system field → display name
+const IMP_FIELDS = [
+  {k:'title',        lbl:'תואר'},
+  {k:'firstName',    lbl:'שם פרטי', req:true},
+  {k:'lastName',     lbl:'שם משפחה', req:true},
+  {k:'closingName',  lbl:'שם סגירה'},
+  {k:'code',         lbl:'קוד תורם'},
+  {k:'address',      lbl:'כתובת'},
+  {k:'cohort',       lbl:'מחזור'},
+  {k:'idNumber',     lbl:'תעודת זהות'},
+  {k:'buildingNum',  lbl:'מספר בנין'},
+  {k:'entrance',     lbl:'כניסה / דירה'},
+  {k:'apartment',    lbl:'דירה'},
+  {k:'phone',        lbl:'טלפון'},
+  {k:'mobile',       lbl:'פלאפון / סלולרי'},
+  {k:'marriageYear', lbl:'שנת נישואין'},
+  {k:'notes',        lbl:'הערות'},
+  {k:'affil',        lbl:'שיוך'},
+  {k:'email',        lbl:'מייל'},
+  {k:'prefTime',     lbl:'מועד תרמה'},
+  {k:'ignore',       lbl:'— התעלם —'},
+];
+
+// Known column order for the specific format (order-based auto-detect)
+const IMP_ORDERED_FORMAT = [
+  'title','firstName','lastName','closingName','code',
+  'address','cohort','idNumber','buildingNum','entrance',
+  'apartment','phone','mobile','marriageYear','notes','affil'
+];
+
+// Auto-detect mapping from Hebrew column name
+const IMP_AUTO_MAP = {
+  'תואר':'title','שם פרטי':'firstName','פרטי':'firstName',
+  'שם משפחה':'lastName','משפחה':'lastName',
+  'שם סגירה':'closingName','סגירה':'closingName',
+  'קוד תורם':'code','קוד':'code',
+  'כתובת':'address',
+  'מחזור':'cohort',
+  'תעודת זהות':'idNumber','ת"ז':'idNumber','תז':'idNumber',
+  'מספר בנין':'buildingNum','בנין':'buildingNum','מספר בית':'buildingNum',
+  'כניסה':'entrance','כניסה קומה':'entrance',
+  'דירה':'apartment',
+  'טלפון':'phone','טל':'phone',
+  'פלאפון':'mobile','סלולרי':'mobile','נייד':'mobile','מובייל':'mobile',
+  'שנת נישואין':'marriageYear','נישואין':'marriageYear',
+  'הערות':'notes','הערה':'notes',
+  'שיוך':'affil','שייך':'affil',
+  'מייל':'email','אימייל':'email','email':'email',
+  'מועד תרמה':'prefTime','מועד':'prefTime',
+};
+
+let _impRawRows = [], _impHeaders = [], _impColMap = {};
+
+function openImportModal(){
+  openModal('importModal');
+  impReset();
+}
+
+function impReset(){
+  _impRawRows=[]; _impHeaders=[]; _impColMap={};
+  document.getElementById('impStep1').style.display='';
+  document.getElementById('impStep2').style.display='none';
+  document.getElementById('impFooter').style.display='none';
+  document.getElementById('importStatus').innerHTML='';
+}
+
+function impLoadFile(input){
   if(!can('import')){alert('אין הרשאה');return;}
-  const file=input.files[0];if(!file)return;
+  const file=input.files[0]; if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
-    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-    let added=0, skipped=0;
-    rows.forEach(row=>{
-      let code=String(row['קוד תורם']||'').trim();
-      // Auto-assign if missing
-      if(!code) code=genCode();
-      // If code conflicts, generate new unique code
-      if(DB.donors.find(d=>d.code===code)) {
-        // Check if it's an exact duplicate row (same name) - skip
-        const existing=DB.donors.find(d=>d.code===code);
-        if(existing && existing.firstName===(row['שם פרטי']||'') && existing.lastName===(row['שם משפחה']||'')) { skipped++; return; }
-        // Different person with same code - assign new code
-        code=genCode();
-        while(DB.donors.find(d=>d.code===code)) code=genCode();
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      // Use header:1 to get array of arrays (raw, no header inference)
+      const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(!aoa||aoa.length<2){document.getElementById('importStatus').innerHTML='<div style="color:var(--danger)">הקובץ ריק או לא תקין</div>';return;}
+      
+      // First row: could be header row or data row
+      const firstRow=aoa[0].map(v=>String(v||'').trim());
+      const isHeaderRow=firstRow.some(v=>IMP_AUTO_MAP[v]!==undefined);
+      
+      if(isHeaderRow){
+        _impHeaders=firstRow;
+        _impRawRows=aoa.slice(1).filter(r=>r.some(v=>String(v).trim()));
+      } else {
+        // No header row — use ordered format
+        _impHeaders=firstRow.map((_,i)=> i<IMP_ORDERED_FORMAT.length ? (IMP_FIELDS.find(f=>f.k===IMP_ORDERED_FORMAT[i])?.lbl||('עמודה '+(i+1))) : ('עמודה '+(i+1)));
+        _impRawRows=aoa.filter(r=>r.some(v=>String(v).trim()));
       }
-      DB.donors.push({id:'D'+Date.now()+Math.random(),code,title:row['תואר']||'',firstName:row['שם פרטי']||'',lastName:row['שם משפחה']||'',closingName:row['שם סגירה']||'',affil:row['שיוך']||'',address:row['כתובת']||'',entrance:row['כניסה קומה']||'',phone:row['טלפון']||'',mobile:row['סלולרי']||'',email:row['מייל']||'',marriageYear:row['שנת נישואין']||'',cohort:row['מחזור']||'',prefTime:row['מועד תרמה']||'',notes:row['הערות']||'',createdAt:new Date().toISOString(),donations:[],futureDonations:[],relations:[]});
-      added++;
-    });
-    saveDB();renderAll();
-    let msg=`✓ יובאו ${added} תורמים`;
-    if(skipped>0) msg+=` | ${skipped} כפולים דולגו`;
-    document.getElementById('importStatus').innerHTML=`<div style="color:var(--success)">${msg}</div>`;
-    auditLog('import', `ייבוא Excel: ${added} תורמים`);
-    input.value='';
+      
+      // Build auto column map
+      _impColMap={};
+      _impHeaders.forEach((h,i)=>{
+        const key=IMP_AUTO_MAP[h];
+        if(key) _impColMap[i]=key;
+        else if(!isHeaderRow && i<IMP_ORDERED_FORMAT.length) _impColMap[i]=IMP_ORDERED_FORMAT[i];
+        else _impColMap[i]='ignore';
+      });
+      
+      // Show step 2
+      document.getElementById('impFileName').textContent='📄 '+file.name;
+      document.getElementById('impRowCount').textContent=_impRawRows.length+' שורות';
+      document.getElementById('impStep1').style.display='none';
+      document.getElementById('impStep2').style.display='';
+      document.getElementById('impFooter').style.display='';
+      impRenderPreview();
+      impRenderMapper();
+    }catch(ex){document.getElementById('importStatus').innerHTML='<div style="color:var(--danger)">שגיאה בקריאת הקובץ: '+ex.message+'</div>';}
   };
   reader.readAsArrayBuffer(file);
+  input.value='';
 }
+
+function impRenderPreview(){
+  const row=_impRawRows[0]||[];
+  const el=document.getElementById('impPreviewRow');
+  if(!el)return;
+  el.innerHTML=_impHeaders.map((h,i)=>`<span style="background:white;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px"><strong>${escHtml(h||'עמודה '+(i+1))}</strong><br><span style="color:var(--muted)">${escHtml(String(row[i]||'').slice(0,20))}</span></span>`).join('');
+}
+
+function impRenderMapper(){
+  const tbody=document.getElementById('impMapperBody');
+  if(!tbody)return;
+  const sampleRow=_impRawRows[0]||[];
+  tbody.innerHTML=_impHeaders.map((h,i)=>{
+    const mapped=_impColMap[i]||'ignore';
+    const sample=String(sampleRow[i]||'').slice(0,30);
+    const opts=IMP_FIELDS.map(f=>`<option value="${f.k}"${f.k===mapped?' selected':''}>${f.lbl}${f.req?' *':''}</option>`).join('');
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px 10px;font-weight:600">${escHtml(h||'עמודה '+(i+1))}</td>
+      <td style="padding:6px 10px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(sample)}</td>
+      <td style="padding:6px 10px"><select class="form-control" style="font-size:12px;padding:4px 6px" onchange="_impColMap[${i}]=this.value">${opts}</select></td>
+    </tr>`;
+  }).join('');
+}
+
+function impDoImport(){
+  // Validate: at least firstName or lastName must be mapped
+  const mappedFields=Object.values(_impColMap);
+  const hasName=mappedFields.includes('firstName')||mappedFields.includes('lastName');
+  if(!hasName){
+    document.getElementById('impMapWarn').textContent='⚠️ חובה למפות לפחות שם פרטי או שם משפחה';
+    return;
+  }
+  document.getElementById('impMapWarn').textContent='';
+  
+  let added=0, skipped=0;
+  _impRawRows.forEach(row=>{
+    // Build data object from mapping
+    const data={};
+    _impHeaders.forEach((_,i)=>{
+      const field=_impColMap[i];
+      if(field&&field!=='ignore') data[field]=String(row[i]||'').trim();
+    });
+    
+    // Skip rows with no name at all
+    if(!data.firstName&&!data.lastName){skipped++;return;}
+    
+    // Merge buildingNum into address if both exist
+    if(data.buildingNum&&data.address&&!data.address.includes(data.buildingNum)){
+      data.address=data.address.trim()+' '+data.buildingNum;
+    }
+    // Merge apartment into entrance
+    if(data.apartment){
+      data.entrance=(data.entrance?data.entrance+', ':'')+'דירה '+data.apartment;
+      delete data.apartment;
+    }
+    
+    // Handle code
+    let code=data.code||'';
+    if(!code) code=genCode();
+    if(DB.donors.find(d=>d.code===code)){
+      const ex=DB.donors.find(d=>d.code===code);
+      if(ex&&ex.firstName===data.firstName&&ex.lastName===data.lastName){skipped++;return;}
+      code=genCode();
+      while(DB.donors.find(d=>d.code===code)) code=genCode();
+    }
+    
+    DB.donors.push({
+      id:'D'+Date.now()+Math.random(),
+      code,
+      title:data.title||'',
+      firstName:data.firstName||'',
+      lastName:data.lastName||'',
+      closingName:data.closingName||'',
+      affil:data.affil||'',
+      address:data.address||'',
+      entrance:data.entrance||'',
+      phone:data.phone||'',
+      mobile:data.mobile||'',
+      email:data.email||'',
+      marriageYear:data.marriageYear||'',
+      cohort:data.cohort||'',
+      idNumber:data.idNumber||'',
+      prefTime:data.prefTime||'',
+      notes:data.notes||'',
+      createdAt:new Date().toISOString(),
+      donations:[],futureDonations:[],relations:[]
+    });
+    added++;
+  });
+  
+  saveDB(); renderAll();
+  let msg=`✅ יובאו ${added} תורמים`;
+  if(skipped>0) msg+=` | ${skipped} דולגו (כפולים/ללא שם)`;
+  auditLog('import',`ייבוא Excel: ${added} תורמים`);
+  closeModal('importModal');
+  toast(msg);
+}
+
+// ════ GEOCODE BATCH ════
+function openGeocodeBatchModal(){
+  const withAddr=DB.donors.filter(d=>d.address&&d.address.trim().length>2);
+  const noGeo=withAddr.filter(d=>!d.lat||!d.lng);
+  document.getElementById('geoSummary').innerHTML=`
+    <div style="display:flex;flex-wrap:wrap;gap:16px">
+      <span><strong style="color:var(--navy)">${withAddr.length}</strong> תורמים עם כתובת</span>
+      <span><strong style="color:var(--success)">${withAddr.length-noGeo.length}</strong> כבר גיאוקדו</span>
+      <span><strong style="color:var(--warn)">${noGeo.length}</strong> ממתינים לגיאוקוד</span>
+    </div>
+    ${noGeo.length===0?'<div style="margin-top:10px;color:var(--success);font-weight:600">✅ כל התורמים עם כתובת כבר גיאוקדו!</div>':''}`;
+  document.getElementById('geoBatchFill').style.width='0%';
+  document.getElementById('geoBatchText').textContent='';
+  document.getElementById('geoBatchBtn').disabled=noGeo.length===0;
+  openModal('geocodeBatchModal');
+}
+
+async function runGeocodeBatch(){
+  const pool=DB.donors.filter(d=>d.address&&d.address.trim().length>2&&(!d.lat||!d.lng));
+  if(!pool.length){toast('אין תורמים לגיאוקוד');return;}
+  const btn=document.getElementById('geoBatchBtn');
+  btn.disabled=true; btn.textContent='מגיאוקוד...';
+  let done=0, success=0;
+  for(const d of pool){
+    await rpGeocodeOne(d);
+    if(d.lat&&d.lng) success++;
+    done++;
+    const pct=Math.round(done/pool.length*100);
+    document.getElementById('geoBatchFill').style.width=pct+'%';
+    document.getElementById('geoBatchText').textContent=done+' / '+pool.length+' | '+success+' הצליחו';
+    await new Promise(r=>setTimeout(r,1100));
+  }
+  saveDB();
+  document.getElementById('geoBatchBtn').disabled=false;
+  document.getElementById('geoBatchBtn').textContent='🚀 התחל גיאוקוד';
+  document.getElementById('geoSummary').innerHTML=`<div style="color:var(--success);font-weight:600">✅ גיאוקוד הושלם! ${success}/${pool.length} נמצאו</div>`;
+  toast('✅ גיאוקוד הושלם: '+success+' תורמים');
+}
+
 
 function exportTable(){
   if(!can('export')){alert('אין הרשאת ייצוא');return;}
