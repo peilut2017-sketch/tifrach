@@ -4251,12 +4251,14 @@ function renderDash() {
     : recent.map(dn=>`<tr>
         <td><strong>${donorName(dn.donor)}</strong></td>
         <td style="font-size:12px;color:var(--muted)">${campName(dn.campaignId)||'-'}</td>
-        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||dn.groupId?grpNameById(dn.groupId||''):''||'-'}</td>
+        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||grpNameById(dn.groupId||'')||'-'}</td>
         <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong></td>
         <td>${dateCell(dn.date)}</td>
         <td>${methodBadge(dn.method)}</td>
       </tr>`).join('');
   startCampaignCountdown();
+  renderSmartAlerts();
+  renderDashCharts();
 }
 
 // ── Live campaign countdown (ticks every second) ──
