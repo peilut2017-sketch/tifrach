@@ -785,7 +785,7 @@ tr:hover td { background: var(--primary-bg) }
     <button class="sb-item sb-dropdown-toggle" id="sb-messages-group" onclick="toggleSbDropdown('sbdd-messages')"><span class="sb-icon"><i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">הודעות <span id="sbdd-messages-arrow" style="font-size:9px">▸</span> <span id="sbUnreadBadge" style="display:none;background:var(--danger);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></span></button>
     <div id="sbdd-messages" style="display:none">
       <button class="sb-item sb-sub" id="sb-messages" onclick="showPage('messages')"><span class="sb-icon"><i data-lucide="inbox" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">פאנל הודעות פנימיות</span></button>
-      <button class="sb-item sb-sub" onclick="showPage('emailDonors')"><span class="sb-icon"><i data-lucide="send" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">שליחת מייל לתורמים</span></button>
+      <button class="sb-item sb-sub" onclick="openBulkEmail()"><span class="sb-icon"><i data-lucide="send" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">שליחת מייל לתורמים</span></button>
     </div>
     <hr class="sb-divider">
     <button class="sb-item sb-dropdown-toggle" id="sb-admin-group" onclick="toggleSbDropdown('sbdd-admin')"><span class="sb-icon"><i data-lucide="settings" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">ניהול <span id="sbdd-admin-arrow" style="font-size:9px">▸</span></span></button>
@@ -11431,7 +11431,7 @@ function exportExpensesExcel() {
 function renderFRStats() {
   const frs = DB.fundraisers||[];
   const totalTarget = frs.reduce((s,f)=>s+parseFloat(f.target||0),0);
-  const totalRaised = frs.reduce((s,f)=>s+getFRRaised(f.id),0);
+  const totalRaised = frs.reduce((s,f)=>s+frRaisedTotal(f.id),0);
   const pct = totalTarget>0 ? Math.min(100,Math.round(totalRaised/totalTarget*100)) : 0;
 
   // Render stats banner if container exists
@@ -11441,7 +11441,7 @@ function renderFRStats() {
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:14px">
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">₪${totalTarget.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">יעד כולל</div></div>
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:#059669">₪${totalRaised.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">גויס</div></div>
-      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'#10b981':'var(--gold)'}}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
+      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'#10b981':'var(--gold)'}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">${frs.length}</div><div style="font-size:11px;color:var(--muted)">מתרימים</div></div>
     </div>
     <div style="background:#e5e7eb;border-radius:8px;height:10px;margin-bottom:16px;overflow:hidden">
