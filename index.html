@@ -785,7 +785,7 @@ tr:hover td { background: var(--primary-bg) }
     <button class="sb-item sb-dropdown-toggle" id="sb-messages-group" onclick="toggleSbDropdown('sbdd-messages')"><span class="sb-icon"><i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">הודעות <span id="sbdd-messages-arrow" style="font-size:9px">▸</span> <span id="sbUnreadBadge" style="display:none;background:var(--danger);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></span></button>
     <div id="sbdd-messages" style="display:none">
       <button class="sb-item sb-sub" id="sb-messages" onclick="showPage('messages')"><span class="sb-icon"><i data-lucide="inbox" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">פאנל הודעות פנימיות</span></button>
-      <button class="sb-item sb-sub" onclick="showPage('emailDonors')"><span class="sb-icon"><i data-lucide="send" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">שליחת מייל לתורמים</span></button>
+      <button class="sb-item sb-sub" onclick="openBulkEmail()"><span class="sb-icon"><i data-lucide="send" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">שליחת מייל לתורמים</span></button>
     </div>
     <hr class="sb-divider">
     <button class="sb-item sb-dropdown-toggle" id="sb-admin-group" onclick="toggleSbDropdown('sbdd-admin')"><span class="sb-icon"><i data-lucide="settings" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">ניהול <span id="sbdd-admin-arrow" style="font-size:9px">▸</span></span></button>
@@ -4251,12 +4251,14 @@ function renderDash() {
     : recent.map(dn=>`<tr>
         <td><strong>${donorName(dn.donor)}</strong></td>
         <td style="font-size:12px;color:var(--muted)">${campName(dn.campaignId)||'-'}</td>
-        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||dn.groupId?grpNameById(dn.groupId||''):''||'-'}</td>
+        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||grpNameById(dn.groupId||'')||'-'}</td>
         <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong></td>
         <td>${dateCell(dn.date)}</td>
         <td>${methodBadge(dn.method)}</td>
       </tr>`).join('');
   startCampaignCountdown();
+  renderSmartAlerts();
+  renderDashCharts();
 }
 
 // ── Live campaign countdown (ticks every second) ──
@@ -8040,26 +8042,30 @@ function getDonAttribution(prefix) {
 
 function loadDemoIfEmpty(){
   if(DB.donors.length>0) return;
-  // Add sample campaign
+  // Helper: date relative to today
+  function dAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0];}
+  function dAhead(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
+  // Add sample campaign — deadline always in the future so countdown works
+  const prevYear = new Date().getFullYear() - 1;
   DB.campaigns=[
-    {id:'CAM1',name:'מגבית פורים תשפ"ה',year:'תשפ"ה',goal:150000,deadline:'2025-03-14',active:true,desc:'מגבית השנה'},
-    {id:'CAM2',name:'מגבית פורים תשפ"ד',year:'תשפ"ד',goal:120000,deadline:'2024-03-24',active:false,desc:''},
+    {id:'CAM1',name:'מגבית פורים השנה',year:'השנה',goal:150000,deadline:dAhead(55),deadlineTime:'23:59',active:true,desc:'מגבית השנה'},
+    {id:'CAM2',name:`מגבית פורים ${prevYear}`,year:String(prevYear),goal:120000,deadline:dAgo(365),active:false,desc:''},
   ];
   DB.donors=[
-    {id:'D1',code:'T1001',title:'הרב',firstName:'משה',lastName:'לוי',closingName:'בברכה',affil:'בוגר',address:'הרצל 15, ירושלים',entrance:'כניסה א',phone:'02-5551234',mobile:'0521234567',email:'moshe@example.com',marriageYear:'1995',cohort:'מחזור כ',notes:'תורם ותיק',prefTime:'פורים בבית',createdAt:'2022-09-01T10:00:00',
-      donations:[{amount:500,date:'2024-03-06',method:'מזומן',campaignId:'CAM2',notes:''},{amount:1000,date:'2025-03-13',method:'אשראי',campaignId:'CAM1',notes:'שנתי'}],
-      futureDonations:[{date:'2026-03-02',expectedAmount:1500,campaignId:'CAM1',notes:'הוסכם בשיחה - מגדיל'},{date:'2025-09-15',expectedAmount:null,campaignId:'',notes:'לבדוק בראש השנה'}],
+    {id:'D1',code:'T1001',title:'הרב',firstName:'משה',lastName:'לוי',closingName:'בברכה',affil:'בוגר',address:'הרצל 15, ירושלים',entrance:'כניסה א',phone:'02-5551234',mobile:'0521234567',email:'moshe@example.com',marriageYear:'1995',cohort:'מחזור כ',notes:'תורם ותיק',prefTime:'פורים בבית',createdAt:dAgo(800)+'T10:00:00',
+      donations:[{amount:500,date:dAgo(330),method:'מזומן',campaignId:'CAM2',notes:''},{amount:1000,date:dAgo(45),method:'אשראי',campaignId:'CAM1',notes:'שנתי'}],
+      futureDonations:[{date:dAhead(30),expectedAmount:1500,campaignId:'CAM1',notes:'הוסכם בשיחה - מגדיל'},{date:dAhead(180),expectedAmount:null,campaignId:'',notes:'לבדוק בראש השנה'}],
       relations:[]},
-    {id:'D2',code:'T1002',title:'מר',firstName:'יעקב',lastName:'כהן',closingName:'בכבוד רב',affil:'הורה תלמיד',address:'בן גוריון 8, תל אביב',entrance:'קומה 4',phone:'03-6661234',mobile:'0501111222',email:'yaakov@example.com',marriageYear:'',cohort:'',notes:'',prefTime:'טלפוני לפני פורים',createdAt:'2023-01-15T10:00:00',
-      donations:[{amount:2000,date:'2025-02-15',method:'העברה בנקאית',campaignId:'CAM1',notes:''}],
-      futureDonations:[{date:'2026-02-20',expectedAmount:2500,campaignId:'CAM1',notes:'מעוניין להגדיל'}],
+    {id:'D2',code:'T1002',title:'מר',firstName:'יעקב',lastName:'כהן',closingName:'בכבוד רב',affil:'הורה תלמיד',address:'בן גוריון 8, תל אביב',entrance:'קומה 4',phone:'03-6661234',mobile:'0501111222',email:'yaakov@example.com',marriageYear:'',cohort:'',notes:'',prefTime:'טלפוני לפני פורים',createdAt:dAgo(500)+'T10:00:00',
+      donations:[{amount:2000,date:dAgo(120),method:'העברה בנקאית',campaignId:'CAM1',notes:''}],
+      futureDonations:[{date:dAhead(60),expectedAmount:2500,campaignId:'CAM1',notes:'מעוניין להגדיל'}],
       relations:[{donorId:'D1',type:'שווער'}]},
-    {id:'D3',code:'T1003',title:'ד"ר',firstName:'שרה',lastName:'גולדברג',closingName:'בהוקרה',affil:'מכר',address:'ביאליק 22, חיפה',entrance:'',phone:'04-8884321',mobile:'0523334445',email:'sarah@example.com',marriageYear:'2001',cohort:'',notes:'הכירה דרך ר. שמעון',prefTime:'טלפוני בפורים',createdAt:'2024-03-01T10:00:00',
-      donations:[{amount:5000,date:'2025-03-10',method:"צ'ק",campaignId:'CAM1',notes:'שיק 123'}],
+    {id:'D3',code:'T1003',title:'ד"ר',firstName:'שרה',lastName:'גולדברג',closingName:'בהוקרה',affil:'מכר',address:'ביאליק 22, חיפה',entrance:'',phone:'04-8884321',mobile:'0523334445',email:'sarah@example.com',marriageYear:'2001',cohort:'',notes:'הכירה דרך ר. שמעון',prefTime:'טלפוני בפורים',createdAt:dAgo(400)+'T10:00:00',
+      donations:[{amount:5000,date:dAgo(200),method:"צ'ק",campaignId:'CAM1',notes:'שיק 123'}],
       futureDonations:[],relations:[]},
-    {id:'D4',code:'T1004',title:'הרב',firstName:'אברהם',lastName:'גרינברג',closingName:'יישר כח',affil:'תלמיד',address:'מלכי ישראל 3, בני ברק',entrance:'',phone:'',mobile:'0524445566',email:'',marriageYear:'',cohort:'מחזור כה',notes:'',prefTime:'פורים בבית',createdAt:'2024-06-10T10:00:00',
-      donations:[],
-      futureDonations:[{date:'2026-03-02',expectedAmount:500,campaignId:'CAM1',notes:'ביקר בסוכות - הסכים לתרום'}],
+    {id:'D4',code:'T1004',title:'הרב',firstName:'אברהם',lastName:'גרינברג',closingName:'יישר כח',affil:'תלמיד',address:'מלכי ישראל 3, בני ברק',entrance:'',phone:'',mobile:'0524445566',email:'',marriageYear:'',cohort:'מחזור כה',notes:'',prefTime:'פורים בבית',createdAt:dAgo(300)+'T10:00:00',
+      donations:[{amount:300,date:dAgo(15),method:'מזומן',campaignId:'CAM1',notes:''}],
+      futureDonations:[{date:dAhead(10),expectedAmount:500,campaignId:'CAM1',notes:'ביקר בסוכות - הסכים לתרום'}],
       relations:[]},
   ];
   // Demo fundraisers
@@ -11429,7 +11435,7 @@ function exportExpensesExcel() {
 function renderFRStats() {
   const frs = DB.fundraisers||[];
   const totalTarget = frs.reduce((s,f)=>s+parseFloat(f.target||0),0);
-  const totalRaised = frs.reduce((s,f)=>s+getFRRaised(f.id),0);
+  const totalRaised = frs.reduce((s,f)=>s+frRaisedTotal(f.id),0);
   const pct = totalTarget>0 ? Math.min(100,Math.round(totalRaised/totalTarget*100)) : 0;
 
   // Render stats banner if container exists
@@ -11439,7 +11445,7 @@ function renderFRStats() {
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:14px">
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">₪${totalTarget.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">יעד כולל</div></div>
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:#059669">₪${totalRaised.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">גויס</div></div>
-      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'#10b981':'var(--gold)'}}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
+      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'#10b981':'var(--gold)'}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">${frs.length}</div><div style="font-size:11px;color:var(--muted)">מתרימים</div></div>
     </div>
     <div style="background:#e5e7eb;border-radius:8px;height:10px;margin-bottom:16px;overflow:hidden">
