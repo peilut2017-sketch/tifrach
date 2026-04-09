@@ -5489,9 +5489,9 @@ function renderUsersTable(){
   const roles=[{v:'superadmin',l:'מנהל ראשי'},{v:'admin',l:'מנהל'},{v:'editor',l:'עורך'},{v:'viewer',l:'מבקר'}];
   const isSA = can('superadmin');
   document.getElementById('usersBody').innerHTML=DB.users.map((u,i)=>`<tr>
-    <td><input class="form-control" type="email" value="${u.email||u.username||''}" oninput="DB.users[${i}].email=this.value;DB.users[${i}].username=this.value" style="width:160px" placeholder="user@example.com" ${!isSA?'readonly':''}></td>
-    <td><input class="form-control" value="${u.displayName||u.username||''}" oninput="DB.users[${i}].displayName=this.value" style="width:110px"></td>
-    <td><input class="form-control" type="password" value="${u.password||''}" oninput="DB.users[${i}].password=this.value" style="width:110px" placeholder="סיסמה ראשונית"></td>
+    <td><input class="form-control" type="email" value="${escHtml(u.email||u.username||'')}" oninput="DB.users[${i}].email=this.value;DB.users[${i}].username=this.value" style="width:160px" placeholder="user@example.com" ${!isSA?'readonly':''}></td>
+    <td><input class="form-control" value="${escHtml(u.displayName||u.username||'')}" oninput="DB.users[${i}].displayName=this.value" style="width:110px"></td>
+    <td><input class="form-control" type="password" value="${escHtml(u.password||'')}" oninput="DB.users[${i}].password=this.value" style="width:110px" placeholder="סיסמה ראשונית"></td>
     <td><select class="form-control" onchange="DB.users[${i}].role=this.value" style="width:120px" ${!isSA?'disabled':''}>
       ${roles.map(r=>`<option value="${r.v}"${u.role===r.v?' selected':''}>${r.l}</option>`).join('')}
     </select></td>
@@ -5721,7 +5721,7 @@ function impLoadFile(input){
       document.getElementById('impFooter').style.display='';
       impRenderPreview();
       impRenderMapper();
-    }catch(ex){document.getElementById('importStatus').innerHTML='<div style="color:var(--danger)">שגיאה בקריאת הקובץ: '+ex.message+'</div>';}
+    }catch(ex){document.getElementById('importStatus').innerHTML='<div style="color:var(--danger)">שגיאה בקריאת הקובץ: '+escHtml(ex.message)+'</div>';}
   };
   reader.readAsArrayBuffer(file);
   input.value='';
@@ -7208,20 +7208,20 @@ function frImpLoadFile(input) {
       document.getElementById('frImpRowCount').textContent = frImpRows.length + ' שורות';
       // Preview row
       const pr = document.getElementById('frImpPreviewRow');
-      pr.innerHTML = frImpHeaders.map(h => `<span style="background:var(--primary-light);color:var(--primary-dark);padding:2px 8px;border-radius:10px;font-size:11px">${h}: ${String(frImpRows[0][h]).slice(0,20)}</span>`).join('');
+      pr.innerHTML = frImpHeaders.map(h => `<span style="background:var(--primary-light);color:var(--primary-dark);padding:2px 8px;border-radius:10px;font-size:11px">${escHtml(h)}: ${escHtml(String(frImpRows[0][h]).slice(0,20))}</span>`).join('');
       // Build mapper
       const tbody = document.getElementById('frImpMapperBody');
       tbody.innerHTML = frImpHeaders.map(h => {
         const autoKey = FR_IMP_AUTO[h] || FR_IMP_AUTO[h.toLowerCase()] || '';
         const opts = FR_IMP_FIELDS.map(f => `<option value="${f.key}"${f.key===autoKey?' selected':''}>${f.label}</option>`).join('');
         return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:6px 10px;font-weight:600">${h}</td>
-          <td style="padding:6px 10px;color:var(--muted)">${String(frImpRows[0][h]).slice(0,25)||'—'}</td>
-          <td style="padding:6px 10px"><select class="filter-select" style="font-size:11px" id="frImpMap_${h.replace(/[^a-zA-Zא-ת0-9]/g,'_')}" data-col="${h}">${opts}</select></td>
+          <td style="padding:6px 10px;font-weight:600">${escHtml(h)}</td>
+          <td style="padding:6px 10px;color:var(--muted)">${escHtml(String(frImpRows[0][h]).slice(0,25))||'—'}</td>
+          <td style="padding:6px 10px"><select class="filter-select" style="font-size:11px" id="frImpMap_${h.replace(/[^a-zA-Zא-ת0-9]/g,'_')}" data-col="${escHtml(h)}">${opts}</select></td>
         </tr>`;
       }).join('');
     } catch(err) {
-      document.getElementById('frImportStatus').innerHTML = `<span style="color:var(--danger)">שגיאה: ${err.message}</span>`;
+      document.getElementById('frImportStatus').innerHTML = `<span style="color:var(--danger)">שגיאה: ${escHtml(err.message)}</span>`;
     }
     input.value = '';
   };
@@ -9739,7 +9739,7 @@ function processNedarimImport(input) {
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       importNedarimRows(rows);
     } catch(err) {
-      statusEl.innerHTML=`<span style="color:var(--danger)">שגיאה: ${err.message}</span>`;
+      statusEl.innerHTML=`<span style="color:var(--danger)">שגיאה: ${escHtml(err.message)}</span>`;
     }
   };
   reader.readAsBinaryString(file);
@@ -10146,7 +10146,7 @@ function buildMultiOpts(optsId, values, onChange) {
   ).join('');
 }
 
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escHtml(s) { if(!s&&s!==0)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function updateMultiSel(optsId, cb) {
   if (!_multiSelected[optsId]) _multiSelected[optsId] = new Set();
