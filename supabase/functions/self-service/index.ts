@@ -69,16 +69,17 @@ Deno.serve(async (req) => {
     for (const f of ALLOWED) {
       if (edits && typeof edits[f] === "string") clean[f] = edits[f].slice(0, 200);
     }
-    if (!DB.pendingEdits) DB.pendingEdits = [];
-    DB.pendingEdits.push({
-      id: "PE" + Date.now(),
-      donorId,
-      edits: clean,
-      ts: new Date().toISOString(),
-      token,
+    // Atomic append via SQL — never rewrites the whole blob, so concurrent
+    // staff saves can no longer be clobbered by this function.
+    const { error: upErr } = await sb.rpc("append_pending_edit", {
+      p_edit: {
+        id: "PE" + Date.now() + Math.random().toString(36).slice(2, 6),
+        donorId,
+        edits: clean,
+        ts: new Date().toISOString(),
+        token,
+      },
     });
-    const { error: upErr } = await sb
-      .from("app_state").update({ data: DB }).eq("id", "main");
     if (upErr) return json({ error: "save failed" }, 500);
     return json({ ok: true });
   }

@@ -6,7 +6,8 @@
 supabase/
 ├── config.toml                     הגדרות CLI + Edge Functions
 ├── migrations/
-│   └── 0001_init.sql               טבלת app_state + RLS + טריגר + seed
+│   ├── 0001_init.sql               טבלת app_state + RLS + טריגר + seed
+│   └── 0002_edge_atomic_writes.sql פונקציות SQL אטומיות ל-Edge Functions
 └── functions/
     ├── self-service/index.ts       פורטל עדכון עצמי לתורם (מאובטח בטוקן)
     └── yemot-ivr/index.ts          Webhook לתרומות טלפוניות (אופציונלי)
@@ -31,11 +32,13 @@ supabase link --project-ref <YOUR_PROJECT_REF>
 ```
 > אפשר גם לעדכן את `project_id` ב-`config.toml` לאותו ref.
 
-### 2. הרצת המיגרציה (יצירת הטבלה + RLS)
+### 2. הרצת המיגרציות (טבלה + RLS + פונקציות אטומיות)
 ```bash
 supabase db push
 ```
-**לחלופין ידני** (בלי CLI): Dashboard → SQL Editor → New query → הדבק את תוכן `migrations/0001_init.sql` → Run.
+**לחלופין ידני** (בלי CLI): Dashboard → SQL Editor → New query → הדבק את תוכן `migrations/0001_init.sql` → Run, ואז את `migrations/0002_edge_atomic_writes.sql` → Run.
+
+> **חשוב:** מיגרציה 0002 נדרשת ל-Edge Functions העדכניות — הן כותבות דרך פונקציות SQL אטומיות (`append_pending_edit`, `append_donor_donation`) במקום לשכתב את כל בסיס הנתונים, כך ששמירה של צוות במקביל לא תימחק. אחרי הרצתה יש לפרוס מחדש את הפונקציות (`supabase functions deploy`).
 
 ### 3. פריסת ה-Edge Functions
 ```bash
