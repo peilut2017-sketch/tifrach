@@ -17,7 +17,11 @@ try { if (window.top !== window.self) { window.top.location = window.self.locati
 // ══ SUPABASE CONFIG ══
 const SUPABASE_URL = "https://bgnjupxlslelynbgyggt.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnbmp1cHhsc2xlbHluYmd5Z2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3OTcwNTgsImV4cCI6MjA4NzM3MzA1OH0.42yRsoRUlpZ0wl05if3EAvx0vkiJg1Fv_9COx8V68qA";
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Null-safe: if the Supabase CDN failed to load, the app still boots in
+// offline mode (localStorage) instead of dying on a ReferenceError.
+const _sb = (typeof supabase !== 'undefined')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : new Proxy({}, { get(){ throw new Error('Supabase library not loaded'); } });
 
 // ══ SECURITY: XSS Prevention ══
 function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -2364,51 +2368,6 @@ tr:hover td { background: var(--primary-bg) }
   </div>
 </div>
 
-<!-- EXPORT WIZARD MODAL -->
-<div class="modal-overlay" id="exportWizard">
-  <div class="modal modal-lg">
-    <div class="modal-header"><h3><i data-lucide="upload" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> אשף ייצוא</h3><button class="modal-close" onclick="closeModal('exportWizard')">✕</button></div>
-    <div class="modal-body">
-      <h4 style="font-size:13px;font-weight:700;margin-bottom:12px">פילטרים</h4>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-        <div class="fg"><label class="form-label">שיוך</label>
-          <select class="form-control" id="ex_affil"><option value="">הכל</option></select></div>
-        <div class="fg"><label class="form-label">מגבית</label>
-          <select class="form-control" id="ex_camp"><option value="">הכל</option></select></div>
-        <div class="fg"><label class="form-label">סכום מינימלי כולל (₪)</label>
-          <input class="form-control" id="ex_minTotal" type="number" placeholder="0" min="0"></div>
-        <div class="fg"><label class="form-label">סכום מינ' במגבית (₪)</label>
-          <input class="form-control" id="ex_minCamp" type="number" placeholder="0" min="0"></div>
-        <div class="fg"><label class="form-label">מתאריך</label>
-          <input class="form-control" id="ex_from" type="date"></div>
-        <div class="fg"><label class="form-label">עד תאריך</label>
-          <input class="form-control" id="ex_to" type="date"></div>
-      </div>
-      <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">עמודות לייצוא</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="ex_cols">
-        <label class="col-pick"><input type="checkbox" value="קוד" checked> קוד</label>
-        <label class="col-pick"><input type="checkbox" value="שם" checked> שם</label>
-        <label class="col-pick"><input type="checkbox" value="שיוך" checked> שיוך</label>
-        <label class="col-pick"><input type="checkbox" value="כתובת" checked> כתובת</label>
-        <label class="col-pick"><input type="checkbox" value="טלפון" checked> טלפון</label>
-        <label class="col-pick"><input type="checkbox" value="סלולרי" checked> סלולרי</label>
-        <label class="col-pick"><input type="checkbox" value="מייל"> מייל</label>
-        <label class="col-pick"><input type="checkbox" value="מועד תרמה"> מועד תרמה</label>
-        <label class="col-pick"><input type="checkbox" value="סך תרומות" checked> סך תרומות</label>
-        <label class="col-pick"><input type="checkbox" value="תרומה גבוהה"> תרומה גבוהה</label>
-        <label class="col-pick"><input type="checkbox" value="מספר תרומות"> מספר תרומות</label>
-        <label class="col-pick"><input type="checkbox" value="הערות"> הערות</label>
-      </div>
-      <div id="ex_preview" style="font-size:12px;background:var(--bg-app);padding:8px 12px;border-radius:7px;color:var(--muted)">לחץ על תצוגה מקדימה לפני הייצוא</div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" onclick="closeModal('exportWizard')">ביטול</button>
-      <button class="btn btn-outline btn-sm" onclick="previewExport()"><i data-lucide="eye" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> תצוגה מקדימה</button>
-      <button class="btn btn-navy" onclick="runExportWizard()">📥 ייצא לאקסל</button>
-    </div>
-  </div>
-</div>
-
 <!-- REPORTS MODAL -->
 <div class="modal-overlay" id="reportsModal">
   <div class="modal modal-xl" style="width:780px">
@@ -3362,6 +3321,7 @@ async function loadDB() {
     if (data && data.data && !error) {
       DB = data.data;
       _lastKnownCloudUpdatedAt = data.updated_at || null;
+      _baseDB = _dbClone(data.data);   // remember exactly what the server holds
       // Update local cache
       try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
       loadedFromCloud = true;
@@ -3431,6 +3391,8 @@ async function loadDB() {
   });
   // ── Load audit log from dedicated localStorage key (persists across upgrades) ──
   _loadAuditLog();
+  // Stable ids for nested records — required by the merge engine
+  _ensureRecordIds();
 }
 
 // Sync LOCAL → Cloud (first-time migration from localStorage to Supabase)
@@ -3449,61 +3411,306 @@ async function migrateLocalToCloud() {
     }
   } catch(e) { console.warn('Migration failed:', e); }
 }
+// ════════════════════════════════════════════════════════════════
+// SYNC ENGINE v30 — automatic three-way merge, no conflict dialogs.
+//
+// Principle: we always remember the last state we KNOW the server had
+// (_baseDB). When we push and someone else saved in between, we do a
+// three-way merge (base vs local vs remote) at the record level:
+// non-overlapping changes from both sides are combined automatically;
+// only when the very same record changed on both sides, the newer
+// record wins (per updatedAt). Writes are compare-and-swap on
+// updated_at, so a concurrent save can never silently overwrite —
+// it fails the CAS, merges, and retries.
+// ════════════════════════════════════════════════════════════════
+let _syncTimer = null;
+let _syncRetryTimer = null;
+let _syncBusy = false;
+let _dirty = false;
+let _pendingRerender = false;
+let _baseDB = null;                 // last state known to exist on the server
+let _lastKnownCloudUpdatedAt = null;
+
 function saveDB() {
+  _ensureRecordIds();
   // Save locally immediately (fast, offline fallback)
   try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
-  // Sync to Supabase in background
+  _dirty = true;
   _syncToSupabase();
 }
 
-let _syncTimer = null;
-// Track the server's updated_at at last load — for optimistic concurrency check
-let _lastKnownCloudUpdatedAt = null;
+// Give nested records stable ids so they can be merged across clients
+function _ensureRecordIds() {
+  let n = 0;
+  const mk = p => p + Date.now().toString(36) + (n++).toString(36) + Math.random().toString(36).slice(2,6);
+  (DB.donors||[]).forEach(d => {
+    (d.donations||[]).forEach(dn => { if (!dn.id) dn.id = mk('dn'); });
+    (d.futureDonations||[]).forEach(f => { if (!f.id) f.id = mk('fd'); });
+  });
+}
+
+function _dbClone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+function _jstr(v) { return v === undefined ? 'u' : JSON.stringify(v); }
+function _recEq(a, b) { return _jstr(a) === _jstr(b); }
+function _tsOf(v) { const t = v ? new Date(v).getTime() : 0; return isNaN(t) ? 0 : t; }
+function _newerOf(l, r) {
+  const lt = _tsOf(l && (l.updatedAt || l.ts || l.date));
+  const rt = _tsOf(r && (r.updatedAt || r.ts || r.date));
+  return rt > lt ? r : l;
+}
+function _dnKey(dn) {
+  return dn.id || 'h:' + [dn.date, dn.amount, dn.method, dn.campaignId, dn.fundraiserId, dn.groupId, dn.notes].join('|');
+}
+function _fdKey(f) {
+  return f.id || 'h:' + [f.date, f.expectedAmount, f.campaignId, f.notes].join('|');
+}
+
+// Generic three-way merge of a list of records keyed by keyFn.
+// Rules per key (b=base, l=local, r=remote):
+//  - unchanged on one side → take the other side's version
+//  - changed on both sides → deepMergeFn if given, else newer record wins
+//  - deleted on one side & unchanged on the other → stays deleted
+//  - deleted on one side but EDITED on the other → the edit survives
+function _merge3List(baseArr, localArr, remoteArr, keyFn, deepMergeFn) {
+  const bm = new Map(), lm = new Map(), rm = new Map();
+  (baseArr||[]).forEach(x => { if (x) bm.set(keyFn(x), x); });
+  (localArr||[]).forEach(x => { if (x) lm.set(keyFn(x), x); });
+  (remoteArr||[]).forEach(x => { if (x) rm.set(keyFn(x), x); });
+  const stats = { remoteApplied: 0, conflicts: 0 };
+  const out = [];
+  const seen = new Set();
+  const resolve = (k) => {
+    const b = bm.get(k), l = lm.get(k), r = rm.get(k);
+    const inL = lm.has(k), inR = rm.has(k), inB = bm.has(k);
+    if (inL && inR) {
+      if (_recEq(l, r)) return l;
+      if (_recEq(l, b)) { stats.remoteApplied++; return r; }
+      if (_recEq(r, b)) return l;
+      stats.conflicts++; stats.remoteApplied++;
+      return deepMergeFn ? deepMergeFn(b || {}, l, r) : _dbClone(_newerOf(l, r));
+    }
+    if (inL) { // not in remote
+      if (inB && _recEq(l, b)) { stats.remoteApplied++; return undefined; } // deleted remotely
+      return l; // local addition or local edit vs remote delete → keep
+    }
+    if (inR) { // not in local
+      if (inB && _recEq(r, b)) return undefined; // deleted locally
+      stats.remoteApplied++;
+      return r; // remote addition or remote edit vs local delete → keep
+    }
+    return undefined;
+  };
+  // keep local ordering, then append remote-only records
+  (localArr||[]).forEach(x => {
+    if (!x) return;
+    const k = keyFn(x);
+    if (seen.has(k)) return; seen.add(k);
+    const v = resolve(k);
+    if (v !== undefined) out.push(v);
+  });
+  (remoteArr||[]).forEach(x => {
+    if (!x) return;
+    const k = keyFn(x);
+    if (seen.has(k)) return; seen.add(k);
+    const v = resolve(k);
+    if (v !== undefined) out.push(v);
+  });
+  return { list: out, stats };
+}
+
+// Field-level merge for a donor that changed on BOTH sides:
+// each scalar field is merged base-aware; nested lists merge recursively.
+function _mergeDonorDeep(b, l, r) {
+  const lNewer = _tsOf(l.updatedAt) >= _tsOf(r.updatedAt);
+  const prim = lNewer ? l : r, sec = lNewer ? r : l;
+  const out = {};
+  const NESTED = ['donations', 'futureDonations', 'relations'];
+  const fields = new Set([...Object.keys(l||{}), ...Object.keys(r||{})]);
+  for (const f of fields) {
+    if (NESTED.includes(f)) continue;
+    const bv = b ? b[f] : undefined;
+    if (_recEq(l[f], r[f])) out[f] = l[f];
+    else if (_recEq(l[f], bv)) out[f] = r[f];
+    else if (_recEq(r[f], bv)) out[f] = l[f];
+    else out[f] = prim[f] !== undefined ? prim[f] : sec[f];
+  }
+  out.donations       = _merge3List(b && b.donations,       l.donations,       r.donations,       _dnKey).list;
+  out.futureDonations = _merge3List(b && b.futureDonations, l.futureDonations, r.futureDonations, _fdKey).list;
+  out.relations       = _merge3List(b && b.relations,       l.relations,       r.relations,       x => (x.donorId||'') + '|' + (x.type||'')).list;
+  return out;
+}
+
+// key-wise three-way merge for plain settings objects
+function _merge3Object(b, l, r) {
+  b = b || {}; l = l || {}; r = r || {};
+  const out = {};
+  const keys = new Set([...Object.keys(l), ...Object.keys(r)]);
+  for (const k of keys) {
+    const inL = k in l, inR = k in r, inB = k in b;
+    if (inL && inR) {
+      if (_recEq(l[k], r[k])) out[k] = l[k];
+      else if (_recEq(l[k], b[k])) out[k] = r[k];
+      else out[k] = l[k];
+    } else if (inL) {
+      if (!(inB && _recEq(l[k], b[k]))) out[k] = l[k]; // else deleted remotely
+      else out[k] = l[k]; // settings keys: never silently drop
+    } else if (inR) {
+      if (!(inB && _recEq(r[k], b[k]))) out[k] = r[k]; // remote addition/change
+      // deleted locally → drop
+    }
+  }
+  return out;
+}
+
+const _MERGE_ID_COLLECTIONS = [
+  { key: 'donors',           id: x => x.id, deep: true },
+  { key: 'users',            id: x => (x.email || x.username || '') },
+  { key: 'campaigns',        id: x => x.id },
+  { key: 'fundraisers',      id: x => x.id },
+  { key: 'groups',           id: x => x.id },
+  { key: 'fundraisingDates', id: x => x.id },
+  { key: 'routes',           id: x => x.id },
+  { key: 'expenses',         id: x => x.id },
+  { key: 'messages',         id: x => x.id },
+  { key: 'pendingEdits',     id: x => x.id },
+  { key: 'auditLog',         id: x => x.id },
+];
+const _MERGE_OBJECT_KEYS = ['settings','emailSettings','yemotSettings','nedarimSettings','selfServiceTokens','nbhRules','neighborhoods'];
+const _MERGE_STR_LISTS = ['expenseDepts','expenseMethods','expenseStatuses'];
+
+function _merge3DB(base, local, remote) {
+  base = base || {}; local = local || {}; remote = remote || {};
+  const merged = {};
+  const totals = { remoteApplied: 0, conflicts: 0 };
+  const handled = new Set();
+
+  for (const cfg of _MERGE_ID_COLLECTIONS) {
+    handled.add(cfg.key);
+    const res = _merge3List(base[cfg.key], local[cfg.key], remote[cfg.key], cfg.id,
+                            cfg.deep ? _mergeDonorDeep : null);
+    merged[cfg.key] = res.list;
+    totals.remoteApplied += res.stats.remoteApplied;
+    totals.conflicts += res.stats.conflicts;
+  }
+  // audit log: newest first, capped
+  if (merged.auditLog) {
+    merged.auditLog.sort((a,b) => _tsOf(b.ts) - _tsOf(a.ts));
+    merged.auditLog = merged.auditLog.slice(0, 500);
+  }
+  for (const k of _MERGE_OBJECT_KEYS) {
+    handled.add(k);
+    merged[k] = _merge3Object(base[k], local[k], remote[k]);
+  }
+  for (const k of _MERGE_STR_LISTS) {
+    handled.add(k);
+    merged[k] = _merge3List(base[k], local[k], remote[k], x => String(x)).list;
+  }
+  // counters: take the max so codes are never reused
+  handled.add('nextCode');   merged.nextCode   = Math.max(local.nextCode||0,   remote.nextCode||0)   || local.nextCode || remote.nextCode;
+  handled.add('nextFRCode'); merged.nextFRCode = Math.max(local.nextFRCode||0, remote.nextFRCode||0) || local.nextFRCode || remote.nextFRCode;
+  handled.add('nextGrpSeq');
+  merged.nextGrpSeq = {};
+  const seqKeys = new Set([...Object.keys(local.nextGrpSeq||{}), ...Object.keys(remote.nextGrpSeq||{})]);
+  for (const k of seqKeys) merged.nextGrpSeq[k] = Math.max((local.nextGrpSeq||{})[k]||0, (remote.nextGrpSeq||{})[k]||0);
+  // anything else: local-if-changed-else-remote
+  const rest = new Set([...Object.keys(local), ...Object.keys(remote)]);
+  for (const k of rest) {
+    if (handled.has(k)) continue;
+    if (!(k in local)) { merged[k] = remote[k]; continue; }
+    if (!(k in remote)) { merged[k] = local[k]; continue; }
+    merged[k] = _recEq(local[k], base[k]) ? remote[k] : local[k];
+  }
+  return { merged, remoteApplied: totals.remoteApplied, conflicts: totals.conflicts };
+}
+
+// Strip large undo snapshots — kept only locally (donorAuditLog_v1)
+function _stripForCloud(db) {
+  const safe = JSON.parse(JSON.stringify(db));
+  if (safe.auditLog) {
+    safe.auditLog = safe.auditLog.map(e => ({ ...e, undoData: e.undoData ? {_hasUndo: true} : null }));
+  }
+  return safe;
+}
+
+// Merge a freshly-fetched server copy into our state (no dialog, no data loss)
+function _applyRemoteMerge(remote) {
+  const res = _merge3DB(_baseDB, DB, remote.data || {});
+  DB = res.merged;
+  _baseDB = _dbClone(remote.data || {});
+  _lastKnownCloudUpdatedAt = remote.updated_at || null;
+  try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
+  if (res.remoteApplied > 0) {
+    toast('🔄 שינויים של משתמש אחר שולבו אוטומטית');
+    _requestRerender();
+  }
+  return res;
+}
+
+// Compare-and-swap push: only writes if the server still holds the version
+// we merged against; otherwise fetch → merge → retry (max 3 rounds).
+async function _pushWithCAS() {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const payload = { data: _stripForCloud(DB), updated_at: new Date().toISOString() };
+    let q = _sb.from('app_state').update(payload).eq('id', 'main');
+    if (_lastKnownCloudUpdatedAt) q = q.eq('updated_at', _lastKnownCloudUpdatedAt);
+    const { data: rows, error } = await q.select('updated_at');
+    if (error) throw error;
+    if (rows && rows.length) {
+      _lastKnownCloudUpdatedAt = rows[0].updated_at;
+      _baseDB = _dbClone(DB);
+      _dirty = false;
+      return true;
+    }
+    // CAS failed → someone saved in between (or the row is missing)
+    const { data: remote, error: e1 } = await _sb.from('app_state')
+      .select('data,updated_at').eq('id', 'main').maybeSingle();
+    if (e1) throw e1;
+    if (!remote) {
+      const { data: ins, error: e2 } = await _sb.from('app_state')
+        .insert({ id: 'main', data: _stripForCloud(DB) }).select('updated_at').single();
+      if (e2) throw e2;
+      _lastKnownCloudUpdatedAt = ins ? ins.updated_at : null;
+      _baseDB = _dbClone(DB);
+      _dirty = false;
+      return true;
+    }
+    _applyRemoteMerge(remote); // absorbs their changes, keeps ours → retry push
+  }
+  throw new Error('sync contention — will retry');
+}
 
 function _syncToSupabase() {
-  // Debounce: wait 800ms after last change before sending to server
+  // Debounce: wait 800ms after the last change before pushing
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
+    if (_syncBusy) { _syncToSupabase(); return; }
+    _syncBusy = true;
+    _showSyncStatus('loading');
     try {
-      // ── Optimistic Concurrency Check ──
-      // Ask Supabase: has the data changed since we loaded it?
-      if (_lastKnownCloudUpdatedAt) {
-        const { data: meta } = await _sb.from('app_state')
-          .select('updated_at')
-          .eq('id','main')
-          .maybeSingle();
-        if (meta && meta.updated_at && meta.updated_at !== _lastKnownCloudUpdatedAt) {
-          // Someone else saved — warn the user
-          const who = await _getLastEditor();
-          const proceed = await _showConflictDialog(who);
-          if (!proceed) return; // User chose to abort
-        }
-      }
-
-      // Serialize through JSON to strip non-cloneable values
-      const safeData = JSON.parse(JSON.stringify(DB));
-      // Strip large undoData snapshots — kept only in localStorage (donorAuditLog_v1)
-      if (safeData.auditLog) {
-        safeData.auditLog = safeData.auditLog.map(e => ({
-          ...e, undoData: e.undoData ? {_hasUndo: true} : null
-        }));
-      }
-      const now = new Date().toISOString();
-      const payload = { id: 'main', data: safeData, updated_at: now };
-      const { error } = await _sb.from('app_state').upsert(payload);
-      if (error) {
-        console.warn('Supabase sync error:', error.message);
-        _showSyncStatus('error');
-      } else {
-        _lastKnownCloudUpdatedAt = now;
-        _showSyncStatus('ok');
-        _clearRefreshHighlight(); // our save is now latest
-      }
+      await _pushWithCAS();
+      _showSyncStatus('ok');
     } catch(e) {
-      console.warn('Supabase unreachable, using local cache:', e.message);
-      _showSyncStatus('offline');
+      console.warn('Supabase sync failed, kept locally:', e.message);
+      _showSyncStatus(navigator.onLine === false ? 'offline' : 'error');
+      clearTimeout(_syncRetryTimer);
+      _syncRetryTimer = setTimeout(() => { if (_dirty) _syncToSupabase(); }, 7000);
+    } finally {
+      _syncBusy = false;
     }
   }, 800);
+}
+
+// Re-render the current page after a merge — but never while a modal is
+// open (so we don't clobber a form mid-edit); deferred to modal close.
+function _requestRerender() {
+  if (document.querySelector('.modal-overlay.open')) { _pendingRerender = true; return; }
+  renderCurrentPage();
+}
+function renderCurrentPage() {
+  _pendingRerender = false;
+  if (!currentUser) return;
+  try { showPage(window._currentPage || 'dash'); } catch(e) {}
+  try { renderGlobalStats(); } catch(e) {}
 }
 
 function _showSyncStatus(status) {
@@ -3520,80 +3727,34 @@ function _showSyncStatus(status) {
   el.title = s.title;
 }
 
-// ── Get name of last editor from audit log ──
-async function _getLastEditor() {
-  try {
-    const { data } = await _sb.from('app_state').select('data').eq('id','main').maybeSingle();
-    if (data && data.data && data.data.auditLog && data.data.auditLog.length) {
-      const last = data.data.auditLog[data.data.auditLog.length - 1];
-      return last.user || 'משתמש אחר';
-    }
-  } catch(e) {}
-  return 'משתמש אחר';
-}
-
-// ── Show conflict warning dialog ──
-function _showConflictDialog(who) {
-  return new Promise(resolve => {
-    // Remove existing if any
-    const existing = document.getElementById('conflictOverlay');
-    if (existing) existing.remove();
-    const overlay = document.createElement('div');
-    overlay.id = 'conflictOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center';
-    overlay.innerHTML = `
-      <div style="background:white;border-radius:16px;padding:28px 32px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
-        <h3 style="margin:0 0 10px;font-size:18px;color:#1e293b">ניגוד שינויים</h3>
-        <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.6">
-          <strong>${who}</strong> עדכן את המסד בזמן שערכת.<br>
-          אם תדרוס — שינויים של ${who} ייאבדו.
-        </p>
-        <div style="display:flex;gap:10px;justify-content:center">
-          <button id="conflictReload" style="padding:10px 20px;border-radius:8px;border:none;background:var(--primary);color:white;cursor:pointer;font-size:14px;font-weight:600">טען גרסה חדשה</button>
-          <button id="conflictOverride" style="padding:10px 20px;border-radius:8px;border:1px solid #dc2626;background:white;color:#dc2626;cursor:pointer;font-size:14px;font-weight:600">דרוס בכל זאת</button>
-          <button id="conflictCancel" style="padding:10px 20px;border-radius:8px;border:1px solid #cbd5e1;background:white;color:#64748b;cursor:pointer;font-size:14px">ביטול</button>
-        </div>
-      </div>`;
-    document.body.appendChild(overlay);
-    document.getElementById('conflictReload').onclick = () => {
-      overlay.remove(); loadDB().then(() => { renderAll(); renderGlobalStats(); }); resolve(false);
-    };
-    document.getElementById('conflictOverride').onclick = () => { overlay.remove(); resolve(true); };
-    document.getElementById('conflictCancel').onclick = () => { overlay.remove(); resolve(false); };
-  });
-}
-
-// ── Refresh button logic ──
+// ── Manual refresh: pull + merge (never overwrites local edits) ──
 async function manualRefresh() {
   const btn = document.getElementById('refreshBtn');
   if (btn) { btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; }
-  await loadDB();
-  renderAll();
-  renderGlobalStats();
-  _clearRefreshHighlight();
+  try {
+    const { data: remote } = await _sb.from('app_state')
+      .select('data,updated_at').eq('id', 'main').maybeSingle();
+    if (remote && remote.data) {
+      const res = _applyRemoteMerge(remote);
+      if (_dirty) _syncToSupabase();
+      renderCurrentPage();
+      toast(res.remoteApplied > 0 ? '✅ עודכנו נתונים מהשרת' : '✓ הנתונים כבר מעודכנים');
+      _showSyncStatus('ok');
+    } else {
+      toast('⚠️ לא ניתן לטעון מהשרת');
+    }
+  } catch(e) {
+    toast('⚠️ אין חיבור לשרת — הנתונים שמורים מקומית');
+    _showSyncStatus('offline');
+  }
   if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = ''; }
-  toast('✅ נתונים עודכנו מהשרת');
 }
 
-function _highlightRefreshBtn() {
-  const btn = document.getElementById('refreshBtn');
-  if (!btn) return;
-  btn.style.background = '#16a34a';
-  btn.style.borderColor = '#16a34a';
-  btn.style.color = 'white';
-  btn.style.boxShadow = '0 0 8px rgba(22,163,74,.6)';
-  btn.title = 'נתונים חדשים זמינים — לחץ לרענון';
-}
-
+// kept for compatibility — live merge made the highlight unnecessary
+function _highlightRefreshBtn() {}
 function _clearRefreshHighlight() {
   const btn = document.getElementById('refreshBtn');
-  if (!btn) return;
-  btn.style.background = 'transparent';
-  btn.style.borderColor = 'rgba(255,255,255,.25)';
-  btn.style.color = 'rgba(255,255,255,.7)';
-  btn.style.boxShadow = '';
-  btn.title = 'רענן נתונים מהשרת';
+  if (btn) btn.title = 'רענן נתונים מהשרת';
 }
 
 // ══════════════════════════════════════════
@@ -3609,8 +3770,8 @@ async function startPresence(user) {
   await _writePresence(user);
   // Heartbeat every 20 seconds
   _presenceInterval = setInterval(() => _writePresence(user), 20000);
-  // Poll cloud for changes every 15 seconds
-  _cloudPollInterval = setInterval(() => _pollForCloudChanges(), 15000);
+  // Live sync: poll the cloud every 10 seconds and auto-merge changes
+  _cloudPollInterval = setInterval(() => _pollForCloudChanges(), 10000);
 }
 
 async function _writePresence(user) {
@@ -3644,12 +3805,19 @@ async function stopPresence() {
   _presenceLoginTime = null;
 }
 
+// Live collaboration: when the server has a newer version, pull it and
+// merge automatically. Local unsynced edits are preserved and pushed back.
 async function _pollForCloudChanges() {
+  if (_syncBusy || !currentUser) return;
   try {
     const { data } = await _sb.from('app_state').select('updated_at').eq('id','main').maybeSingle();
-    if (data && data.updated_at && _lastKnownCloudUpdatedAt && data.updated_at !== _lastKnownCloudUpdatedAt) {
-      // New data on server — highlight refresh button
-      _highlightRefreshBtn();
+    if (data && data.updated_at && data.updated_at !== _lastKnownCloudUpdatedAt) {
+      const { data: remote } = await _sb.from('app_state')
+        .select('data,updated_at').eq('id','main').maybeSingle();
+      if (remote && remote.data) {
+        _applyRemoteMerge(remote);
+        if (_dirty) _syncToSupabase();
+      }
     }
   } catch(e) {}
 }
@@ -5616,7 +5784,6 @@ function populateSelectFromSettings(id, key, emptyLabel) {
 // ════════════════════════════════════════════════════
 // IMPORT / EXPORT
 // ════════════════════════════════════════════════════
-function openImportModal(){openModal('importModal');document.getElementById('importStatus').innerHTML='';}
 // ════ IMPORT SYSTEM v25 — column mapper ════
 
 // Field definitions: system field → display name
@@ -5899,43 +6066,6 @@ function populateReportCampaigns(){
   el.innerHTML=`<option value="">כל המגביות</option>`+DB.campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
 }
 
-function generateReport(){
-  const affil=document.getElementById('rpt_affil').value;
-  const pref=document.getElementById('rpt_pref').value;
-  const campId=document.getElementById('rpt_camp').value;
-  const min=parseFloat(document.getElementById('rpt_min').value)||0;
-  const from=document.getElementById('rpt_fromDate').value;
-  const to=document.getElementById('rpt_toDate').value;
-
-  // Get donors that have donations matching filters
-  const filtered=DB.donors.filter(d=>{
-    const dons=(d.donations||[]).filter(dn=>(!campId||dn.campaignId===campId)&&(!from||dn.date>=from)&&(!to||dn.date<=to));
-    const total=dons.reduce((s,x)=>s+parseFloat(x.amount||0),0);
-    return (!affil||d.affil===affil)&&(!pref||d.prefTime===pref)&&total>=min;
-  });
-
-  const reportTotal=filtered.reduce((s,d)=>{
-    const dons=(d.donations||[]).filter(dn=>(!campId||dn.campaignId===campId)&&(!from||dn.date>=from)&&(!to||dn.date<=to));
-    return s+dons.reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0);
-  },0);
-
-  document.getElementById('reportOutput').innerHTML=`<div class="card" style="margin-top:16px">
-    <div class="card-header"><h3>תוצאות הדוח</h3><div style="display:flex;gap:8px">
-      <span class="badge" style="background:var(--slate-200);color:var(--muted)">${filtered.length} תורמים</span>
-      <span class="badge b-cash">₪${reportTotal.toLocaleString()} סה"כ</span>
-    </div></div>
-    <div class="card-body" style="padding:0"><div class="table-scroll"><table>
-      <thead><tr><th>קוד</th><th>שם</th><th>שיוך</th><th>מועד תרמה</th><th>סלולרי</th><th>סך תרומות</th><th>גבוהה</th><th>מס' תרומות</th></tr></thead>
-      <tbody>${filtered.map(d=>{
-        const dons=(d.donations||[]).filter(dn=>(!campId||dn.campaignId===campId)&&(!from||dn.date>=from)&&(!to||dn.date<=to));
-        const t=dons.reduce((s,x)=>s+parseFloat(x.amount||0),0);
-        const mx=dons.length?Math.max(...dons.map(x=>parseFloat(x.amount||0))):0;
-        return `<tr><td>${d.code||''}</td><td>${donorName(d)}</td><td>${d.affil||''}</td><td>${d.prefTime||''}</td><td>${d.mobile||''}</td><td><strong>₪${t.toLocaleString()}</strong></td><td>₪${mx.toLocaleString()}</td><td>${dons.length}</td></tr>`;
-      }).join('')}</tbody>
-    </table></div></div></div>`;
-}
-
-
 // ════════════════════════════════════════════════════
 // MODALS
 // ════════════════════════════════════════════════════
@@ -5948,8 +6078,15 @@ function closeModal(id){
     const t=document.getElementById('quickDonModalTitle');
     if(t) t.textContent='💰 הוספת תרומה מהירה';
   }
+  // a merge arrived while the modal was open — refresh the page behind it now
+  if(_pendingRerender && !document.querySelector('.modal-overlay.open')) renderCurrentPage();
 }
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{
+  if(e.target===o){
+    o.classList.remove('open');
+    if(_pendingRerender && !document.querySelector('.modal-overlay.open')) renderCurrentPage();
+  }
+}));
 
 // ════════════════════════════════════════════════════
 // DEMO DATA
@@ -6735,77 +6872,6 @@ async function checkCloudStatus() {
     if(el) el.textContent = '❌ לא מחובר: ' + e.message;
     _showSyncStatus('offline');
   }
-}
-
-// ══════════════════════════════════════
-// EXPORT WIZARD
-// ══════════════════════════════════════
-function openExportWizard() {
-  const affilSel = document.getElementById('ex_affil');
-  const S = getSettings();
-  affilSel.innerHTML = '<option value="">הכל</option>' + (S.affiliations||[]).map(v=>`<option>${v}</option>`).join('');
-  const campSel = document.getElementById('ex_camp');
-  campSel.innerHTML = '<option value="">הכל</option>' + DB.campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  document.getElementById('ex_preview').textContent = 'לחץ על תצוגה מקדימה לפני הייצוא';
-  openModal('exportWizard');
-}
-function getExportFilteredRows() {
-  const affil = document.getElementById('ex_affil')?.value||'';
-  const campId = document.getElementById('ex_camp')?.value||'';
-  const minTotal = parseFloat(document.getElementById('ex_minTotal')?.value||0)||0;
-  const minCamp = parseFloat(document.getElementById('ex_minCamp')?.value||0)||0;
-  const from = document.getElementById('ex_from')?.value||'';
-  const to = document.getElementById('ex_to')?.value||'';
-  return DB.donors.filter(d => {
-    if (affil && d.affil !== affil) return false;
-    const tot = (d.donations||[]).reduce((s,dn)=>s+parseFloat(dn.amount||0),0);
-    if (tot < minTotal) return false;
-    if (campId) {
-      const campTot = (d.donations||[]).filter(dn=>dn.campaignId===campId).reduce((s,dn)=>s+parseFloat(dn.amount||0),0);
-      if (campTot < minCamp) return false;
-    }
-    if (from || to) {
-      const hasDon = (d.donations||[]).some(dn=>(!from||dn.date>=from)&&(!to||dn.date<=to));
-      if (!hasDon) return false;
-    }
-    return true;
-  });
-}
-function previewExport() {
-  const rows = getExportFilteredRows();
-  document.getElementById('ex_preview').innerHTML = `<strong>נמצאו ${rows.length} תורמים תואמים</strong> — ${rows.slice(0,5).map(d=>donorName(d)).join(', ')}${rows.length>5?'...':''}`;
-}
-function runExportWizard() {
-  const rows = getExportFilteredRows();
-  if (!rows.length) { alert('לא נמצאו תורמים תואמים'); return; }
-  const cols = Array.from(document.querySelectorAll('#ex_cols input:checked')).map(el=>el.value);
-  const colFns = {
-    'קוד': d=>d.code||'', 'שם': d=>donorName(d), 'שיוך': d=>d.affil||'',
-    'כתובת': d=>d.address||'', 'טלפון': d=>d.phone||'', 'סלולרי': d=>d.mobile||'',
-    'מייל': d=>d.email||'', 'מועד תרמה': d=>d.prefTime||'',
-    'סך תרומות': d=>(d.donations||[]).reduce((s,dn)=>s+parseFloat(dn.amount||0),0),
-    'תרומה גבוהה': d=>Math.max(0,...(d.donations||[]).map(dn=>parseFloat(dn.amount||0))),
-    'מספר תרומות': d=>(d.donations||[]).length, 'הערות': d=>d.notes||'',
-  };
-  const ws_data = [cols, ...rows.map(d=>cols.map(c=>colFns[c]?colFns[c](d):''))];
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'ייצוא');
-  XLSX.writeFile(wb, 'export_'+today()+'.xlsx');
-  closeModal('exportWizard');
-}
-// Export currently shown/filtered donors table
-function exportFiltered() {
-  if (!can('admin')) { alert('אין הרשאה'); return; }
-  const rows = filteredRows && filteredRows.length ? filteredRows : DB.donors;
-  const ws_data = [['קוד','שם','שיוך','כתובת','טלפון','סלולרי','מייל','הערות','סך תרומות','תרומה גבוהה'],
-    ...rows.map(d=>[d.code||'',donorName(d),d.affil||'',d.address||'',d.phone||'',d.mobile||'',d.email||'',d.notes||'',
-      (d.donations||[]).reduce((s,dn)=>s+parseFloat(dn.amount||0),0),
-      Math.max(0,...(d.donations||[]).map(dn=>parseFloat(dn.amount||0)))
-    ])
-  ];
-  const ws = XLSX.utils.aoa_to_sheet(ws_data); const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'תורמים');
-  XLSX.writeFile(wb, 'donors_filtered_'+today()+'.xlsx');
 }
 
 // ── FR raised = direct donations + proportional group-share ──
