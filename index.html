@@ -3177,8 +3177,8 @@ tr:hover td { background: var(--primary-bg) }
       <div style="background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--primary-dark);margin-bottom:14px;line-height:1.7">
         עם מפתח Google — השלמת כתובות תוך כדי הקלדה, זיהוי מיקום מדויק ומהיר, ותצוגות מפה של Google.<br>
         1. <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" style="color:var(--primary)">Google Cloud Console → Maps Platform</a> — צור מפתח API<br>
-        2. הפעל שני שירותים: <strong>Geocoding API</strong> (השלמה + מיקום) ו-<strong>Maps Embed API</strong> (תצוגת מפה — חינמי לחלוטין)<br>
-        3. מומלץ: הגבל את המפתח לשני השירותים האלה + הגדר תקרת שימוש יומית<br>
+        2. הפעל שלושה שירותים: <strong>Geocoding API</strong> (השלמה + מיקום), <strong>Maps Embed API</strong> (תצוגה בכרטיס תורם — חינמי), ו-<strong>Maps JavaScript API</strong> (מפת המסלולים האינטראקטיבית)<br>
+        3. מומלץ: הגבל את המפתח לשלושת השירותים האלה + הגדר תקרת שימוש יומית<br>
         <span style="color:var(--muted)">ללא מפתח — המערכת ממשיכה עם OpenStreetMap (חינמי, איטי ופחות מדויק).</span>
       </div>
       <div class="fg">
@@ -9585,6 +9585,12 @@ function saveGmapsKey() {
   if (!DB.settings) DB.settings = {};
   DB.settings.googleMapsKey = document.getElementById('gmapsKeyInput').value.trim();
   saveDB();
+  // routes map: switch backend on next render if it was built as Leaflet
+  if (typeof _rpMap !== 'undefined' && _rpMap && _rpMapImpl === 'leaflet' && DB.settings.googleMapsKey) {
+    try { _rpMap.remove(); } catch(e){}
+    _rpMap = null; _rpMapImpl = null; _rpMapLayers = {};
+    const el = document.getElementById('rpMainMap'); if (el) el.innerHTML='';
+  }
   closeModal('gmapsModal');
   toast(DB.settings.googleMapsKey ? '✓ מפתח Google נשמר — הגיאוקוד יעבוד דרך Google' : '✓ נשמר — הגיאוקוד יעבוד דרך OpenStreetMap');
 }
@@ -10048,8 +10054,7 @@ function renderRoutesPage() {
   // Sidebar
   rpRenderSidebar(routes, '');
   // Map
-  rpInitMap();
-  rpDrawAllRoutes(routes);
+  rpInitMap().then(() => rpDrawAllRoutes(routes));
 }
 
 function rpRenderSidebar(routes, q) {
@@ -10115,9 +10120,52 @@ function rpFilterSidebar() {
 }
 
 // ── Map ──
-function rpInitMap() {
+// ── Map backend: Google Maps JS SDK when a key is configured, Leaflet/OSM
+//    fallback otherwise. All route drawing goes through this adapter. ──
+let _rpMapImpl = null; // 'google' | 'leaflet'
+
+function _loadGoogleMapsSDK(key) {
+  if (window.google && window.google.maps && window.google.maps.Map) return Promise.resolve(true);
+  if (window._gmapsSDKPromise) return window._gmapsSDKPromise;
+  window._gmapsSDKPromise = new Promise((resolve) => {
+    window._gmapsSDKReady = () => resolve(true);
+    const s = document.createElement('script');
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&language=iw&region=IL&callback=_gmapsSDKReady';
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+    setTimeout(() => resolve(!!(window.google && window.google.maps && window.google.maps.Map)), 8000);
+  });
+  return window._gmapsSDKPromise;
+}
+
+function _rpRemoveLayer(l) {
+  try { if (l.setMap) l.setMap(null); else if (l.remove) l.remove(); } catch(e){}
+}
+
+async function rpInitMap() {
+  const key = getGoogleMapsKey();
+  // a key was added after the map came up as Leaflet → rebuild with Google
+  if (_rpMap && _rpMapImpl === 'leaflet' && key) {
+    try { _rpMap.remove(); } catch(e){}
+    _rpMap = null; _rpMapLayers = {};
+    document.getElementById('rpMainMap').innerHTML = '';
+  }
   if (_rpMap) return; // already inited
+  if (key) {
+    const ok = await _loadGoogleMapsSDK(key);
+    if (ok && window.google && google.maps && google.maps.Map) {
+      _rpMapImpl = 'google';
+      _rpMap = new google.maps.Map(document.getElementById('rpMainMap'), {
+        center: {lat:31.7683, lng:35.2137}, zoom: 12,
+        mapTypeControl: false, streetViewControl: false,
+        fullscreenControl: true, clickableIcons: false,
+      });
+      return;
+    }
+    console.warn('Google Maps SDK unavailable — falling back to Leaflet');
+  }
   if (typeof L === 'undefined') return;
+  _rpMapImpl = 'leaflet';
   _rpMap = L.map('rpMainMap', {zoomControl:true, attributionControl:false});
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_rpMap);
   _rpMap.setView([31.7683,35.2137], 12); // default: Jerusalem
@@ -10126,19 +10174,27 @@ function rpInitMap() {
 function rpDrawAllRoutes(routes) {
   if (!_rpMap) return;
   // Clear existing layers
-  Object.values(_rpMapLayers).forEach(layers => layers.forEach(l=>l.remove()));
+  Object.values(_rpMapLayers).forEach(layers => layers.forEach(_rpRemoveLayer));
   _rpMapLayers = {};
-  const allBounds = [];
 
+  const pts = [];
   routes.forEach(r => {
-    const layers = rpDrawRoute(r, false);
-    _rpMapLayers[r.id] = layers;
-    layers.forEach(l => { if(l.getLatLng) allBounds.push(l.getLatLng()); else if(l.getLatLngs) l.getLatLngs().forEach(ll=>allBounds.push(ll)); });
+    _rpMapLayers[r.id] = rpDrawRoute(r, false);
+    (r.donors||[]).forEach(id => {
+      const d = DB.donors.find(x=>x.id===id);
+      if (d && d.lat && d.lng) pts.push({lat:d.lat, lng:d.lng});
+    });
   });
-
-  if (allBounds.length > 0) {
-    try { _rpMap.fitBounds(L.latLngBounds(allBounds), {padding:[20,20], maxZoom:16}); } catch(e){}
-  }
+  if (!pts.length) return;
+  try {
+    if (_rpMapImpl === 'google') {
+      const b = new google.maps.LatLngBounds();
+      pts.forEach(p => b.extend(p));
+      _rpMap.fitBounds(b, 30);
+    } else {
+      _rpMap.fitBounds(L.latLngBounds(pts.map(p=>[p.lat,p.lng])), {padding:[20,20], maxZoom:16});
+    }
+  } catch(e){}
 }
 
 function rpDrawRoute(r, highlight) {
@@ -10147,14 +10203,36 @@ function rpDrawRoute(r, highlight) {
   if (!donors.length) return [];
   const layers = [];
   const color = r.color || '#2360d8';
-  const coords = donors.map(d=>[d.lat,d.lng]);
 
-  // Line
+  if (_rpMapImpl === 'google') {
+    const path = donors.map(d => ({lat:d.lat, lng:d.lng}));
+    if (path.length > 1) {
+      const line = new google.maps.Polyline({
+        path, map:_rpMap, strokeColor:color,
+        strokeWeight: highlight?4:2.5, strokeOpacity: highlight?.85:.55,
+      });
+      line._isLine = true;
+      layers.push(line);
+    }
+    donors.forEach((d,i) => {
+      const marker = new google.maps.Marker({
+        position:{lat:d.lat, lng:d.lng}, map:_rpMap,
+        title:`${i+1}. ${donorName(d)}\n${d.address||''}`,
+        label:{ text:String(i+1), color:'#fff', fontSize:'11px', fontWeight:'700' },
+        icon:{ path: google.maps.SymbolPath.CIRCLE, scale:12, fillColor:color, fillOpacity:1, strokeColor:'#fff', strokeWeight:2 },
+      });
+      marker.addListener('click', () => rpOpenDetail(r.id));
+      layers.push(marker);
+    });
+    return layers;
+  }
+
+  // Leaflet fallback
+  const coords = donors.map(d=>[d.lat,d.lng]);
   if (coords.length > 1) {
     const line = L.polyline(coords, {color, weight:highlight?4:2.5, opacity:highlight?.85:.55, dashArray:highlight?null:'4,3'}).addTo(_rpMap);
     layers.push(line);
   }
-  // Markers
   donors.forEach((d,i) => {
     const ic = L.divIcon({
       className:'',
@@ -10181,8 +10259,15 @@ function rpSelectRoute(id) {
     if (r) {
       const donors = (r.donors||[]).map(i=>DB.donors.find(d=>d.id===i)).filter(d=>d&&d.lat&&d.lng);
       if (donors.length) {
-        const bounds = donors.map(d=>[d.lat,d.lng]);
-        try { _rpMap.fitBounds(L.latLngBounds(bounds),{padding:[30,30],maxZoom:17}); } catch(e){}
+        try {
+          if (_rpMapImpl === 'google') {
+            const b = new google.maps.LatLngBounds();
+            donors.forEach(d => b.extend({lat:d.lat, lng:d.lng}));
+            _rpMap.fitBounds(b, 40);
+          } else {
+            _rpMap.fitBounds(L.latLngBounds(donors.map(d=>[d.lat,d.lng])),{padding:[30,30],maxZoom:17});
+          }
+        } catch(e){}
       }
     }
   }
@@ -10190,6 +10275,7 @@ function rpSelectRoute(id) {
   Object.entries(_rpMapLayers).forEach(([rid,layers]) => {
     layers.forEach(l => {
       if (l.setStyle) l.setStyle({opacity: rid===id?.85:.25, weight: rid===id?4:2});
+      else if (l._isLine && l.setOptions) l.setOptions({strokeOpacity: rid===id?.85:.25, strokeWeight: rid===id?4:2});
     });
   });
 }
@@ -10243,7 +10329,7 @@ function rpDrop(e,toIdx,rid) {
   r.donors=arr; _rpDragFromIdx=null;
   rpRenderDetailBody(r);
   // Redraw this route on map
-  (_rpMapLayers[rid]||[]).forEach(l=>l.remove());
+  (_rpMapLayers[rid]||[]).forEach(_rpRemoveLayer);
   _rpMapLayers[rid] = rpDrawRoute(r, true);
 }
 
@@ -10259,7 +10345,7 @@ function rpDeleteRoute(id) {
   if (!confirm('למחוק מסלול זה?')) return;
   DB.routes = (DB.routes||[]).filter(r=>r.id!==id);
   (DB.groups||[]).forEach(g => { g.routeIds = (g.routeIds||[]).filter(rid => rid !== id); });
-  (_rpMapLayers[id]||[]).forEach(l=>l.remove());
+  (_rpMapLayers[id]||[]).forEach(_rpRemoveLayer);
   delete _rpMapLayers[id];
   saveDB(); renderRoutesPage();
 }
@@ -10269,7 +10355,7 @@ function rpClearAll() {
   if (!confirm('למחוק את כל המסלולים? (השיוכים לקבוצות ינוקו גם)')) return;
   DB.routes=[];
   (DB.groups||[]).forEach(g => { g.routeIds = []; });
-  Object.values(_rpMapLayers).forEach(layers=>layers.forEach(l=>l.remove()));
+  Object.values(_rpMapLayers).forEach(layers=>layers.forEach(_rpRemoveLayer));
   _rpMapLayers={};
   saveDB(); renderRoutesPage();
 }
