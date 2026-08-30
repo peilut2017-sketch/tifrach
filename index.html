@@ -3175,10 +3175,10 @@ tr:hover td { background: var(--primary-bg) }
     </div>
     <div class="modal-body">
       <div style="background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--primary-dark);margin-bottom:14px;line-height:1.7">
-        עם מפתח Google — זיהוי הכתובות מדויק ומהיר משמעותית (במקום OSM).<br>
+        עם מפתח Google — השלמת כתובות תוך כדי הקלדה, זיהוי מיקום מדויק ומהיר, ותצוגות מפה של Google.<br>
         1. <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" style="color:var(--primary)">Google Cloud Console → Maps Platform</a> — צור מפתח API<br>
-        2. הפעל את <strong>Geocoding API</strong> בלבד<br>
-        3. מומלץ: הגבל את המפתח ל-Geocoding API + הגדר תקרת שימוש יומית<br>
+        2. הפעל שני שירותים: <strong>Geocoding API</strong> (השלמה + מיקום) ו-<strong>Maps Embed API</strong> (תצוגת מפה — חינמי לחלוטין)<br>
+        3. מומלץ: הגבל את המפתח לשני השירותים האלה + הגדר תקרת שימוש יומית<br>
         <span style="color:var(--muted)">ללא מפתח — המערכת ממשיכה עם OpenStreetMap (חינמי, איטי ופחות מדויק).</span>
       </div>
       <div class="fg">
@@ -4863,7 +4863,7 @@ function fillForm(d) {
   const mapDiv = document.getElementById('addressMapPreview');
   if(mapDiv) {
     if(d.lat && d.lng) {
-      mapDiv.innerHTML = `<iframe width="100%" height="120" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${d.lng-.0018},${d.lat-.0018},${d.lng+.0018},${d.lat+.0018}&layer=mapnik&marker=${d.lat},${d.lng}" style="border-radius:8px"></iframe>`;
+      mapDiv.innerHTML = mapPreviewHtml(d.lat, d.lng);
       mapDiv.style.display='';
     } else {
       mapDiv.style.display='none';
@@ -4906,6 +4906,8 @@ function saveDonor() {
   // Save geo data only if a fresh suggestion was picked in this edit session
   if(window._lastGeoPicked && window._lastGeoLat) data.lat = window._lastGeoLat;
   if(window._lastGeoPicked && window._lastGeoLng) data.lng = window._lastGeoLng;
+  if(window._lastGeoPicked && window._lastGeoCity) data.geocodedCity = window._lastGeoCity;
+  if(window._lastGeoPicked && window._lastGeoNbh)  data.geocodedNbh  = window._lastGeoNbh;
   const ca=document.getElementById('f_createdAt').value;
   data.createdAt=ca?ca+'T00:00:00':new Date().toISOString();
   data.updatedAt=new Date().toISOString();
@@ -4944,6 +4946,9 @@ function saveDonor() {
     auditLog('create',`הוספת תורם: ${fn} ${ln}`);
   }
   flushPendingToNewDonor(currentDonorId); saveDB(); renderAll(); renderGlobalStats();
+  // immediate geocode for manually-typed addresses (no-op if coords exist)
+  const _gcId = currentDonorId;
+  setTimeout(() => _bgGeocodeDonor(_gcId), 400);
   toast('✓ תורם נשמר');
   setTimeout(() => closeModal('donorModal'), 300);
 }
@@ -4959,6 +4964,8 @@ function saveDonorAndNew() {
   });
   if(window._lastGeoPicked && window._lastGeoLat) data.lat = window._lastGeoLat;
   if(window._lastGeoPicked && window._lastGeoLng) data.lng = window._lastGeoLng;
+  if(window._lastGeoPicked && window._lastGeoCity) data.geocodedCity = window._lastGeoCity;
+  if(window._lastGeoPicked && window._lastGeoNbh)  data.geocodedNbh  = window._lastGeoNbh;
   const ca=document.getElementById('f_createdAt').value;
   data.createdAt=ca?ca+'T00:00:00':new Date().toISOString();
   if(currentDonorId){
@@ -4967,6 +4974,8 @@ function saveDonorAndNew() {
   } else {
     const nd={id:'D'+Date.now(),...data,donations:[],futureDonations:[],relations:[]};
     DB.donors.push(nd);
+    const _gcId2 = nd.id;
+    setTimeout(() => _bgGeocodeDonor(_gcId2), 400); // immediate geocode for typed addresses
   }
   saveDB(); renderAll(); renderGlobalStats();
   auditLog(currentDonorId ? 'edit' : 'create', `${currentDonorId?'עדכון':'הוספת'} תורם: ${fn} ${ln}`);
@@ -4993,24 +5002,44 @@ function addressAutocomplete(val) {
   if (!val || val.length < 3) { box.style.display='none'; return; }
   _addrTimer = setTimeout(async ()=>{
     try {
-      const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=il&limit=6&addressdetails=1`,{headers:{'Accept-Language':'he'}});
-      const data = await resp.json();
-      if (!data.length) { box.innerHTML='<div style="padding:8px 12px;font-size:12px;color:var(--muted)">לא נמצאו כתובות</div>'; box.style.display=''; return; }
-      box.innerHTML = data.map(r=>`<div class="pick-item" style="font-size:12px" onclick="selectAddress('${encodeURIComponent(r.display_name)}','${r.lat}','${r.lon}')">${r.display_name}</div>`).join('');
+      const key = getGoogleMapsKey();
+      let items = [];
+      if (key) {
+        // Google: accurate, Hebrew-friendly, handles partial addresses
+        items = (await _geocodeGoogleMulti(val, key)).map(r => ({
+          name: r.name, lat: r.lat, lng: r.lng, city: r.city, nbh: r.nbh, src: 'G',
+        }));
+      }
+      if (!items.length) {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=il&limit=6&addressdetails=1`,{headers:{'Accept-Language':'he'}});
+        const data = await resp.json();
+        items = data.map(r => ({
+          name: r.display_name, lat: r.lat, lng: r.lon,
+          city: (r.address&&(r.address.city||r.address.town||r.address.village))||'',
+          nbh:  (r.address&&(r.address.quarter||r.address.neighbourhood||r.address.suburb))||'',
+          src: 'O',
+        }));
+      }
+      if (!items.length) { box.innerHTML='<div style="padding:8px 12px;font-size:12px;color:var(--muted)">לא נמצאו כתובות</div>'; box.style.display=''; return; }
+      box.innerHTML = items.map(r=>`<div class="pick-item" style="font-size:12px;display:flex;justify-content:space-between;gap:8px"
+        onclick="selectAddress('${encodeURIComponent(r.name)}','${r.lat}','${r.lng}','${encodeURIComponent(r.city||'')}','${encodeURIComponent(r.nbh||'')}')">
+        <span>${escHtml(r.name)}</span>${r.src==='G'?'<span style="color:var(--muted);font-size:10px;flex-shrink:0">Google</span>':''}
+      </div>`).join('');
       box.style.display='';
     } catch(e){}
-  }, 400);
+  }, 350);
 }
-function selectAddress(encName, lat, lng) {
+function selectAddress(encName, lat, lng, encCity, encNbh) {
   const name = decodeURIComponent(encName);
   document.getElementById('f_address').value = name;
   document.getElementById('addressSuggestions').style.display='none';
   window._lastGeoLat = parseFloat(lat);
   window._lastGeoPicked = true;
   window._lastGeoLng = parseFloat(lng);
-  // Show map preview using OpenStreetMap embed
+  window._lastGeoCity = encCity ? decodeURIComponent(encCity) : '';
+  window._lastGeoNbh  = encNbh  ? decodeURIComponent(encNbh)  : '';
   const mapDiv = document.getElementById('addressMapPreview');
-  mapDiv.innerHTML = `<iframe width="100%" height="120" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng)-.0018},${parseFloat(lat)-.0018},${parseFloat(lng)+.0018},${parseFloat(lat)+.0018}&layer=mapnik&marker=${lat},${lng}" style="border-radius:8px"></iframe>`;
+  mapDiv.innerHTML = mapPreviewHtml(lat, lng);
   mapDiv.style.display='';
 }
 // Close suggestions when clicking outside
@@ -6196,6 +6225,13 @@ function impDoImport(){
   auditLog('import',`ייבוא Excel: ${added} תורמים`);
   closeModal('importModal');
   toast(msg);
+  // Imported addresses are geocoded via the batch tool — offer it now
+  const needGeo = DB.donors.filter(d=>(d.address||'').trim().length>2&&(!d.lat||!d.lng)).length;
+  if (added>0 && needGeo>0) {
+    setTimeout(()=>{
+      if (confirm(`ל-${needGeo} תורמים יש כתובת ללא מיקום במפה.\nלהריץ גיאוקוד מרוכז עכשיו?`)) openGeocodeBatchModal();
+    }, 600);
+  }
 }
 
 // ════ GEOCODE BATCH ════
@@ -9141,9 +9177,13 @@ function approvePendingEdit(idx) {
   if (!pe) return;
   const d = DB.donors.find(x => x.id === pe.donorId);
   if (d) {
+    const addrChanged = pe.edits && typeof pe.edits.address === 'string' &&
+      pe.edits.address.trim() !== (d.address||'').trim();
     Object.assign(d, pe.edits);
+    if (addrChanged) { d.lat=null; d.lng=null; d.geocodedCity=''; d.geocodedNbh=''; d.geocodeFailed=null; }
     d.updatedAt = new Date().toISOString();
     d.updatedBy = 'self';
+    if (addrChanged) setTimeout(() => _bgGeocodeDonor(d.id), 400);
   }
   DB.pendingEdits.splice(idx, 1);
   auditLog('edit', `אושר עדכון עצמי לתורם ${d ? donorName(d) : pe.donorId}`);
@@ -9649,6 +9689,51 @@ async function geocodeAddress(address) {
     catch(e) { console.warn('Google geocode failed, falling back to OSM:', e.message); }
   }
   return await _geocodeNominatim(address);
+}
+
+// Multiple candidates for autocomplete (Google geocoder handles partial input well)
+async function _geocodeGoogleMulti(query, key) {
+  const url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + encodeURIComponent(query) +
+    '&language=he&region=il&components=country:IL&key=' + encodeURIComponent(key);
+  const resp = await fetch(url);
+  const j = await resp.json();
+  if (!j.results || !j.results.length) return [];
+  return j.results.slice(0, 6).map(r => {
+    const comp = (types) => {
+      const c = (r.address_components||[]).find(x => types.some(t => (x.types||[]).includes(t)));
+      return c ? c.long_name : '';
+    };
+    return {
+      name: r.formatted_address,
+      lat: r.geometry.location.lat,
+      lng: r.geometry.location.lng,
+      city: comp(['locality','postal_town','administrative_area_level_2']),
+      nbh:  comp(['neighborhood','sublocality','sublocality_level_1']),
+    };
+  });
+}
+
+// Small embedded map preview — Google Embed API when a key exists, OSM otherwise
+function mapPreviewHtml(lat, lng) {
+  lat = parseFloat(lat); lng = parseFloat(lng);
+  const key = getGoogleMapsKey();
+  if (key) {
+    return `<iframe width="100%" height="120" frameborder="0" style="border-radius:8px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+      src="https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(key)}&q=${lat},${lng}&zoom=16&language=iw"></iframe>`;
+  }
+  return `<iframe width="100%" height="120" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-.0018},${lat-.0018},${lng+.0018},${lat+.0018}&layer=mapnik&marker=${lat},${lng}" style="border-radius:8px"></iframe>`;
+}
+
+// Background geocode right after a donor is saved with a new address —
+// so every manually-entered address gets coordinates immediately.
+// (Imported donors are geocoded via the batch tool instead.)
+async function _bgGeocodeDonor(donorId) {
+  const d = DB.donors.find(x => x.id === donorId);
+  if (!d || !(d.address||'').trim() || (d.lat && d.lng)) return;
+  const ok = await rpGeocodeOne(d);
+  saveDB();
+  if (!ok) toast('⚠️ הכתובת לא זוהתה במפה — ניתן לתקן בכרטיס התורם');
+  else if (window._currentPage === 'donors') { try { renderAll(); } catch(e){} }
 }
 
 async function rpGeocodeOne(d) {
