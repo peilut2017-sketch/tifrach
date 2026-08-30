@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>עזר תורה - תושיה תפרח | v29</title>
+<title>עזר תורה - תושיה תפרח | v30</title>
 <link rel="icon" id="appFavicon" href="" type="image/jpeg">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -602,6 +602,12 @@ tr:hover td { background: var(--primary-bg) }
   .dc-m-amount { font-weight: 700; color: var(--success); font-size: 13px; }
   .dc-m-btns { display: flex; gap: 6px; margin-top: 8px; }
   .dc-m-btns .btn { flex: 1; font-size: 11px; padding: 5px; justify-content: center; }
+  /* keep the app shell inside the viewport — wide content scrolls in its own container */
+  #mainContent { overflow-x: hidden; }
+  .topbar > div { flex-wrap: wrap; }
+  .topbar kbd { display: none; }
+  .camp-countdown { flex-wrap: wrap; }
+  .camp-countdown > div > div { flex-wrap: wrap; }
 }
 
 @media (max-width: 480px) {
@@ -780,7 +786,7 @@ tr:hover td { background: var(--primary-bg) }
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-logo"><img class="app-logo" alt="עזר תורה" src="" style="height:90px;margin-bottom:4px"><div style="font-size:20px;font-weight:900;color:var(--slate-900)">עזר תורה</div></div>
-    <div class="login-sub">תושיה תפרח — כניסה למערכת <span style="opacity:.5;font-size:11px">v29</span></div>
+    <div class="login-sub">תושיה תפרח — כניסה למערכת <span style="opacity:.5;font-size:11px">v30</span></div>
     <div class="login-form" id="loginFormBox">
       <div class="fg"><label class="form-label">כתובת מייל</label><input class="form-control" id="loginEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="fg"><label class="form-label">סיסמה</label><input class="form-control" type="password" id="loginPass" placeholder="סיסמה" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -876,7 +882,7 @@ tr:hover td { background: var(--primary-bg) }
       <button id="refreshBtn" onclick="manualRefresh()" title="רענן נתונים מהשרת" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s"><i data-lucide="refresh-cw" style="width:14px;height:14px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> <span>רענן</span></button>
       <button onclick="openGlobalSearch()" title="חיפוש גלובלי (Ctrl+K)" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s">🔍 <span>חיפוש</span> <kbd style="font-size:10px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:4px;padding:0 4px">Ctrl+K</kbd></button>
     </div>
-    <div class="topbar-brand"><img class="app-logo" alt="עזר תורה" src="" style="height:34px;margin-left:8px;border-radius:4px"> עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;font-family:monospace;font-weight:600;opacity:.5;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:10px">v3.1 ☁️</span></div>
+    <div class="topbar-brand"><img class="app-logo" alt="עזר תורה" src="" style="height:34px;margin-left:8px;border-radius:4px"> עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;font-family:monospace;font-weight:600;opacity:.5;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:10px">v30 ☁️</span></div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="syncStatusDot" title="סטטוס סנכרון" style="display:none;width:10px;height:10px;border-radius:50%;background:#6b7a9a;flex-shrink:0;transition:background .5s"></span>
       <button onclick="showPage('messages')" id="topMsgBadge" style="display:none;background:var(--danger);color:white;border:none;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif" title="הודעות שלא נקראו"></button>
@@ -4233,7 +4239,7 @@ function can(p) {
 
 // Version upgrade notification
 function checkVersionUpgrade() {
-  const APP_VER = 'v29';
+  const APP_VER = 'v30';
   const stored = localStorage.getItem('lastSeenVersion');
   if(stored && stored !== APP_VER) {
     const bar = document.createElement('div');
@@ -4779,12 +4785,13 @@ function renderAll() { renderGlobalStats(); rebuildDonorFilters(); applyFilters(
 function renderDonorPagination(total, page) {
   let el = document.getElementById('donorPagination');
   if (!el) {
-    // Create pagination bar under donors table
-    const tableWrap = document.querySelector('#donorsBody')?.closest('table')?.parentElement;
+    // Create pagination bar under the donors table — OUTSIDE .table-wrap so
+    // it stays visible on mobile, where the table is swapped for cards
+    const tableWrap = document.querySelector('#donorsBody')?.closest('.table-wrap');
     if (tableWrap) {
       el = document.createElement('div');
       el.id = 'donorPagination';
-      el.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;border-top:1px solid var(--slate-200)';
+      el.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap';
       tableWrap.after(el);
     } else return;
   }
@@ -12484,17 +12491,9 @@ function runGlobalSearch() {
 // ════════════════════════════════════════════════════
 // V19: AMOUNT RANGE FILTER (Donors & Donations)
 // ════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════
-// V19: PATCH renderDash to include charts + alerts
-// ════════════════════════════════════════════════════
-function renderDash() {
-  renderDashCore();
-  // Render alerts and charts after DB is ready
-  setTimeout(()=>{
-    renderSmartAlerts();
-    renderDashCharts();
-  }, 300);
-}
+// renderDashCore already renders alerts + charts (with bounded retries for
+// a late Chart.js load) — no second deferred render needed.
+function renderDash() { renderDashCore(); }
 
 // Init on load
 document.addEventListener('DOMContentLoaded', ()=>{
