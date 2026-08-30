@@ -2043,49 +2043,6 @@ tr:hover td { background: var(--primary-bg) }
   </div>
 </div>
 
-<!-- SEND EMAIL TO DONORS MODAL -->
-<div class="modal-overlay" id="sendEmailModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><h3>📧 שליחת מייל לתורמים</h3><button class="modal-close" onclick="closeModal('sendEmailModal')">✕</button></div>
-    <div class="modal-body" dir="rtl">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fg">
-          <label class="form-label">נמענים</label>
-          <select class="form-control" id="emailRecipientType" onchange="updateEmailRecipientCount()">
-            <option value="all">כל התורמים עם מייל</option>
-            <option value="campaign">תורמי מגבית נוכחית</option>
-            <option value="single">תורם ספציפי</option>
-          </select>
-        </div>
-        <div id="singleDonorEmailWrap" style="display:none" class="fg">
-          <label class="form-label">בחר תורם</label>
-          <input class="form-control" id="singleDonorEmailSearch" placeholder="חפש תורם..." oninput="searchDonorForEmail(this.value)">
-          <div id="emailDonorResults" class="pick-results" style="max-height:120px"></div>
-          <input type="hidden" id="singleDonorEmailId">
-        </div>
-        <div style="font-size:12px;color:var(--muted)">מספר נמענים: <strong id="emailRecipientCount">0</strong></div>
-        <div class="fg"><label class="form-label">סוג מייל</label>
-          <select class="form-control" id="emailType" onchange="toggleEmailType()">
-            <option value="announce">הודעה כללית</option>
-            <option value="donor_link">קישור עדכון פרטים אישי</option>
-          </select>
-        </div>
-        <div id="emailAnnounceFields">
-          <div class="fg"><label class="form-label">נושא</label><input class="form-control" id="emailSubjectField" placeholder="נושא המייל" style="direction:rtl"></div>
-          <div class="fg"><label class="form-label">תוכן</label><textarea class="form-control" id="emailBodyField" rows="4" placeholder="תוכן ההודעה..." style="direction:rtl;text-align:right"></textarea></div>
-        </div>
-        <div id="emailDonorLinkNote" style="display:none;background:var(--bg-app);border-radius:8px;padding:10px;font-size:12px">
-          כל תורם יקבל קישור אישי ייחודי לעדכון פרטיו. קישורים אלה מאובטחים אישית לכל תורם.
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('sendEmailModal')">ביטול</button>
-      <button class="btn btn-navy" onclick="openBulkEmail()">שלח 📧</button>
-    </div>
-  </div>
-</div>
-
 <!-- SEND EMAIL TO DONOR MODAL — Rich editor + RTL -->
 <div class="modal-overlay" id="sendDonorEmailModal">
   <div class="modal" style="max-width:560px">
@@ -3475,13 +3432,32 @@ async function loadDB() {
       .single();
 
     if (data && data.data && !error) {
-      DB = data.data;
+      // Were edits left unsynced by the previous session (offline / closed
+      // before the debounced push)? Merge them in instead of dropping them.
+      let merged = false;
+      try {
+        if (localStorage.getItem('donorDB_dirty') === '1') {
+          const localStr = localStorage.getItem('donorDB_v6');
+          const baseStr  = localStorage.getItem('donorDB_base');
+          if (localStr) {
+            const localDB  = JSON.parse(localStr);
+            const baseSnap = baseStr ? JSON.parse(baseStr) : null;
+            const res = _merge3DB(baseSnap, localDB, data.data);
+            DB = res.merged;
+            merged = true;
+            _dirty = true; // push the recovered edits back to the server
+            if (res.remoteApplied || res.conflicts) console.info('boot merge: recovered unsynced local edits');
+          }
+        }
+      } catch(e) { console.warn('boot merge failed, using cloud copy:', e && e.message); }
+      if (!merged) DB = data.data;
       _lastKnownCloudUpdatedAt = data.updated_at || null;
       _baseDB = _dbClone(data.data);   // remember exactly what the server holds
       // Update local cache
       try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
       loadedFromCloud = true;
       _showSyncStatus('ok');
+      if (_dirty) _syncToSupabase();
     }
   } catch(e) {
     console.warn('Supabase load failed, using local cache:', e.message);
@@ -3590,9 +3566,33 @@ function saveDB() {
   _ensureRecordIds();
   // Save locally immediately (fast, offline fallback)
   try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
+  // Mark "unsynced edits exist" + snapshot the server base we edited against,
+  // so a browser restart can 3-way-merge instead of dropping these edits.
+  try {
+    if (localStorage.getItem('donorDB_dirty') !== '1') {
+      localStorage.setItem('donorDB_dirty', '1');
+      if (_baseDB) localStorage.setItem('donorDB_base', JSON.stringify(_baseDB));
+      else localStorage.removeItem('donorDB_base');
+    }
+  } catch(e){}
   _dirty = true;
   _syncToSupabase();
 }
+
+function _clearDirtyFlag() {
+  try {
+    localStorage.setItem('donorDB_dirty', '0');
+    localStorage.removeItem('donorDB_base');
+    // keep the local cache aligned with what was pushed
+    localStorage.setItem('donorDB_v6', JSON.stringify(DB));
+  } catch(e){}
+}
+
+// Closing the tab with unsynced edits? They survive in localStorage and merge
+// on the next boot, but warn anyway — the user may expect them on the server.
+window.addEventListener('beforeunload', (e) => {
+  if (_dirty && currentUser) { e.preventDefault(); e.returnValue = ''; }
+});
 
 // Give nested records stable ids so they can be merged across clients
 function _ensureRecordIds() {
@@ -3823,6 +3823,7 @@ async function _pushWithCAS() {
       _lastKnownCloudUpdatedAt = rows[0].updated_at;
       _baseDB = _dbClone(DB);
       _dirty = false;
+      _clearDirtyFlag();
       return true;
     }
     // CAS failed → someone saved in between (or the row is missing)
@@ -3836,6 +3837,7 @@ async function _pushWithCAS() {
       _lastKnownCloudUpdatedAt = ins ? ins.updated_at : null;
       _baseDB = _dbClone(DB);
       _dirty = false;
+      _clearDirtyFlag();
       return true;
     }
     _applyRemoteMerge(remote); // absorbs their changes, keeps ours → retry push
@@ -4255,7 +4257,6 @@ function setupNavForRole() {
   hide('sb-add-donor', !can('edit'));
   hide('sb-add-donation', !can('edit'));
   hide('dashActions', !can('edit'));
-  hide('frBtns', !can('edit'));
 }
 
 async function doLogin() {
@@ -4746,12 +4747,11 @@ function startCampaignCountdown() {
           </div>
         </div>`;
     }
-    boxes.forEach(el => {
-      el.style.display = 'flex';
-      el.style.cssText += ';display:flex;align-items:center;gap:12px;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:10px;padding:10px 16px;margin-bottom:14px';
-      el.innerHTML = html;
-    });
+    boxes.forEach(el => { el.innerHTML = html; });
   }
+  els.forEach(el => {
+    el.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:10px;padding:10px 16px;margin-bottom:14px';
+  });
   tick();
   if (deadline - new Date() > 0) _cdTimer = setInterval(tick, 1000);
 }
@@ -4918,6 +4918,7 @@ function openNewDonorModal() {
   fillForm({});
   document.getElementById('f_code').value=genCode(); // persisted on save
   document.getElementById('f_createdAt').value=today();
+  cancelDonForm(); cancelFutureForm(); // stale edit-index from a previous donor would corrupt data
   switchDTab('details');
   openModal('donorModal'); setTimeout(initSelectsAddable, 100);
 }
@@ -4943,6 +4944,7 @@ function openDonorModal(id) {
   const donationsNed=document.getElementById('donationsNedarimLink');
   if(donationsNed){donationsNed.innerHTML=nedarimHtml;donationsNed.style.display=nedarimId?'':'none';}
   
+  cancelDonForm(); cancelFutureForm(); // never carry an edit-index over from another donor
   switchDTab('details');
   updateDetailsTabSummary();
   openModal('donorModal');
@@ -5004,9 +5006,9 @@ function switchDTab(tab) {
   if(tab==='details') updateDetailsTabSummary();
   if(tab==='donations') renderDonationsTab();
   if(tab==='future') renderFutureTab();
-  if(tab==='relations'&&currentDonorId) renderRelTab();
-  if(tab==='bond'&&currentDonorId) renderBondScore(currentDonorId);
-  if(tab==='history'&&currentDonorId) renderDonorHistory(currentDonorId);
+  if(tab==='relations'){ if(currentDonorId) renderRelTab(); else renderPendingRelations(); }
+  if(tab==='bond'){ if(currentDonorId) renderBondScore(currentDonorId); else { const b=document.getElementById('bondScoreContent'); if(b) b.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">ציון חוזק קשר יחושב לאחר שמירת התורם</div>'; } }
+  if(tab==='history'){ if(currentDonorId) renderDonorHistory(currentDonorId); else { const h=document.getElementById('donorHistoryContent'); if(h) h.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">היסטוריה תופיע לאחר שמירת התורם</div>'; } }
 }
 
 // Read the donor form into a data object (shared by save / save-and-new)
@@ -5546,7 +5548,6 @@ function renderRelTab() {
     revEl.style.display='';
   } else if(revEl) revEl.style.display='none';
   
-  document.getElementById('relSearchBox')&&(document.getElementById('relSearchBox').style.display='none');
 }
 // ════════════════════════════════════════════════════
 // QUICK DONATION MODAL
@@ -8329,36 +8330,36 @@ function renderPendingDonations() {
 }
 
 function renderPendingFuture() {
-  const body = document.getElementById('futureTabBody');
-  if (!body) return;
-  if (_pendingFuture.length === 0) {
-    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">אין תרומות עתידיות</td></tr>';
-    return;
-  }
-  body.innerHTML = _pendingFuture.map((f,i) => `
-    <tr>
-      <td>${fmt(f.date)}</td>
-      <td>${f.expectedAmount ? '₪'+parseFloat(f.expectedAmount).toLocaleString() : '—'}</td>
-      <td>${escHtml(f.notes||'')}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="removePending('future',${i})">🗑️</button></td>
-    </tr>`).join('');
+  const host = document.getElementById('futureItemsList');
+  if (!host) return;
+  host.innerHTML = _pendingFuture.length === 0
+    ? '<p style="color:var(--muted);font-size:13px">אין תרומות עתידיות — ניתן להוסיף כבר עכשיו, הן יישמרו יחד עם התורם</p>'
+    : _pendingFuture.map((f,i)=>`<div class="future-item">
+        <div class="future-item-info">
+          <div class="fi-date">${f.date?fmt(f.date):'תאריך לא נקבע'}</div>
+          ${f.date?`<div class="fi-heb">${toHeb(f.date)}</div>`:''}
+          ${f.expectedAmount?`<div class="fi-amount">💰 סכום צפוי: <strong>₪${parseFloat(f.expectedAmount).toLocaleString()}</strong></div>`:''}
+          ${f.notes?`<div class="fi-notes">📝 ${escHtml(f.notes)}</div>`:''}
+        </div>
+        <div class="future-item-actions"><button class="btn btn-danger btn-sm" onclick="removePending('future',${i})">🗑️</button></div>
+      </div>`).join('');
 }
 
 function renderPendingRelations() {
-  const body = document.getElementById('relTabBody');
-  if (!body) return;
-  if (_pendingRelations.length === 0) {
-    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">אין התאמות</td></tr>';
-    return;
-  }
-  body.innerHTML = _pendingRelations.map((r,i) => {
-    const other = DB.donors.find(x=>x.id===r.relId);
-    return `<tr>
-      <td>${escHtml(other ? donorName(other) : r.relId)}</td>
-      <td>${escHtml(r.relType||'')}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="removePending('rel',${i})">🗑️</button></td>
-    </tr>`;
-  }).join('');
+  const host = document.getElementById('relList');
+  if (!host) return;
+  host.innerHTML = _pendingRelations.length === 0
+    ? '<p style="color:var(--muted);font-size:13px;padding:8px 0">אין התאמות — ניתן להוסיף כבר עכשיו, הן יישמרו יחד עם התורם</p>'
+    : _pendingRelations.map((r,i)=>{
+        let name='?';
+        if((r.donorId||'').startsWith('fr_')){const f=DB.fundraisers.find(x=>x.id===r.donorId.slice(3));if(f)name=((f.firstName||'')+' '+(f.lastName||'')).trim()+' 👤';}
+        else {const d=DB.donors.find(x=>x.id===r.donorId);if(d)name=donorName(d);}
+        return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-app);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:7px">
+          <div><strong style="color:var(--primary)">${escHtml(name)}</strong>
+          <span class="badge" style="background:var(--purple-bg);color:var(--purple);margin-right:8px;font-size:11px">${escHtml(r.type||'')}</span></div>
+          <button class="btn btn-danger btn-sm" onclick="removePending('rel',${i})">הסר</button>
+        </div>`;
+      }).join('');
 }
 
 function removePending(type, idx) {
@@ -10525,56 +10526,6 @@ window.addEventListener('message',e=>{if(e.data&&(e.data.Amount||e.data.status==
   else toast('אפשר פופ-אפ בדפדפן');
 }
 
-// ════════════════════════════════════════════════════
-// ITEM 10 — Multi-select relations (donors + fundraisers)
-// ════════════════════════════════════════════════════
-let _relSelectedIds=[], _relMode='donor';
-
-function showRelSearch(mode) {
-  _relSelectedIds=[]; _relMode=mode||'donor';
-  const box=document.getElementById('relSearchBox');
-  document.getElementById('relSearchLabel').textContent = _relMode==='fr' ? 'חיפוש מתרים' : 'חיפוש תורם';
-  document.getElementById('relSearch').value='';
-  document.getElementById('relResults').innerHTML='';
-  document.getElementById('relSelectedList').innerHTML='';
-  document.getElementById('relSelected').style.display='none';
-  box.style.display='';
-}
-function searchRelDonors() {
-  const q=document.getElementById('relSearch').value.trim().toLowerCase(); if(!q){document.getElementById('relResults').innerHTML='';return;}
-  let res;
-  if (_relMode==='fr') {
-    res=(DB.fundraisers||[]).filter(f=>(f.firstName+' '+f.lastName).toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)).slice(0,8);
-    document.getElementById('relResults').innerHTML=res.map(f=>`<div class="pick-item" onclick="addRelSelected('fr_${f.id}')">${escHtml((f.firstName||'')+' '+(f.lastName||''))} <span style="color:var(--muted);font-size:11px">${escHtml(f.code||'')}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
-  } else {
-    res=DB.donors.filter(d=>d.id!==currentDonorId&&!_relSelectedIds.includes(d.id)&&(donorName(d).toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q))).slice(0,8);
-    document.getElementById('relResults').innerHTML=res.map(d=>`<div class="pick-item" onclick="addRelSelected('${d.id}')">${escHtml(donorName(d))} <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
-  }
-}
-function addRelSelected(id) {
-  if(_relSelectedIds.includes(id))return;
-  _relSelectedIds.push(id);
-  document.getElementById('relSearch').value='';
-  document.getElementById('relResults').innerHTML='';
-  renderRelSelectedList();
-}
-function removeRelSelected(id) {
-  _relSelectedIds=_relSelectedIds.filter(x=>x!==id);
-  renderRelSelectedList();
-}
-function renderRelSelectedList() {
-  const list=document.getElementById('relSelectedList');
-  document.getElementById('relSelected').style.display=_relSelectedIds.length?'':'none';
-  list.innerHTML=_relSelectedIds.map(id=>{
-    let name='';
-    if(id.startsWith('fr_')){const f=DB.fundraisers.find(x=>x.id===id.slice(3));name=f?((f.firstName||'')+' '+(f.lastName||'')).trim()+' 👤':'?';}
-    else{const d=DB.donors.find(x=>x.id===id);name=d?donorName(d):'?';}
-    return `<div style="display:flex;align-items:center;gap:6px;background:var(--bg-app);padding:5px 9px;border-radius:8px;margin-bottom:4px;font-size:12px">
-      <span style="flex:1">${escHtml(name)}</span>
-      <button style="border:none;background:none;cursor:pointer;color:var(--danger);font-size:16px;padding:0" onclick="removeRelSelected('${id}')">✕</button>
-    </div>`;
-  }).join('');
-}
 // Reciprocal relation map (v26)
 const RECIP_REL = {
   'הורה': 'בן',
@@ -10584,34 +10535,6 @@ const RECIP_REL = {
   'אח': 'אח',
 };
 
-function confirmRel() {
-  if(!_relSelectedIds.length){toast('בחר לפחות אחד');return;}
-  const relType=document.getElementById('relType').value;
-  const baseDonor=DB.donors.find(x=>x.id===currentDonorId);
-  if(!baseDonor.relations)baseDonor.relations=[];
-  let added=0;
-  _relSelectedIds.forEach(id=>{
-    if(!baseDonor.relations.find(r=>r.donorId===id)){
-      baseDonor.relations.push({donorId:id,type:relType});
-      added++;
-      // Add reciprocal relation
-      const recipType = RECIP_REL[relType];
-      if(recipType && !id.startsWith('fr_')){
-        const targetDonor=DB.donors.find(x=>x.id===id);
-        if(targetDonor){
-          if(!targetDonor.relations)targetDonor.relations=[];
-          if(!targetDonor.relations.find(r=>r.donorId===currentDonorId)){
-            targetDonor.relations.push({donorId:currentDonorId,type:recipType});
-          }
-        }
-      }
-    }
-  });
-  _relSelectedIds=[];
-  saveDB(); renderRelTab();
-  toast(`✓ ${added} שיוכים נוספו`);
-}
-function cancelRel(){document.getElementById('relSearchBox')&&(document.getElementById('relSearchBox').style.display='none');_relSelectedIds=[];}
 function deleteRel(idx){const d=DB.donors.find(x=>x.id===currentDonorId);if(!d||!confirm('להסיר?'))return;d.relations.splice(idx,1);saveDB();renderRelTab();}
 
 // ── New Relation Panel functions ──────────────────────────────
@@ -10663,7 +10586,16 @@ function confirmNewRel(){
   const id=document.getElementById('relAddSelId').value;
   if(!id){toast('בחר תורם/מתרים תחילה');return;}
   const relType=document.getElementById('relAddType2').value;
+  if(isNewDonor()){
+    if(_pendingRelations.find(r=>r.donorId===id)){toast('כבר קיים שיוך זה');return;}
+    _pendingRelations.push({donorId:id,type:relType});
+    renderPendingRelations();
+    toast('✓ התאמה נוספה — תישמר עם שמירת התורם');
+    closeAddRelPanel();
+    return;
+  }
   const baseDonor=DB.donors.find(x=>x.id===currentDonorId);
+  if(!baseDonor) return;
   if(!baseDonor.relations)baseDonor.relations=[];
   if(!baseDonor.relations.find(r=>r.donorId===id)){
     baseDonor.relations.push({donorId:id,type:relType});
