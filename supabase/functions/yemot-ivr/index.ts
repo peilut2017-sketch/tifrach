@@ -46,6 +46,8 @@ Deno.serve(async (req) => {
 
   const activeCamp = (DB.campaigns || []).find((c: any) => c.active);
   const donation = {
+    // stable id — required by the client's multi-user merge engine
+    id: "dn" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     amount,
     date: new Date().toISOString().slice(0, 10),
     method: "טלפון (ימות)",
@@ -53,23 +55,27 @@ Deno.serve(async (req) => {
     notes: "תרומה טלפונית דרך ימות המשיח",
   };
 
+  // Atomic appends via SQL — never rewrite the whole blob, so concurrent
+  // staff saves cannot be clobbered by this webhook.
   if (donor) {
-    if (!donor.donations) donor.donations = [];
-    donor.donations.push(donation);
-  } else {
-    // unknown caller — record as a pending/unassigned donation on a stub
-    if (!DB.pendingEdits) DB.pendingEdits = [];
-    DB.pendingEdits.push({
-      id: "PE" + Date.now(),
-      donorId: null,
-      edits: { _phoneDonation: { phone, ...donation } },
-      ts: new Date().toISOString(),
-      token: "yemot",
+    const { data: ok, error: upErr } = await sb.rpc("append_donor_donation", {
+      p_donor_id: donor.id,
+      p_donation: donation,
     });
+    if (upErr || !ok) return reply("שגיאה בשמירת התרומה");
+  } else {
+    // unknown caller — queue as a pending edit for manual assignment
+    const { error: upErr } = await sb.rpc("append_pending_edit", {
+      p_edit: {
+        id: "PE" + Date.now() + Math.random().toString(36).slice(2, 6),
+        donorId: null,
+        edits: { _phoneDonation: { phone, ...donation } },
+        ts: new Date().toISOString(),
+        token: "yemot",
+      },
+    });
+    if (upErr) return reply("שגיאה בשמירת התרומה");
   }
-
-  const { error: upErr } = await sb.from("app_state").update({ data: DB }).eq("id", "main");
-  if (upErr) return reply("שגיאה בשמירת התרומה");
 
   return reply(`תודה רבה, התקבלה תרומה על סך ${amount} שקלים`);
 });
