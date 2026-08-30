@@ -1,0 +1,16 @@
+# Supabase CLI config — עזר תורה
+# After creating the project, replace project_id with your project ref
+# (Dashboard → Project Settings → General → "Reference ID"), then run:
+#   supabase link --project-ref <your-ref>
+project_id = "REPLACE_WITH_YOUR_PROJECT_REF"
+
+# ── Edge Functions ──
+# self-service: unauthenticated donor self-edit portal (token-validated
+# server-side). Must NOT require a user JWT.
+[functions.self-service]
+verify_jwt = false
+
+# yemot-ivr: webhook called by Yemot HaMashiach (phone IVR). Server-to-
+# server, no user JWT. Optional — only needed if you use phone donations.
+[functions.yemot-ivr]
+verify_jwt = false

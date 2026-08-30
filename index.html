@@ -3344,11 +3344,10 @@ let _lastDonsRows = [];
 let qd_selectedId = null;
 let editingDonorFinal = false;
 
-const DEFAULT_USERS = [
-  { username:'admin', displayName:'מנהל ראשי', password:'admin123', role:'admin' },
-  { username:'editor', displayName:'עורך', password:'edit123', role:'editor' },
-  { username:'viewer', displayName:'מבקר', password:'view123', role:'viewer' },
-];
+// Authentication is handled by Supabase Auth. Staff profiles (email → role)
+// live in DB.users WITHOUT passwords. No default credentials are shipped;
+// the first user who signs in through Supabase Auth becomes superadmin.
+const DEFAULT_USERS = [];
 
 async function loadDB() {
   // Try Supabase first (authoritative cloud data)
@@ -3788,30 +3787,28 @@ function hideInactivityWarning() {
 
 // ── Auto-login from saved session ──
 window.addEventListener('DOMContentLoaded', async () => {
-  await loadDB();
-  // Check if this is a self-service link first
+  // Self-service donor portal — unauthenticated, served via edge function.
   const params = new URLSearchParams(window.location.search);
   if (params.get('selfService')) {
     checkSelfServiceMode();
     return;
   }
-  // Check password reset token
+  // Password reset token
   if (params.get('reset')) {
     if (typeof checkResetToken === 'function' && checkResetToken()) return;
   }
   // Init EmailJS if configured
   _initEmailJS();
-  // Restore saved session
-  const saved = localStorage.getItem('savedSession');
-  if (saved) {
-    try {
-      const s = JSON.parse(saved);
-      await doLogin(s);
-    } catch(e) { localStorage.removeItem('savedSession'); }
-  }
+  // Restore an existing Supabase Auth session (no plaintext passwords stored)
+  try {
+    const { data } = await _sb.auth.getSession();
+    if (data && data.session && data.session.user) {
+      await _afterAuth(data.session.user);
+    }
+  } catch(e) { console.warn('session restore failed', e && e.message); }
 });
 
-// Supabase Auth not used - local auth only
+// Authentication is handled by Supabase Auth (see doLogin / _afterAuth).
 
 const ROLES = { superadmin:'מנהל ראשי', admin:'מנהל', editor:'עורך', viewer:'מבקר' };
 
@@ -3859,54 +3856,64 @@ function setupNavForRole() {
   if (!can('edit') && document.getElementById('frBtns')) document.getElementById('frBtns').style.display='none';
 }
 
-async function doLogin(savedUser) {
+async function doLogin() {
   const loginBtn = document.getElementById('loginBtn');
   const loginErr = document.getElementById('loginError');
-  let email, password, remember;
+  const email = document.getElementById('loginEmail')?.value.trim();
+  const password = document.getElementById('loginPass')?.value;
+  if (!email || !password) { loginErr.style.display='block'; loginErr.textContent='נא למלא מייל וסיסמה'; return; }
+  loginErr.style.display='none';
+  if(loginBtn) { loginBtn.disabled=true; loginBtn.textContent='מתחבר...'; }
 
-  if (savedUser) {
-    email = savedUser.email; password = savedUser.password; remember = true;
-  } else {
-    email = document.getElementById('loginEmail')?.value.trim();
-    password = document.getElementById('loginPass')?.value;
-    remember = document.getElementById('rememberMe')?.checked;
-    if (!email || !password) { loginErr.style.display='block'; loginErr.textContent='נא למלא מייל וסיסמה'; return; }
-    loginErr.style.display='none';
-    if(loginBtn) { loginBtn.disabled=true; loginBtn.textContent='מתחבר...'; }
-  }
-
-  await loadDB();
-
-  // Authenticate against local DB.users (match by email OR username for backward compat)
-  const user = DB.users.find(x =>
-    (x.email === email || x.username === email) && x.password === password
-  );
-  if (!user) {
-    if (!savedUser) {
-      if(loginErr) { loginErr.style.display='block'; loginErr.textContent='כתובת מייל או סיסמה שגויים'; }
-      if(loginBtn) { loginBtn.disabled=false; loginBtn.textContent='כניסה'; }
-    }
-    localStorage.removeItem('savedSession');
+  // Authenticate with Supabase Auth (password verified server-side)
+  let sbUser = null;
+  try {
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    sbUser = data.user;
+  } catch (e) {
+    if(loginErr) { loginErr.style.display='block'; loginErr.textContent = 'כתובת מייל או סיסמה שגויים'; }
+    if(loginBtn) { loginBtn.disabled=false; loginBtn.textContent='כניסה'; }
     return;
   }
 
-  if (remember) localStorage.setItem('savedSession', JSON.stringify({email, password}));
-  else localStorage.removeItem('savedSession');
-
   if(loginBtn) { loginBtn.disabled=false; loginBtn.textContent='כניסה'; }
-  _setupSession(user);
+  await _afterAuth(sbUser);
 }
 
-async function _onAuthSuccess(sbUser) {
-  // Get role from local DB users by email
-  const localUser = DB.users.find(u => u.email === sbUser.email) || {};
+// Post-authentication bootstrap: load DB, resolve the profile/role from
+// DB.users (email → role), and open the app. The FIRST authenticated user
+// on a fresh install is auto-provisioned as superadmin.
+async function _afterAuth(sbUser) {
+  await loadDB();
+  const email = (sbUser.email || '').toLowerCase();
+  let prof = (DB.users || []).find(u => (u.email || '').toLowerCase() === email);
+
+  if (!prof) {
+    const hasRealUsers = (DB.users || []).some(u => u.email);
+    if (!hasRealUsers) {
+      // first real user becomes the superadmin
+      prof = { email: sbUser.email, username: sbUser.email,
+               displayName: sbUser.email.split('@')[0], role: 'superadmin', firstLogin: false };
+      DB.users = DB.users || [];
+      DB.users.push(prof);
+      saveDB();
+    } else {
+      // authenticated but not authorized in this system
+      try { await _sb.auth.signOut(); } catch(e){}
+      const loginErr = document.getElementById('loginError');
+      if(loginErr) { loginErr.style.display='block'; loginErr.textContent='המשתמש אינו מורשה במערכת. פנה למנהל.'; }
+      return;
+    }
+  }
+
   const user = {
     id: sbUser.id || ('U' + Date.now()),
     email: sbUser.email,
-    username: localUser.username || sbUser.email,
-    displayName: localUser.displayName || localUser.username || sbUser.email.split('@')[0],
-    role: localUser.role || 'viewer',
-    firstLogin: localUser.firstLogin ?? false,
+    username: prof.username || sbUser.email,
+    displayName: prof.displayName || prof.username || sbUser.email.split('@')[0],
+    role: prof.role || 'viewer',
+    firstLogin: prof.firstLogin ?? false,
   };
   _setupSession(user);
   if (user.firstLogin) {
@@ -3948,6 +3955,7 @@ async function doLogout() {
   currentUser = null;
   clearInactivityTimer();
   localStorage.removeItem('savedSession');
+  try { await _sb.auth.signOut(); } catch(e){}
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appWrapper').style.display='none';
   _showSyncStatus('loading');
@@ -3984,11 +3992,19 @@ async function saveNewPassword() {
   const err = document.getElementById('changePassErr');
   if (p1.length < 8) { err.style.display='block'; err.textContent='הסיסמה חייבת להכיל לפחות 8 תווים'; return; }
   if (p1 !== p2) { err.style.display='block'; err.textContent='הסיסמאות אינן תואמות'; return; }
-  // Update local DB user
+  // Update the password in Supabase Auth (not stored in the app DB)
+  try {
+    const { error } = await _sb.auth.updateUser({ password: p1 });
+    if (error) throw error;
+  } catch(e) {
+    err.style.display='block'; err.textContent = 'שגיאה בעדכון הסיסמה: ' + (e && e.message || '');
+    return;
+  }
+  // Clear the first-login flag on the profile (no password kept in DB)
   if (currentUser) {
     const u = DB.users.find(x => x.email === currentUser.email || x.username === currentUser.username);
-    if (u) { u.password = p1; u.firstLogin = false; }
-    if (currentUser) currentUser.firstLogin = false;
+    if (u) { delete u.password; u.firstLogin = false; }
+    currentUser.firstLogin = false;
     saveDB();
   }
   closeModal('changePassModal');
@@ -8585,24 +8601,29 @@ function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => toast('✓ הקישור הועתק'));
 }
 
-// Handle self-service page load (if token in URL)
-function checkSelfServiceMode() {
+// Handle self-service page load (if token in URL) — validated server-side
+// via the self-service edge function (app_state is not readable by anon).
+async function checkSelfServiceMode() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('selfService');
   const donorId = params.get('donor');
   if (!token || !donorId) return false;
-  // Verify token
-  if (!DB.selfServiceTokens || DB.selfServiceTokens[donorId] !== token) {
-    document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">קישור לא תקין או פג תוקף</div>';
-    return true;
+  document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#64748f">טוען…</div>';
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'get', donorId, token }),
+    });
+    const out = await resp.json();
+    if (!resp.ok || !out.donor) {
+      document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">קישור לא תקין או פג תוקף</div>';
+      return true;
+    }
+    showSelfEditForm({ ...out.donor, id: donorId }, token);
+  } catch(e) {
+    document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">שגיאה בטעינת הטופס</div>';
   }
-  const d = DB.donors.find(x => x.id === donorId);
-  if (!d) {
-    document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">תורם לא נמצא</div>';
-    return true;
-  }
-  // Show self-edit form
-  showSelfEditForm(d, token);
   return true;
 }
 
@@ -8635,7 +8656,7 @@ function showSelfEditForm(d, token) {
     </div>`;
 }
 
-function submitSelfEdit(donorId, token) {
+async function submitSelfEdit(donorId, token) {
   const edits = {
     firstName: document.getElementById('ss_firstName')?.value.trim(),
     lastName: document.getElementById('ss_lastName')?.value.trim(),
@@ -8644,9 +8665,18 @@ function submitSelfEdit(donorId, token) {
     mobile: document.getElementById('ss_mobile')?.value.trim(),
     email: document.getElementById('ss_email')?.value.trim(),
   };
-  if (!DB.pendingEdits) DB.pendingEdits = [];
-  DB.pendingEdits.push({ id: 'PE'+Date.now(), donorId, edits, ts: new Date().toISOString(), token });
-  saveDB();
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'submit', donorId, token, edits }),
+    });
+    if (!resp.ok) throw new Error('submit failed');
+  } catch(e) {
+    const res = document.getElementById('ss_result');
+    if (res) { res.style.display='block'; res.style.background='#fdf0f1'; res.style.color='#c22430'; res.textContent='שגיאה בשליחה, נסו שוב'; }
+    return;
+  }
   const res = document.getElementById('ss_result');
   if (res) {
     res.style.display='block'; res.style.background='#eafaf1'; res.style.color='#1e8449';
