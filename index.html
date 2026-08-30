@@ -726,6 +726,29 @@ tr:hover td { background: var(--primary-bg) }
 .multi-filter-footer button { flex:1;padding:4px;font-size:11px;border:1px solid var(--border);background:white;border-radius:var(--r-sm);cursor:pointer;font-family:'Heebo',sans-serif; }
 .multi-filter-footer button:hover { background:var(--stone-50); }
 
+/* ════ Overflow "more" menu ════ */
+.more-menu{position:relative;display:inline-block}
+.more-menu-list{position:absolute;top:calc(100% + 4px);left:0;z-index:450;background:#fff;border:1px solid var(--stone-200);border-radius:var(--r-md);box-shadow:var(--sh-lg);min-width:200px;padding:5px;display:none;animation:slideDown .15s ease}
+.more-menu-list.open{display:block}
+.more-menu-item{display:flex;align-items:center;gap:9px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:13px;color:var(--stone-700);border-radius:var(--r-sm);text-align:right;transition:background var(--tr)}
+.more-menu-item:hover{background:var(--primary-bg);color:var(--primary)}
+.more-menu-item.danger:hover{background:var(--danger-bg);color:var(--danger)}
+.more-menu-sep{border:none;border-top:1px solid var(--stone-100);margin:4px 6px}
+
+/* ════ Import/Export Center ════ */
+.io-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);padding:0 14px;background:var(--stone-50);flex-shrink:0}
+.io-tab{padding:11px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2.5px solid transparent;margin-bottom:-1px;font-family:'Heebo',sans-serif;background:none;border-top:none;border-left:none;border-right:none;transition:all var(--tr)}
+.io-tab:hover{color:var(--stone-700)}
+.io-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.io-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.io-item{display:flex;align-items:center;gap:11px;background:var(--white);border:1px solid var(--stone-200);border-radius:var(--r-md);padding:12px 14px;cursor:pointer;transition:all var(--tr);text-align:right;font-family:'Heebo',sans-serif;width:100%}
+.io-item:hover{border-color:var(--primary-border);background:var(--primary-bg);transform:translateY(-1px);box-shadow:var(--sh)}
+.io-item .ic{font-size:20px;flex-shrink:0}
+.io-item .tt{font-size:13px;font-weight:700;color:var(--ink)}
+.io-item .st{font-size:11px;color:var(--muted);margin-top:1px}
+.io-sec{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--stone-500);text-transform:uppercase;letter-spacing:.4px;margin-top:6px}
+.io-sec:first-child{margin-top:0}
+
 /* ════ Rich Email Editor / Wizard ════ */
 .re-btn{padding:3px 8px;border:1px solid var(--border);border-radius:var(--r-sm);background:white;cursor:pointer;font-size:12px;font-family:'Heebo',sans-serif;color:var(--stone-700);transition:all var(--tr)}
 .wiz-type-card:hover{border-color:var(--primary-border)!important;background:var(--primary-bg)!important}
@@ -819,7 +842,7 @@ tr:hover td { background: var(--primary-bg) }
     <div id="sbdd-admin" style="display:none">
       <button class="sb-item sb-sub" id="sb-admin" onclick="showPage('admin'); setTimeout(checkCloudStatus, 500);"><span class="sb-icon"><i data-lucide="settings" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">פאנל ניהול</span></button>
       <button class="sb-item sb-sub" id="sb-expenses" onclick="showPage('expenses')"><span class="sb-icon"><i data-lucide="receipt" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">פאנל הוצאות</span></button>
-      <button class="sb-item sb-sub" id="sb-exportwiz" onclick="openExportWizard()"><span class="sb-icon"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">פאנל ייצוא והדפסה (אשף)</span></button>
+      <button class="sb-item sb-sub" id="sb-exportwiz" onclick="openIOCenter('excel')"><span class="sb-icon"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label" style="padding-right:8px">מרכז ייבוא וייצוא</span></button>
     </div>
   </nav>
 
@@ -962,16 +985,19 @@ tr:hover td { background: var(--primary-bg) }
   <div class="toolbar">
     <input type="text" class="search-input" id="mainSearch" placeholder="חיפוש חופשי בכל השדות..." oninput="applyFilters()">
     <button class="btn btn-gold" onclick="openNewDonorModal()">+ הוסף תורם</button>
-    <button class="btn btn-outline btn-sm" id="exportBtn" onclick="quickExcelExport('donors')" title="ייצוא לאקסל"><i data-lucide="table-2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> Excel</button>
-    <button class="btn btn-outline btn-sm" id="exportPdfBtn" onclick="quickPdfExport('donors')" title="הדפסת הטבלה המסוננת"><i data-lucide="file-text" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> PDF</button>
-    <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" onclick="deleteSelectedDonors()" style="display:none"><i data-lucide="trash-2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> מחק נבחרים</button>
-    <button class="btn btn-outline btn-sm" id="exportWizBtn" onclick="openExportWizard('donors')" title="אשף ייצוא מורחב">🧙 אשף</button>
-    <button class="btn btn-outline btn-sm" onclick="openSelfServicePanel()">🔗 עמוד עצמי לתורם</button>
-    <button class="btn btn-outline btn-sm" onclick="openBulkEmail()" id="donorsEmailBtn">📧 מייל לתורמים</button>
-    <button class="btn btn-outline btn-sm" onclick="window.print()"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></button>
-    <button class="btn btn-outline btn-sm" onclick="openLabelsModal()"><i data-lucide="tag" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> מדבקות</button>
-    <button class="btn btn-gold btn-sm" onclick="toggleColPicker()" id="colPickerBtn" title="בחר עמודות להצגה"><i data-lucide="sliders-horizontal" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> עמודות</button>
-    <button class="btn btn-outline btn-sm" onclick="openGeocodeBatchModal()" title="גיאוקוד תורמים ללא קואורדינטות">📍 גיאוקוד</button>
+    <button class="btn btn-navy btn-sm" onclick="openIOCenter('excel','donors')">📦 ייצוא והדפסה</button>
+    <div class="more-menu">
+      <button class="btn btn-outline btn-sm" onclick="toggleMoreMenu('donorsMoreMenu')" title="פעולות נוספות">⋯ עוד</button>
+      <div class="more-menu-list" id="donorsMoreMenu">
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');openIOCenter('labels')">🏷️ מדבקות</button>
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');openBulkEmail()" id="donorsEmailBtn">📧 מייל לתורמים</button>
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');openSelfServicePanel()">🔗 עמוד עצמי לתורם</button>
+        <hr class="more-menu-sep">
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');toggleColPicker()" id="colPickerBtn">📑 בחירת עמודות</button>
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');openGeocodeBatchModal()">📍 גיאוקוד כתובות</button>
+        <button class="more-menu-item" onclick="toggleMoreMenu('donorsMoreMenu');window.print()">🖨️ הדפסת המסך</button>
+      </div>
+    </div>
   </div>
 
   <!-- Column picker dropdown -->
@@ -1072,12 +1098,7 @@ tr:hover td { background: var(--primary-bg) }
   </div>
 
   <!-- Table -->
-  <div class="quick-export-bar" style="display:flex;align-items:center;gap:8px;padding:6px 0 10px">
-    <span style="font-size:12px;color:var(--muted);font-weight:600">⚡ ייצוא מהיר:</span>
-    <button class="btn btn-outline btn-sm" onclick="quickExcelExport('donors')" title="ייצוא לאקסל לפי מסנן פעיל"><i data-lucide="table-2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> Excel</button>
-    <button class="btn btn-outline btn-sm" onclick="quickPdfExport('donors')" title="הדפסת טבלה כ-PDF"><i data-lucide="file-text" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> PDF</button>
-    <button class="btn btn-outline btn-sm" onclick="openExportWizard('donors')">🧙 אשף ייצוא</button>
-  </div>
+  
   <div class="table-wrap">
     <div class="table-info"><span id="tableCount">0 תורמים</span><span id="tableSum" style="font-weight:700;color:var(--slate-900)"></span></div>
     <div class="table-scroll">
@@ -1166,8 +1187,8 @@ tr:hover td { background: var(--primary-bg) }
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
     <h2 style="font-family:'Noto Serif Hebrew',serif;font-size:24px">🎓 פאנל מתרימים</h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-outline btn-sm" onclick="openFRImportModal()">📥 ייבוא אקסל</button>
-      <button class="btn btn-outline btn-sm" onclick="quickExcelExport('fundraisers')">📊 ייצוא Excel</button>
+      <button class="btn btn-navy btn-sm" onclick="openIOCenter('excel','fundraisers')">📦 ייצוא והדפסה</button>
+      <button class="btn btn-outline btn-sm" onclick="openIOCenter('import')">📥 ייבוא</button>
       <button class="btn btn-gold" onclick="openFRModal()">+ הוסף מתרים</button>
     </div>
   </div>
@@ -1226,10 +1247,8 @@ tr:hover td { background: var(--primary-bg) }
     <h2 style="font-family:'Noto Serif Hebrew',serif;font-size:22px"><i data-lucide="coins" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> פאנל תרומות</h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-gold" onclick="openQuickDonationModal()">+ הוסף תרומה</button>
-      <button class="btn btn-outline btn-sm" onclick="quickExcelExport('donations')"><i data-lucide="table-2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> Excel</button>
-      <button class="btn btn-outline btn-sm" onclick="quickPdfExport('donations')"><i data-lucide="file-text" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> PDF</button>
-      <button class="btn btn-outline btn-sm" onclick="openExportWizard('donations')">🧙 אשף</button>
       <button class="btn btn-outline btn-sm" id="donsPanelCreditBtn" onclick="openNedarimPayment()">💳 אשראי</button>
+      <button class="btn btn-navy btn-sm" onclick="openIOCenter('excel','donations')">📦 ייצוא והדפסה</button>
     </div>
   </div>
 
@@ -1495,8 +1514,7 @@ tr:hover td { background: var(--primary-bg) }
 
     <div class="admin-card" onclick="openUsersModal()"><div class="ac-icon"><i data-lucide="users" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>ניהול משתמשים</h3><p>הוספה, עריכה, הרשאות</p></div>
     <div class="admin-card" onclick="openSettingsModal()"><div class="ac-icon"><i data-lucide="clipboard-list" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>נתונים קשיחים</h3><p>עריכת רשימות</p></div>
-    <div class="admin-card" onclick="openImportModal()"><div class="ac-icon">📥</div><h3>ייבוא מאקסל</h3><p>טעינת תורמים</p></div>
-    <div class="admin-card" onclick="exportExcel()"><div class="ac-icon"><i data-lucide="upload" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>ייצוא לאקסל</h3><p>כל המידע</p></div>
+    <div class="admin-card" onclick="openIOCenter('excel')" style="border-color:var(--primary-border);background:var(--primary-bg)"><div class="ac-icon">📦</div><h3>מרכז ייבוא וייצוא</h3><p>ייבוא, Excel, דוחות, הדפסות, מדבקות — הכל במקום אחד</p></div>
     
     <div class="admin-card" style="cursor:default">
       <div class="ac-icon">🎯</div><h3>מגביות</h3><p>ניהול מגביות שנתיות</p>
@@ -1506,11 +1524,9 @@ tr:hover td { background: var(--primary-bg) }
       </div>
     </div>
     
-    <div class="admin-card" onclick="openExportWizard()"><div class="ac-icon"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>אשף ייצוא והדפסה</h3><p>Excel, PDF, מדבקות, דוחות קבוצות</p></div>
     <div class="admin-card" onclick="openAuditLog()"><div class="ac-icon">📜</div><h3>לוג פעולות</h3><p>היסטוריה מלאה + שחזור</p></div>
     <div class="admin-card" onclick="openNedarimSettings()"><div class="ac-icon">💳</div><h3>נדרים פלוס</h3><p>הגדרות אשראי</p></div>
     <div class="admin-card" onclick="openGmapsSettings()"><div class="ac-icon">🗺️</div><h3>מפות Google</h3><p>מפתח API לגיאוקוד מדויק של כתובות</p></div>
-    <div class="admin-card" onclick="openNedarimImport()"><div class="ac-icon">📥</div><h3>ייבוא נדרים פלוס</h3><p>שייוך תרומות אוטומטי</p></div>
     <div class="admin-card" onclick="openDonationFormPage()"><div class="ac-icon"><i data-lucide="globe" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>טופס תרומה</h3><p>דף תרומה עצמאי לשיתוף</p></div>
     <div class="admin-card" onclick="openEmailSettings()"><div class="ac-icon">📧</div><h3>מערכת מיילים</h3><p>EmailJS — שליחת מיילים לתורמים</p></div>
     <div class="admin-card" onclick="openYemotSettings()"><div class="ac-icon"><i data-lucide="phone" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>ימות המשיח</h3><p>API טלפוני — עדכון, תרומה, מגבית</p></div>
@@ -2452,40 +2468,56 @@ tr:hover td { background: var(--primary-bg) }
 </div>
 
 <!-- PRINT MODAL -->
-<div class="modal-overlay" id="printModal">
-  <div class="modal" style="width:560px">
-    <div class="modal-header"><h3><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> מרכז הדפסות</h3><button class="modal-close" onclick="closeModal('printModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        
-        <div class="admin-card" onclick="openLabelsWizard()" style="cursor:pointer">
-          <div class="ac-icon">🏷️</div>
-          <div class="ac-title">מדבקות</div>
-          <div class="ac-sub">Tanex — בחירת נתונים ועיצוב</div>
-        </div>
-        
-        <div class="admin-card" onclick="openFundraisingPrint()" style="cursor:pointer">
-          <div class="ac-icon">📋</div>
-          <div class="ac-title">גיליון התרמה</div>
-          <div class="ac-sub">לפי עיר / שכונה / קבוצה</div>
-        </div>
-        
-        <div class="admin-card" onclick="printGroupsOverview()" style="cursor:pointer">
-          <div class="ac-icon">👥</div>
-          <div class="ac-title">סקירת קבוצות</div>
-          <div class="ac-sub">כל הקבוצות והחברים</div>
-        </div>
-        
-        <div class="admin-card" onclick="printCampaignSummary()" style="cursor:pointer">
-          <div class="ac-icon">📈</div>
-          <div class="ac-title">סיכום מגבית</div>
-          <div class="ac-sub">נתוני המגבית הפעילה</div>
-        </div>
-        
+<div class="modal-overlay" id="ioCenterModal">
+  <div class="modal" style="width:640px;max-height:86vh">
+    <div class="modal-header"><h3>📦 מרכז ייבוא, ייצוא והדפסה</h3><button class="modal-close" onclick="closeModal('ioCenterModal')">✕</button></div>
+    <div class="io-tabs">
+      <button class="io-tab" id="ioTab-excel"  onclick="switchIOTab('excel')">📤 ייצוא Excel</button>
+      <button class="io-tab" id="ioTab-print"  onclick="switchIOTab('print')">🖨️ דוחות והדפסות</button>
+      <button class="io-tab" id="ioTab-labels" onclick="switchIOTab('labels')">🏷️ מדבקות</button>
+      <button class="io-tab" id="ioTab-import" onclick="switchIOTab('import')">📥 ייבוא</button>
+    </div>
+    <div class="modal-body" style="background:var(--bg-app)">
+
+      <div id="ioPane-excel" class="io-grid" style="display:none">
+        <div class="io-sec">ייצוא לפי הסינון הפעיל בעמוד</div>
+        <button class="io-item" onclick="closeModal('ioCenterModal');quickExcelExport('donors')"><span class="ic">👥</span><span><span class="tt">תורמים</span><span class="st" style="display:block">הרשימה המסוננת הנוכחית</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');quickExcelExport('donations')"><span class="ic">💰</span><span><span class="tt">תרומות</span><span class="st" style="display:block">לפי סינון פאנל התרומות</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');quickExcelExport('fundraisers')"><span class="ic">🎓</span><span><span class="tt">מתרימים</span><span class="st" style="display:block">רשימת המתרימים</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');exportGroupsReport()"><span class="ic">👥</span><span><span class="tt">קבוצות</span><span class="st" style="display:block">קוד, וועד, חברים, גיוס</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');exportExpensesExcel()"><span class="ic">💸</span><span><span class="tt">הוצאות</span><span class="st" style="display:block">טבלת ההוצאות</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');exportExcel()"><span class="ic">🗄️</span><span><span class="tt">גיבוי מלא</span><span class="st" style="display:block">תורמים + תרומות + עתידיות</span></span></button>
+        <div class="io-sec">מתקדם</div>
+        <button class="io-item" style="grid-column:1/-1" onclick="closeModal('ioCenterModal');openExportWizard(_ioContext)"><span class="ic">🧙</span><span><span class="tt">אשף ייצוא מתקדם</span><span class="st" style="display:block">סינון מפורט, בחירת עמודות, Excel / PDF / חבילות מתרימים</span></span></button>
       </div>
+
+      <div id="ioPane-print" class="io-grid" style="display:none">
+        <div class="io-sec">דוחות תורמים</div>
+        <button class="io-item" onclick="closeModal('ioCenterModal');openReportsModal()"><span class="ic">📊</span><span><span class="tt">דוח תורמים מתקדם</span><span class="st" style="display:block">סינון לפי עיר, שכונה, מגבית, סכום ועוד</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');quickPdfExport('donors')"><span class="ic">📄</span><span><span class="tt">הדפסת רשימת תורמים</span><span class="st" style="display:block">לפי הסינון הנוכחי</span></span></button>
+        <div class="io-sec">גיוס וקבוצות</div>
+        <button class="io-item" onclick="closeModal('ioCenterModal');openFundraisingPrint()"><span class="ic">📋</span><span><span class="tt">גיליון התרמה</span><span class="st" style="display:block">לפי קבוצה / עיר / שכונה</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');printGroupsOverview()"><span class="ic">👥</span><span><span class="tt">סקירת קבוצות</span><span class="st" style="display:block">כל הקבוצות והחברים</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');rpPrint()"><span class="ic">🗺️</span><span><span class="tt">מסלולים</span><span class="st" style="display:block">כל המסלולים וסדרי העצירות</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');printCampaignSummary()"><span class="ic">📈</span><span><span class="tt">סיכום מגבית</span><span class="st" style="display:block">עמוד סיכום למגבית הפעילה</span></span></button>
+        <div class="io-sec">תרומות</div>
+        <button class="io-item" style="grid-column:1/-1" onclick="closeModal('ioCenterModal');printDonationsPanel()"><span class="ic">💰</span><span><span class="tt">הדפסת תרומות</span><span class="st" style="display:block">לפי הסינון בפאנל התרומות</span></span></button>
+      </div>
+
+      <div id="ioPane-labels" class="io-grid" style="display:none">
+        <button class="io-item" style="grid-column:1/-1" onclick="closeModal('ioCenterModal');openLabelsWizard()"><span class="ic">🏷️</span><span><span class="tt">מדבקות לתורמים</span><span class="st" style="display:block">פורמטים של Tanex · בחירת שדות, גופן וגודל · תצוגה מקדימה</span></span></button>
+      </div>
+
+      <div id="ioPane-import" class="io-grid" style="display:none">
+        <button class="io-item" onclick="closeModal('ioCenterModal');openImportModal()"><span class="ic">👥</span><span><span class="tt">ייבוא תורמים</span><span class="st" style="display:block">Excel / CSV עם ממפה עמודות</span></span></button>
+        <button class="io-item" onclick="closeModal('ioCenterModal');openFRImportModal()"><span class="ic">🎓</span><span><span class="tt">ייבוא מתרימים</span><span class="st" style="display:block">Excel עם ממפה עמודות</span></span></button>
+        <button class="io-item" style="grid-column:1/-1" onclick="closeModal('ioCenterModal');openNedarimImport()"><span class="ic">💳</span><span><span class="tt">ייבוא נדרים פלוס</span><span class="st" style="display:block">קובץ עסקאות — התאמה אוטומטית לתורמים</span></span></button>
+        <div style="grid-column:1/-1;font-size:11.5px;color:var(--muted);background:var(--stone-50);border:1px solid var(--stone-200);border-radius:8px;padding:8px 12px">💡 אחרי ייבוא תורמים המערכת תציע גיאוקוד מרוכז לכתובות החדשות.</div>
+      </div>
+
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" onclick="closeModal('printModal')">סגור</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('ioCenterModal')">סגור</button>
     </div>
   </div>
 </div>
@@ -2615,8 +2647,7 @@ tr:hover td { background: var(--primary-bg) }
       <div id="grpDateChips" class="gp-date-chips"></div>
       <div style="display:flex;gap:6px;flex-wrap:nowrap;margin-right:auto">
         <button class="btn btn-outline btn-sm" onclick="showPage('campaign')" title="ניהול תאריכי גיוס בפאנל המגביות">🗓️ תאריכים</button>
-        <button class="btn btn-outline btn-sm" onclick="printGroupsOverview()">🖨️</button>
-        <button class="btn btn-outline btn-sm" onclick="exportGroupsReport()">📊 דוח</button>
+        <button class="btn btn-navy btn-sm" onclick="openIOCenter('print','groups')">📦 ייצוא והדפסה</button>
         <button class="btn btn-gold btn-sm" onclick="openGroupModal()">+ קבוצה</button>
       </div>
     </div>
@@ -2652,10 +2683,16 @@ tr:hover td { background: var(--primary-bg) }
     <div style="display:flex;gap:6px;flex-wrap:nowrap;margin-right:auto">
       <button class="btn btn-gold btn-sm" onclick="openCreateRoutesWiz()">✨ צור מסלולים</button>
       <button class="btn btn-outline btn-sm" onclick="rpOpenFailedModal()" id="rpFailedBtn" title="תורמים שכתובתם לא זוהתה">⚠️ <span id="rpFailedCount">0</span> ללא מיקום</button>
-      <button class="btn btn-outline btn-sm" onclick="openNbhEditor()">🏘️ שכונות</button>
-      <button class="btn btn-outline btn-sm" onclick="openGmapsSettings()" title="מפתח Google לגיאוקוד מדויק">🌐 Google</button>
-      <button class="btn btn-outline btn-sm" onclick="rpPrint()">🖨️</button>
-      <button class="btn btn-danger btn-sm" onclick="rpClearAll()">🗑️</button>
+      <div class="more-menu">
+        <button class="btn btn-outline btn-sm" onclick="toggleMoreMenu('routesMoreMenu')">⋯ עוד</button>
+        <div class="more-menu-list" id="routesMoreMenu">
+          <button class="more-menu-item" onclick="toggleMoreMenu('routesMoreMenu');rpPrint()">🖨️ הדפסת מסלולים</button>
+          <button class="more-menu-item" onclick="toggleMoreMenu('routesMoreMenu');openNbhEditor()">🏘️ כללי שכונות</button>
+          <button class="more-menu-item" onclick="toggleMoreMenu('routesMoreMenu');openGmapsSettings()">🌐 הגדרות Google</button>
+          <hr class="more-menu-sep">
+          <button class="more-menu-item danger" onclick="toggleMoreMenu('routesMoreMenu');rpClearAll()">🗑️ מחיקת כל המסלולים</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3177,8 +3214,8 @@ tr:hover td { background: var(--primary-bg) }
       <div style="background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--primary-dark);margin-bottom:14px;line-height:1.7">
         עם מפתח Google — השלמת כתובות תוך כדי הקלדה, זיהוי מיקום מדויק ומהיר, ותצוגות מפה של Google.<br>
         1. <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" style="color:var(--primary)">Google Cloud Console → Maps Platform</a> — צור מפתח API<br>
-        2. הפעל שני שירותים: <strong>Geocoding API</strong> (השלמה + מיקום) ו-<strong>Maps Embed API</strong> (תצוגת מפה — חינמי לחלוטין)<br>
-        3. מומלץ: הגבל את המפתח לשני השירותים האלה + הגדר תקרת שימוש יומית<br>
+        2. הפעל שלושה שירותים: <strong>Geocoding API</strong> (השלמה + מיקום), <strong>Maps Embed API</strong> (תצוגה בכרטיס תורם — חינמי), ו-<strong>Maps JavaScript API</strong> (מפת המסלולים האינטראקטיבית)<br>
+        3. מומלץ: הגבל את המפתח לשלושת השירותים האלה + הגדר תקרת שימוש יומית<br>
         <span style="color:var(--muted)">ללא מפתח — המערכת ממשיכה עם OpenStreetMap (חינמי, איטי ופחות מדויק).</span>
       </div>
       <div class="fg">
@@ -6661,96 +6698,9 @@ function printGroupReport(grpId) {
 
 
 // Tanex label formats
-const TANEX_FORMATS = {
-  '70x42': { cols:3, rows:7, w:70, h:42, label:'70×42 מ"מ (21 לדף)' },
-  '70x29': { cols:3, rows:10, w:70, h:29.7, label:'70×29.7 מ"מ (30 לדף)' },
-  '105x42': { cols:2, rows:7, w:105, h:42, label:'105×42 מ"מ (14 לדף)' },
-};
-
-function openLabelsModal() {
-  // Show donor selection + format picker
-  if(!document.getElementById('labelsModal')) {
-    const modal = document.createElement('div');
-    modal.id='labelsModal';
-    modal.className='modal-overlay';
-    modal.innerHTML=`<div class="modal" style="width:520px">
-      <div class="modal-header"><h3>🏷️ הדפסת מדבקות</h3><button class="modal-close" onclick="closeModal('labelsModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="fg"><label class="form-label">פורמט מדבקה</label>
-          <select class="form-control" id="lb_format">
-            ${Object.entries(TANEX_FORMATS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}
-          </select>
-        </div>
-        <div class="fg" style="margin-top:10px"><label class="form-label">תורמים</label>
-          <select class="form-control" id="lb_source">
-            <option value="filtered">מוצגים כרגע בטבלה</option>
-            <option value="all">כל התורמים</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline btn-sm" onclick="closeModal('labelsModal')">ביטול</button>
-        <button class="btn btn-navy" onclick="printLabels()">🖨️ הדפס מדבקות</button>
-      </div>
-    </div>`;
-    document.getElementById('app').appendChild(modal);
-  }
-  openModal('labelsModal');
-}
-
-function printLabels() {
-  const fmt = TANEX_FORMATS[document.getElementById('lb_format')?.value||'70x42'];
-  const source = document.getElementById('lb_source')?.value||'filtered';
-  const donors = source==='filtered' && filteredRows?.length ? filteredRows : DB.donors;
-  
-  const S = getSettings();
-  // Build label HTML
-  const pageW = 210, pageH = 297;
-  const marginL = (pageW - fmt.cols*fmt.w) / 2;
-  const marginT = (pageH - fmt.rows*fmt.h) / 2;
-  
-  const labels = donors.map((d,i) => {
-    const closing = d.closingName || '';
-    const title = d.title||'';
-    const name = donorName(d);
-    const addr = d.address||'';
-    const city = '';  // parse city from address if needed
-    return `<div class="label" style="position:absolute;
-      left:${marginL + (i%fmt.cols)*fmt.w}mm;
-      top:${marginT + Math.floor(i/fmt.cols)*fmt.h}mm;
-      width:${fmt.w-4}mm;height:${fmt.h-3}mm;
-      overflow:hidden;padding:2mm 3mm;box-sizing:border-box">
-      <div style="font-size:9pt;font-weight:700">לכבוד ${escHtml(title)} ${escHtml(name)}</div>
-      <div style="font-size:8pt;margin-top:1mm">${escHtml(addr)}</div>
-      ${closing?`<div style="font-size:7pt;color:#555;margin-top:1mm">${escHtml(closing)}</div>`:''}
-    </div>`;
-  });
-  
-  // Group into pages
-  const perPage = fmt.cols * fmt.rows;
-  const pages = [];
-  for(let p=0; p<Math.ceil(labels.length/perPage); p++) {
-    pages.push(`<div style="position:relative;width:210mm;height:297mm;page-break-after:always">
-      ${labels.slice(p*perPage,(p+1)*perPage).join('')}
-    </div>`);
-  }
-  
-  const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-    <title>מדבקות</title>
-    <style>
-      *{box-sizing:border-box}
-      body{margin:0;padding:0;font-family:Arial,sans-serif;direction:rtl}
-      .label{border:0.5pt dotted #ccc}
-      @page{size:A4;margin:0}
-      @media print{.label{border:none}}
-    </style></head><body>
-    ${pages.join('')}
-    <script>window.onload=()=>window.print();<\/script>
-    </body></html>`);
-  w.document.close();
-  closeModal('labelsModal');
-}
+// The simple labels modal was consolidated into the Labels Wizard
+// (openLabelsWizard) — one label system, richer options.
+function openLabelsModal() { openIOCenter('labels'); }
 
 
 // ══════════════════════════════════════════════════════
@@ -6885,7 +6835,37 @@ function printReport() {
 // ══════════════════════════════════════════════════════
 // PRINT MODAL
 // ══════════════════════════════════════════════════════
-function openPrintModal() { openModal('printModal'); }
+function openPrintModal() { openIOCenter('print'); }
+
+// ── Unified Import/Export Center ──
+let _ioContext = 'donors';
+function openIOCenter(tab, context) {
+  if (context) _ioContext = context;
+  switchIOTab(tab || 'excel');
+  openModal('ioCenterModal');
+}
+function switchIOTab(tab) {
+  ['excel','print','labels','import'].forEach(t => {
+    const pane = document.getElementById('ioPane-'+t);
+    const btn  = document.getElementById('ioTab-'+t);
+    if (pane) pane.style.display = t===tab ? 'grid' : 'none';
+    if (btn) btn.classList.toggle('active', t===tab);
+  });
+}
+
+// ── Overflow "more" menus ──
+function toggleMoreMenu(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.more-menu-list.open').forEach(m => m.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.more-menu')) {
+    document.querySelectorAll('.more-menu-list.open').forEach(m => m.classList.remove('open'));
+  }
+});
 
 // ══════════════════════════════════════════════════════
 // LABELS WIZARD
@@ -7672,9 +7652,11 @@ function grpNameById(id) {
 }
 
 function toggleDonAssignType() {
-  const t = document.getElementById('nd_don_type').value;
-  document.getElementById('nd_fr_box').style.display = t==='fr' ? '' : 'none';
-  document.getElementById('nd_grp_box').style.display = t==='group' ? '' : 'none';
+  const t = document.getElementById('nd_don_type')?.value || 'fr';
+  const fr = document.getElementById('nd_fr_wrap');
+  const gr = document.getElementById('nd_grp_wrap');
+  if (fr) fr.style.display = t==='fr' ? '' : 'none';
+  if (gr) gr.style.display = t==='group' ? '' : 'none';
 }
 
 
@@ -9585,6 +9567,12 @@ function saveGmapsKey() {
   if (!DB.settings) DB.settings = {};
   DB.settings.googleMapsKey = document.getElementById('gmapsKeyInput').value.trim();
   saveDB();
+  // routes map: switch backend on next render if it was built as Leaflet
+  if (typeof _rpMap !== 'undefined' && _rpMap && _rpMapImpl === 'leaflet' && DB.settings.googleMapsKey) {
+    try { _rpMap.remove(); } catch(e){}
+    _rpMap = null; _rpMapImpl = null; _rpMapLayers = {};
+    const el = document.getElementById('rpMainMap'); if (el) el.innerHTML='';
+  }
   closeModal('gmapsModal');
   toast(DB.settings.googleMapsKey ? '✓ מפתח Google נשמר — הגיאוקוד יעבוד דרך Google' : '✓ נשמר — הגיאוקוד יעבוד דרך OpenStreetMap');
 }
@@ -10048,8 +10036,7 @@ function renderRoutesPage() {
   // Sidebar
   rpRenderSidebar(routes, '');
   // Map
-  rpInitMap();
-  rpDrawAllRoutes(routes);
+  rpInitMap().then(() => rpDrawAllRoutes(routes));
 }
 
 function rpRenderSidebar(routes, q) {
@@ -10115,9 +10102,52 @@ function rpFilterSidebar() {
 }
 
 // ── Map ──
-function rpInitMap() {
+// ── Map backend: Google Maps JS SDK when a key is configured, Leaflet/OSM
+//    fallback otherwise. All route drawing goes through this adapter. ──
+let _rpMapImpl = null; // 'google' | 'leaflet'
+
+function _loadGoogleMapsSDK(key) {
+  if (window.google && window.google.maps && window.google.maps.Map) return Promise.resolve(true);
+  if (window._gmapsSDKPromise) return window._gmapsSDKPromise;
+  window._gmapsSDKPromise = new Promise((resolve) => {
+    window._gmapsSDKReady = () => resolve(true);
+    const s = document.createElement('script');
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&language=iw&region=IL&callback=_gmapsSDKReady';
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+    setTimeout(() => resolve(!!(window.google && window.google.maps && window.google.maps.Map)), 8000);
+  });
+  return window._gmapsSDKPromise;
+}
+
+function _rpRemoveLayer(l) {
+  try { if (l.setMap) l.setMap(null); else if (l.remove) l.remove(); } catch(e){}
+}
+
+async function rpInitMap() {
+  const key = getGoogleMapsKey();
+  // a key was added after the map came up as Leaflet → rebuild with Google
+  if (_rpMap && _rpMapImpl === 'leaflet' && key) {
+    try { _rpMap.remove(); } catch(e){}
+    _rpMap = null; _rpMapLayers = {};
+    document.getElementById('rpMainMap').innerHTML = '';
+  }
   if (_rpMap) return; // already inited
+  if (key) {
+    const ok = await _loadGoogleMapsSDK(key);
+    if (ok && window.google && google.maps && google.maps.Map) {
+      _rpMapImpl = 'google';
+      _rpMap = new google.maps.Map(document.getElementById('rpMainMap'), {
+        center: {lat:31.7683, lng:35.2137}, zoom: 12,
+        mapTypeControl: false, streetViewControl: false,
+        fullscreenControl: true, clickableIcons: false,
+      });
+      return;
+    }
+    console.warn('Google Maps SDK unavailable — falling back to Leaflet');
+  }
   if (typeof L === 'undefined') return;
+  _rpMapImpl = 'leaflet';
   _rpMap = L.map('rpMainMap', {zoomControl:true, attributionControl:false});
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_rpMap);
   _rpMap.setView([31.7683,35.2137], 12); // default: Jerusalem
@@ -10126,19 +10156,27 @@ function rpInitMap() {
 function rpDrawAllRoutes(routes) {
   if (!_rpMap) return;
   // Clear existing layers
-  Object.values(_rpMapLayers).forEach(layers => layers.forEach(l=>l.remove()));
+  Object.values(_rpMapLayers).forEach(layers => layers.forEach(_rpRemoveLayer));
   _rpMapLayers = {};
-  const allBounds = [];
 
+  const pts = [];
   routes.forEach(r => {
-    const layers = rpDrawRoute(r, false);
-    _rpMapLayers[r.id] = layers;
-    layers.forEach(l => { if(l.getLatLng) allBounds.push(l.getLatLng()); else if(l.getLatLngs) l.getLatLngs().forEach(ll=>allBounds.push(ll)); });
+    _rpMapLayers[r.id] = rpDrawRoute(r, false);
+    (r.donors||[]).forEach(id => {
+      const d = DB.donors.find(x=>x.id===id);
+      if (d && d.lat && d.lng) pts.push({lat:d.lat, lng:d.lng});
+    });
   });
-
-  if (allBounds.length > 0) {
-    try { _rpMap.fitBounds(L.latLngBounds(allBounds), {padding:[20,20], maxZoom:16}); } catch(e){}
-  }
+  if (!pts.length) return;
+  try {
+    if (_rpMapImpl === 'google') {
+      const b = new google.maps.LatLngBounds();
+      pts.forEach(p => b.extend(p));
+      _rpMap.fitBounds(b, 30);
+    } else {
+      _rpMap.fitBounds(L.latLngBounds(pts.map(p=>[p.lat,p.lng])), {padding:[20,20], maxZoom:16});
+    }
+  } catch(e){}
 }
 
 function rpDrawRoute(r, highlight) {
@@ -10147,14 +10185,36 @@ function rpDrawRoute(r, highlight) {
   if (!donors.length) return [];
   const layers = [];
   const color = r.color || '#2360d8';
-  const coords = donors.map(d=>[d.lat,d.lng]);
 
-  // Line
+  if (_rpMapImpl === 'google') {
+    const path = donors.map(d => ({lat:d.lat, lng:d.lng}));
+    if (path.length > 1) {
+      const line = new google.maps.Polyline({
+        path, map:_rpMap, strokeColor:color,
+        strokeWeight: highlight?4:2.5, strokeOpacity: highlight?.85:.55,
+      });
+      line._isLine = true;
+      layers.push(line);
+    }
+    donors.forEach((d,i) => {
+      const marker = new google.maps.Marker({
+        position:{lat:d.lat, lng:d.lng}, map:_rpMap,
+        title:`${i+1}. ${donorName(d)}\n${d.address||''}`,
+        label:{ text:String(i+1), color:'#fff', fontSize:'11px', fontWeight:'700' },
+        icon:{ path: google.maps.SymbolPath.CIRCLE, scale:12, fillColor:color, fillOpacity:1, strokeColor:'#fff', strokeWeight:2 },
+      });
+      marker.addListener('click', () => rpOpenDetail(r.id));
+      layers.push(marker);
+    });
+    return layers;
+  }
+
+  // Leaflet fallback
+  const coords = donors.map(d=>[d.lat,d.lng]);
   if (coords.length > 1) {
     const line = L.polyline(coords, {color, weight:highlight?4:2.5, opacity:highlight?.85:.55, dashArray:highlight?null:'4,3'}).addTo(_rpMap);
     layers.push(line);
   }
-  // Markers
   donors.forEach((d,i) => {
     const ic = L.divIcon({
       className:'',
@@ -10181,8 +10241,15 @@ function rpSelectRoute(id) {
     if (r) {
       const donors = (r.donors||[]).map(i=>DB.donors.find(d=>d.id===i)).filter(d=>d&&d.lat&&d.lng);
       if (donors.length) {
-        const bounds = donors.map(d=>[d.lat,d.lng]);
-        try { _rpMap.fitBounds(L.latLngBounds(bounds),{padding:[30,30],maxZoom:17}); } catch(e){}
+        try {
+          if (_rpMapImpl === 'google') {
+            const b = new google.maps.LatLngBounds();
+            donors.forEach(d => b.extend({lat:d.lat, lng:d.lng}));
+            _rpMap.fitBounds(b, 40);
+          } else {
+            _rpMap.fitBounds(L.latLngBounds(donors.map(d=>[d.lat,d.lng])),{padding:[30,30],maxZoom:17});
+          }
+        } catch(e){}
       }
     }
   }
@@ -10190,6 +10257,7 @@ function rpSelectRoute(id) {
   Object.entries(_rpMapLayers).forEach(([rid,layers]) => {
     layers.forEach(l => {
       if (l.setStyle) l.setStyle({opacity: rid===id?.85:.25, weight: rid===id?4:2});
+      else if (l._isLine && l.setOptions) l.setOptions({strokeOpacity: rid===id?.85:.25, strokeWeight: rid===id?4:2});
     });
   });
 }
@@ -10243,7 +10311,7 @@ function rpDrop(e,toIdx,rid) {
   r.donors=arr; _rpDragFromIdx=null;
   rpRenderDetailBody(r);
   // Redraw this route on map
-  (_rpMapLayers[rid]||[]).forEach(l=>l.remove());
+  (_rpMapLayers[rid]||[]).forEach(_rpRemoveLayer);
   _rpMapLayers[rid] = rpDrawRoute(r, true);
 }
 
@@ -10259,7 +10327,7 @@ function rpDeleteRoute(id) {
   if (!confirm('למחוק מסלול זה?')) return;
   DB.routes = (DB.routes||[]).filter(r=>r.id!==id);
   (DB.groups||[]).forEach(g => { g.routeIds = (g.routeIds||[]).filter(rid => rid !== id); });
-  (_rpMapLayers[id]||[]).forEach(l=>l.remove());
+  (_rpMapLayers[id]||[]).forEach(_rpRemoveLayer);
   delete _rpMapLayers[id];
   saveDB(); renderRoutesPage();
 }
@@ -10269,7 +10337,7 @@ function rpClearAll() {
   if (!confirm('למחוק את כל המסלולים? (השיוכים לקבוצות ינוקו גם)')) return;
   DB.routes=[];
   (DB.groups||[]).forEach(g => { g.routeIds = []; });
-  Object.values(_rpMapLayers).forEach(layers=>layers.forEach(l=>l.remove()));
+  Object.values(_rpMapLayers).forEach(layers=>layers.forEach(_rpRemoveLayer));
   _rpMapLayers={};
   saveDB(); renderRoutesPage();
 }
