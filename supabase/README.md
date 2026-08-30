@@ -51,6 +51,7 @@ supabase functions deploy yemot-ivr      # אופציונלי — רק אם יש
 2. Dashboard → **Authentication → Users → Add user** → צור את המשתמש הראשון שלך (מייל + סיסמה).
    > המשתמש הראשון שמתחבר לאפליקציה הופך אוטומטית ל**מנהל ראשי (superadmin)**.
 3. **חשוב:** Dashboard → **Authentication → Sign In / Providers** → כבה **"Allow new users to sign up"**, כדי שרק מנהל יוכל להוסיף משתמשים.
+3b. **לאיפוס סיסמה:** Dashboard → **Authentication → URL Configuration** → הגדר **Site URL** לכתובת שבה האתר מתארח (וגם ב-Redirect URLs). בלי זה קישור "שכחתי סיסמה" במייל לא יחזיר את המשתמש לאתר.
 4. הוספת משתמשים נוספים בהמשך: צור אותם ב-Dashboard (Add user), ואז במערכת (פאנל ניהול → משתמשים) הוסף שורה עם אותו **מייל** והגדר תפקיד. הסיסמה מנוהלת ב-Supabase Auth בלבד.
 
 ### 5. חיבור האפליקציה (index.html) לפרויקט החדש
