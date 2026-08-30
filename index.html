@@ -3902,8 +3902,8 @@ async function renderPresenceList() {
       return `<div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 14px">
         <span style="width:9px;height:9px;border-radius:50%;background:#16a34a;box-shadow:0 0 6px #16a34a;animation:pulse 2s infinite;flex-shrink:0"></span>
         <div>
-          <div style="font-weight:700;font-size:13px;color:#15803d">${name}</div>
-          <div style="font-size:11px;color:#64748b">${page ? '📄 '+page+' · ' : ''}${since ? '⏱ '+since : ''}</div>
+          <div style="font-weight:700;font-size:13px;color:#15803d">${escHtml(name)}</div>
+          <div style="font-size:11px;color:#64748b">${page ? '📄 '+escHtml(page)+' · ' : ''}${since ? '⏱ '+since : ''}</div>
         </div>
       </div>`;
     }).join('');
@@ -4467,7 +4467,7 @@ function renderDashCore() {
     const pct = goal>0?Math.min((raised/goal)*100,100):0;
     const over = raised>=goal&&goal>0;
     box.innerHTML = `<div class="card" style="margin-bottom:20px">
-      <div class="card-header"><h3>🎯 מגבית פעילה: ${ac.name}</h3><button class="btn btn-outline btn-sm" onclick="showPage('campaign')">לפאנל המגבית</button></div>
+      <div class="card-header"><h3>🎯 מגבית פעילה: ${escHtml(ac.name)}</h3><button class="btn btn-outline btn-sm" onclick="showPage('campaign')">לפאנל המגבית</button></div>
       <div class="card-body">${typeof countdownHtml !== 'undefined' ? countdownHtml : ''}
         <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
           <div class="stat-card ${over?'green':'red'}" style="padding:12px 16px">
@@ -4496,9 +4496,9 @@ function renderDashCore() {
   document.getElementById('recentDonations').innerHTML = recent.length===0
     ? '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">אין תרומות רשומות</td></tr>'
     : recent.map(dn=>`<tr>
-        <td><strong>${donorName(dn.donor)}</strong></td>
-        <td style="font-size:12px;color:var(--muted)">${campName(dn.campaignId)||'-'}</td>
-        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||grpNameById(dn.groupId||'')||'-'}</td>
+        <td><strong>${escHtml(donorName(dn.donor))}</strong></td>
+        <td style="font-size:12px;color:var(--muted)">${escHtml(campName(dn.campaignId)||'-')}</td>
+        <td style="font-size:12px;color:var(--muted)">${escHtml(frNameById(dn.fundraiserId)||grpNameById(dn.groupId||'')||'-')}</td>
         <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong></td>
         <td>${dateCell(dn.date)}</td>
         <td>${methodBadge(dn.method)}</td>
@@ -4625,24 +4625,24 @@ function sortAndRender() {
   body.innerHTML = pageRows.map(d => {
     const total = getTotal(d), maxD = getMax(d);
     const lastDon = (d.donations||[]).map(dn=>dn.date||'').filter(Boolean).sort().pop()||'';
-    const waBtn = d.mobile ? `<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${d.mobile}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()" title="WhatsApp">💬</button>` : '';
+    const waBtn = d.mobile ? `<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${escHtml(d.mobile)}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()" title="WhatsApp">💬</button>` : '';
     const emBtn = d.email  ? `<button class="btn-icon em" style="width:26px;height:26px;font-size:12px" onclick="openSendEmailModal('${d.id}');event.stopPropagation()" title="שלח מייל">✉️</button>` : '';
     const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" onchange="updateBulkBar()" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
     return `<tr onclick="openDonorModal('${d.id}')">
       ${cbHtml}
-      <td data-col="code"><strong>${d.code||''}</strong></td>
-      <td data-col="name">${donorName(d)}</td>
-      <td data-col="address" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.address||''}${d.entrance?' '+d.entrance:''}</td>
-      <td data-col="phones"><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">${d.phone?`<span style="font-size:11px">${d.phone}</span>`:''} ${d.mobile?`<span style="font-size:11px">${d.mobile}</span>`:''} ${waBtn}</div></td>
-      <td data-col="email"><div style="display:flex;gap:4px;align-items:center">${d.email?`<span style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:block">${d.email}</span>`:''} ${emBtn}</div></td>
-      <td data-col="affil"><span class="badge" style="background:var(--slate-200);color:var(--muted)">${d.affil||''}</span></td>
-      <td data-col="prefTime">${d.prefTime||''}</td>
+      <td data-col="code"><strong>${escHtml(d.code||'')}</strong></td>
+      <td data-col="name">${escHtml(donorName(d))}</td>
+      <td data-col="address" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(d.address||'')}${d.entrance?' '+escHtml(d.entrance):''}</td>
+      <td data-col="phones"><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">${d.phone?`<span style="font-size:11px">${escHtml(d.phone)}</span>`:''} ${d.mobile?`<span style="font-size:11px">${escHtml(d.mobile)}</span>`:''} ${waBtn}</div></td>
+      <td data-col="email"><div style="display:flex;gap:4px;align-items:center">${d.email?`<span style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:block">${escHtml(d.email)}</span>`:''} ${emBtn}</div></td>
+      <td data-col="affil"><span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(d.affil||'')}</span></td>
+      <td data-col="prefTime">${escHtml(d.prefTime||'')}</td>
       <td data-col="total"><strong style="color:var(--success)">₪${total.toLocaleString()}</strong></td>
       <td data-col="lastDon">${lastDon ? dateCell(lastDon) : ''}</td>
       <td data-col="maxDon">₪${maxD.toLocaleString()}</td>
       <td data-col="createdAt">${dateCell(d.createdAt?.split('T')[0]||'')}</td>
       <td data-col="updatedAt">${d.updatedAt ? dateCell(d.updatedAt.split('T')[0]) : '—'}</td>
-      <td data-col="idNumber">${d.idNumber||''}</td>
+      <td data-col="idNumber">${escHtml(d.idNumber||'')}</td>
       <td data-col="status">${statusBadge(d.status)}</td>
       <td data-col="rating">${ratingStars(d.rating)}</td>
       <td data-col="bond">${bondBadge(calcBondScore(d))}</td>
@@ -4728,7 +4728,7 @@ function fillForm(d) {
   const frSel = document.getElementById('f_fundraiserId');
   if (frSel) {
     frSel.innerHTML = '<option value="">-- ללא --</option>' +
-      (DB.fundraisers||[]).map(f => `<option value="${f.id}"${d.fundraiserId===f.id?' selected':''}>${(f.firstName||'')} ${(f.lastName||'')} (${f.code||''})</option>`).join('');
+      (DB.fundraisers||[]).map(f => `<option value="${f.id}"${d.fundraiserId===f.id?' selected':''}>${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')} (${escHtml(f.code||'')})</option>`).join('');
   }
   // Default status to 'active' if not set
   const statusEl=document.getElementById('f_status');
@@ -4928,11 +4928,11 @@ function renderDonationsTab() {
     :(d.donations||[]).map((dn,i)=>`<tr>
         <td>${fmt(dn.date)}</td>
         <td style="font-size:11px;color:var(--muted)">${toHeb(dn.date)}</td>
-        <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong>${dn.originalCurrency?`<span style="font-size:10px;color:var(--muted);display:block">${dn.originalAmount} ${dn.originalCurrency}</span>`:''}</td>
+        <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong>${dn.originalCurrency?`<span style="font-size:10px;color:var(--muted);display:block">${dn.originalAmount} ${escHtml(dn.originalCurrency)}</span>`:''}</td>
         <td>${methodBadge(dn.method)}</td>
-        <td style="font-size:12px;color:var(--muted)">${campName(dn.campaignId)||''}</td>
-        <td style="font-size:12px;color:var(--muted)">${frNameById(dn.fundraiserId)||''}</td>
-        <td>${dn.notes||''}</td>
+        <td style="font-size:12px;color:var(--muted)">${escHtml(campName(dn.campaignId)||'')}</td>
+        <td style="font-size:12px;color:var(--muted)">${escHtml(frNameById(dn.fundraiserId)||'')}</td>
+        <td>${escHtml(dn.notes||'')}</td>
         <td style="white-space:nowrap">${ce?`<button class="btn btn-outline btn-sm" onclick="editDonation(${i})">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteDonation(${i})">🗑️</button>`:''}</td>
       </tr>`).join('');
 }
@@ -5086,8 +5086,8 @@ function renderFutureTab() {
           <div class="fi-date">${f.date?fmt(f.date):'תאריך לא נקבע'}</div>
           ${f.date?`<div class="fi-heb">${toHeb(f.date)}</div>`:''}
           ${f.expectedAmount?`<div class="fi-amount">💰 סכום צפוי: <strong>₪${parseFloat(f.expectedAmount).toLocaleString()}</strong></div>`:''}
-          ${campName(f.campaignId)?`<div class="fi-amount" style="font-size:12px;color:var(--muted)">🎯 ${campName(f.campaignId)}</div>`:''}
-          ${f.notes?`<div class="fi-notes">📝 ${f.notes}</div>`:''}
+          ${campName(f.campaignId)?`<div class="fi-amount" style="font-size:12px;color:var(--muted)">🎯 ${escHtml(campName(f.campaignId))}</div>`:''}
+          ${f.notes?`<div class="fi-notes">📝 ${escHtml(f.notes)}</div>`:''}
         </div>
         ${can('edit')?`<div class="future-item-actions">
           <button class="btn btn-outline btn-sm" onclick="editFuture(${i})">✏️</button>
@@ -5197,16 +5197,16 @@ function renderFuturePage() {
   body.innerHTML=rows.length===0
     ?`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">אין תרומות עתידיות</td></tr>`
     :rows.map(({donor:d,f,fi})=>{
-        const waBtn=d.mobile?`<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${d.mobile}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()">💬</button>`:'';
+        const waBtn=d.mobile?`<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${escHtml(d.mobile)}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()">💬</button>`:'';
         return `<tr style="cursor:pointer" onclick="openDonorAndFuture('${d.id}',${fi})">
-          <td><strong>${donorName(d)}</strong></td>
-          <td style="font-size:12px;color:var(--muted)">${d.code||''}</td>
-          <td><span class="badge" style="background:var(--slate-200);color:var(--muted)">${d.affil||''}</span></td>
+          <td><strong>${escHtml(donorName(d))}</strong></td>
+          <td style="font-size:12px;color:var(--muted)">${escHtml(d.code||'')}</td>
+          <td><span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(d.affil||'')}</span></td>
           <td>${f.date?`<strong>${fmt(f.date)}</strong>`:'<span style="color:var(--muted)">-</span>'}</td>
           <td style="font-size:11px;color:var(--muted)">${f.date?toHeb(f.date):''}</td>
           <td>${f.expectedAmount?`<strong style="color:var(--purple)">₪${parseFloat(f.expectedAmount).toLocaleString()}</strong>`:'<span style="color:var(--muted)">לא צוין</span>'}</td>
-          <td style="max-width:200px;white-space:normal">${f.notes||''}</td>
-          <td><div style="display:flex;gap:4px;align-items:center">${d.mobile?`<span style="font-size:11px">${d.mobile}</span>`:''} ${waBtn}</div></td>
+          <td style="max-width:200px;white-space:normal">${escHtml(f.notes||'')}</td>
+          <td><div style="display:flex;gap:4px;align-items:center">${d.mobile?`<span style="font-size:11px">${escHtml(d.mobile)}</span>`:''} ${waBtn}</div></td>
           <td onclick="event.stopPropagation()">
             ${canE?`<div class="row-actions"><button class="btn btn-outline btn-sm" onclick="openDonorAndFuture('${d.id}',${fi})">✏️</button><button class="btn btn-gold btn-sm" onclick="confirmFutureDonation('${d.id}',${fi})" title="אישור קבלת תרומה">✅ אישור</button><button class="btn btn-danger btn-sm" onclick="deleteFutureFromPage('${d.id}',${fi})">🗑️</button></div>`:''}
           </td>
@@ -5246,10 +5246,10 @@ function renderRelTab() {
         }
         return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-app);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:7px">
           <div style="cursor:${onclick?'pointer':'default'}" ${onclick}>
-            <strong style="color:var(--primary)">${name}</strong>
-            <span class="badge" style="background:var(--purple-bg);color:var(--purple);margin-right:8px;font-size:11px">${r.type}</span>
+            <strong style="color:var(--primary)">${escHtml(name)}</strong>
+            <span class="badge" style="background:var(--purple-bg);color:var(--purple);margin-right:8px;font-size:11px">${escHtml(r.type)}</span>
             ${badge?`<span class="badge" style="background:var(--teal-bg);color:var(--teal);font-size:10px">${badge}</span>`:''}
-            <span style="font-size:11px;color:var(--muted);margin-right:4px">${code}</span>
+            <span style="font-size:11px;color:var(--muted);margin-right:4px">${escHtml(code)}</span>
           </div>
           ${can('edit')?`<button class="btn btn-danger btn-sm" onclick="deleteRel(${i})">הסר</button>`:''}
         </div>`;
@@ -5263,7 +5263,7 @@ function renderRelTab() {
   const townEl=document.getElementById('donorTownsList');
   const townContent=document.getElementById('donorTownsContent');
   if(towns.length>0 && townEl){
-    townContent.innerHTML=towns.map(t=>`<span style="display:inline-block;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin:2px;font-size:12px">🏘 ${t}</span>`).join('');
+    townContent.innerHTML=towns.map(t=>`<span style="display:inline-block;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin:2px;font-size:12px">🏘 ${escHtml(t)}</span>`).join('');
     townEl.style.display='';
   } else if(townEl) townEl.style.display='none';
   
@@ -5275,8 +5275,8 @@ function renderRelTab() {
     revContent.innerHTML=reverseRels.map(od=>{
       const myRel=(od.relations||[]).find(r=>r.donorId===currentDonorId);
       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-app);border-radius:8px;margin-bottom:6px;font-size:12px">
-        <span style="cursor:pointer;color:var(--primary);font-weight:600" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${od.id}'),100)">${donorName(od)}</span>
-        <span class="badge" style="background:var(--slate-100);color:var(--slate-600)">${myRel?myRel.type:''}</span>
+        <span style="cursor:pointer;color:var(--primary);font-weight:600" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${od.id}'),100)">${escHtml(donorName(od))}</span>
+        <span class="badge" style="background:var(--slate-100);color:var(--slate-600)">${escHtml(myRel?myRel.type:'')}</span>
       </div>`;
     }).join('');
     revEl.style.display='';
@@ -5309,7 +5309,7 @@ function openQuickDonationModalForDonor(d) {
   if(resultsEl) resultsEl.innerHTML = '';
   if(selEl) {
     selEl.style.display = d ? '' : 'none';
-    if(d) selEl.innerHTML = `✓ <strong>${donorName(d)}</strong> <span style="color:var(--muted);font-size:11px">${d.code||''} | ${d.affil||''}</span>`;
+    if(d) selEl.innerHTML = `✓ <strong>${escHtml(donorName(d))}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')} | ${escHtml(d.affil||'')}</span>`;
   }
   document.getElementById('qd_amount').value='';
   const qdCurr = document.getElementById('qd_currency'); if(qdCurr) qdCurr.value='ILS';
@@ -5363,7 +5363,7 @@ function searchQDDonor() {
   const q=document.getElementById('qd_search').value.trim().toLowerCase();
   const res=q.length<1?[]:DB.donors.filter(d=>donorName(d).toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)||(d.address||'').toLowerCase().includes(q)).slice(0,8);
   const notFoundBtn = q && res.length===0 ? `<div style="padding:8px 10px;cursor:pointer;border-radius:7px;background:var(--gold-bg);border:1px solid var(--gold);font-size:12px;color:var(--slate-900)" onclick="addDonorFromQD('${q.replace(/'/g,'\\\'')}')">➕ לא נמצא — הוסף תורם חדש</div>` : '';
-  document.getElementById('qd_results').innerHTML=res.map(d=>`<div style="padding:8px 10px;cursor:pointer;border-radius:7px;background:var(--bg-app);margin-bottom:4px;border:1px solid var(--border)" onclick="pickQDDonor('${d.id}')">${donorName(d)} <span style="color:var(--muted);font-size:11px">${d.code||''} ${d.address?'| '+d.address:''}</span></div>`).join('') + notFoundBtn;
+  document.getElementById('qd_results').innerHTML=res.map(d=>`<div style="padding:8px 10px;cursor:pointer;border-radius:7px;background:var(--bg-app);margin-bottom:4px;border:1px solid var(--border)" onclick="pickQDDonor('${d.id}')">${escHtml(donorName(d))} <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')} ${d.address?'| '+escHtml(d.address):''}</span></div>`).join('') + notFoundBtn;
 }
 function addDonorFromQD(prefill) {
   window._qdResumeAfterDonor = true;
@@ -5432,7 +5432,7 @@ function pickQDDonor(id) {
   document.getElementById('qd_results').innerHTML='';
   document.getElementById('qd_search').value=donorName(d);
   document.getElementById('qd_selected').style.display='';
-  document.getElementById('qd_selected').innerHTML=`✓ <strong>${donorName(d)}</strong> <span style="color:var(--muted);font-size:11px">${d.code||''} | ${d.affil||''}</span>`;
+  document.getElementById('qd_selected').innerHTML=`✓ <strong>${escHtml(donorName(d))}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')} | ${escHtml(d.affil||'')}</span>`;
 }
 
 function saveQuickDonation() {
@@ -5509,7 +5509,7 @@ function populateCampaignSelect(elId) {
   const ac=activeCampaign();
   el.innerHTML=`<option value="">ללא מגבית</option>`;
   DB.campaigns.forEach(c=>{
-    el.innerHTML+=`<option value="${c.id}"${c.id===ac?.id?' style="font-weight:700"':''}>${c.name}${c.active?' ★':''}</option>`;
+    el.innerHTML+=`<option value="${c.id}"${c.id===ac?.id?' style="font-weight:700"':''}>${escHtml(c.name)}${c.active?' ★':''}</option>`;
   });
 }
 
@@ -5557,13 +5557,13 @@ function buildCampFRStats(campId) {
     <div>
       <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">🏆 10 המתרימים המובילים</h4>
       <table class="t10"><thead><tr><th>#</th><th>שם</th><th>וועד</th><th>גייס</th></tr></thead><tbody>
-      ${frStats.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${(x.f.firstName||'')+' '+(x.f.lastName||'')}</td><td>${x.f.vaad||''}</td><td><strong style="color:var(--success)">₪${x.r.toLocaleString()}</strong></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--muted)">אין נתונים</td></tr>'}
+      ${frStats.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${escHtml((x.f.firstName||'')+' '+(x.f.lastName||''))}</td><td>${escHtml(x.f.vaad||'')}</td><td><strong style="color:var(--success)">₪${x.r.toLocaleString()}</strong></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--muted)">אין נתונים</td></tr>'}
       </tbody></table>
     </div>
     <div>
       <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">👥 10 הקבוצות המובילות</h4>
       <table class="t10"><thead><tr><th>#</th><th>קבוצה</th><th>קוד</th><th>גייסה</th></tr></thead><tbody>
-      ${grpStats.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${x.g.name}</td><td>${x.g.code||''}</td><td><strong style="color:var(--success)">₪${x.r.toLocaleString()}</strong></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--muted)">אין קבוצות</td></tr>'}
+      ${grpStats.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${escHtml(x.g.name)}</td><td>${escHtml(x.g.code||'')}</td><td><strong style="color:var(--success)">₪${x.r.toLocaleString()}</strong></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--muted)">אין קבוצות</td></tr>'}
       </tbody></table>
     </div>
   </div>
@@ -5572,7 +5572,7 @@ function buildCampFRStats(campId) {
     <table class="t10" style="width:auto"><thead><tr><th>וועד</th><th>גייס</th><th>מתרימים</th></tr></thead><tbody>
     ${vaadTop.map(([v,r])=>{
       const cnt = (DB.fundraisers||[]).filter(f=>f.vaad===v).length;
-      return `<tr><td><strong>${v}</strong></td><td><strong style="color:var(--success)">₪${r.toLocaleString()}</strong></td><td>${cnt}</td></tr>`;
+      return `<tr><td><strong>${escHtml(v)}</strong></td><td><strong style="color:var(--success)">₪${r.toLocaleString()}</strong></td><td>${cnt}</td></tr>`;
     }).join('')||'<tr><td colspan="3" style="padding:10px;color:var(--muted)">אין נתונים</td></tr>'}
     </tbody></table>
   </div>`;
@@ -5629,7 +5629,7 @@ function renderCampaignPage() {
     }
     html+=`<div class="card" style="border:2px solid var(--gold)">
       <div class="card-header" style="background:linear-gradient(135deg,var(--slate-900),#2a3f6b)">
-        <h3>🎯 ${ac.name} ${ac.year?'— '+ac.year:''} <span style="background:var(--gold);color:var(--slate-900);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:8px">פעילה</span></h3>
+        <h3>🎯 ${escHtml(ac.name)} ${ac.year?'— '+escHtml(ac.year):''} <span style="background:var(--gold);color:var(--slate-900);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:8px">פעילה</span></h3>
         ${``}
       </div>
       <div class="card-body">
@@ -5663,8 +5663,8 @@ function renderCampaignPage() {
     ${DB.campaigns.map(c=>{
       const raised=DB.donors.reduce((s,d)=>s+(d.donations||[]).filter(dn=>dn.campaignId===c.id).reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0),0);
       return `<tr>
-        <td><strong>${c.name}</strong></td>
-        <td>${c.year||''}</td>
+        <td><strong>${escHtml(c.name)}</strong></td>
+        <td>${escHtml(c.year||'')}</td>
         <td>₪${(parseFloat(c.goal)||0).toLocaleString()}</td>
         <td><strong style="color:var(--success)">₪${raised.toLocaleString()}</strong></td>
         <td>${fmt(c.deadline)}</td>
@@ -5692,9 +5692,9 @@ function renderCampMgmtList() {
   el.innerHTML = DB.campaigns.map(c => `
     <div style="background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
       <div>
-        <strong>${c.name}</strong>
+        <strong>${escHtml(c.name)}</strong>
         <span class="badge ${c.active?'b-cash':'b-other'}" style="margin-right:8px">${c.active?'פעילה':'לא פעילה'}</span>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">יעד: ₪${(c.goal||0).toLocaleString()} | ${c.year||''} | ${fmt(c.deadline)||''}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">יעד: ₪${(c.goal||0).toLocaleString()} | ${escHtml(c.year||'')} | ${fmt(c.deadline)||''}</div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-outline btn-sm" onclick="editCampaign('${c.id}')">✏️ ערוך</button>
@@ -5802,7 +5802,7 @@ function openSettingsModal(){
         <button class="btn btn-outline btn-sm" onclick="addSetting(${li})">+ הוסף</button>
       </div>
       <div id="slist_${li}">
-        ${lst.vals.map(v=>`<div class="setting-item" data-key="${lst.key}"><input class="form-control" value="${v}" style="flex:1"><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
+        ${lst.vals.map(v=>`<div class="setting-item" data-key="${lst.key}"><input class="form-control" value="${escHtml(v)}" style="flex:1"><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
       </div>
     </div>`).join('');
   openModal('settingsModal');
@@ -5839,7 +5839,7 @@ function refreshSelectsFromSettings() {
   const updateSelect = (id, vals, emptyLabel) => {
     const el = document.getElementById(id); if(!el) return;
     const cur = el.value;
-    el.innerHTML = (emptyLabel ? `<option value="">${emptyLabel}</option>` : '') + vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+    el.innerHTML = (emptyLabel ? `<option value="">${emptyLabel}</option>` : '') + vals.map(v=>`<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
     if(vals.includes(cur)) el.value = cur;
   };
   updateSelect('f_title', S.titles, 'ללא');
@@ -5855,7 +5855,7 @@ function populateSelectFromSettings(id, key, emptyLabel) {
   const S = getSettings();
   const el = document.getElementById(id); if(!el) return;
   const vals = S[key] || DEFAULT_SETTINGS[key] || [];
-  el.innerHTML = (emptyLabel !== undefined ? `<option value="">${emptyLabel}</option>` : '') + vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+  el.innerHTML = (emptyLabel !== undefined ? `<option value="">${emptyLabel}</option>` : '') + vals.map(v=>`<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
 }
 
 // ════════════════════════════════════════════════════
@@ -6140,7 +6140,7 @@ function exportExcel(){
 // ════════════════════════════════════════════════════
 function populateReportCampaigns(){
   const el=document.getElementById('rpt_camp');if(!el)return;
-  el.innerHTML=`<option value="">כל המגביות</option>`+DB.campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  el.innerHTML=`<option value="">כל המגביות</option>`+DB.campaigns.map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
 }
 
 // ════════════════════════════════════════════════════
@@ -6232,7 +6232,7 @@ function renderFundraisingDatesList() {
   }
   container.innerHTML = dates.map(fd => `
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:180px;cursor:pointer" onclick="openFundraisingDateModal('${fd.id}')">
-      <div style="font-weight:600;font-size:14px">${fd.label}</div>
+      <div style="font-weight:600;font-size:14px">${escHtml(fd.label)}</div>
       ${fd.date ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">📅 ${fd.date}</div>` : ''}
       <div style="font-size:11px;color:var(--muted);margin-top:2px">ספרה: ${fd.orderIndex||0}</div>
     </div>`).join('');
@@ -6388,12 +6388,12 @@ function renderDonationsPanel() {
         return `<tr onclick="openDonorById('${donor.id}')" style="cursor:pointer">
           <td style="white-space:nowrap">${fmt(r.date)}</td>
           <td style="font-size:11px;color:var(--muted)">${toHeb(r.date)}</td>
-          <td><strong>${donorName(donor)}</strong><br><span style="font-size:10px;color:var(--muted)">${donor.code||''}</span></td>
+          <td><strong>${escHtml(donorName(donor))}</strong><br><span style="font-size:10px;color:var(--muted)">${escHtml(donor.code||'')}</span></td>
           <td><strong style="color:var(--success)">₪${parseFloat(r.amount||0).toLocaleString()}</strong></td>
-          <td>${dn.method||''}</td>
-          <td style="font-size:11px">${r._campName||''}</td>
-          <td style="font-size:11px">${r._frLabel||''}</td>
-          <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis">${dn.notes||''}</td>
+          <td>${escHtml(dn.method||'')}</td>
+          <td style="font-size:11px">${escHtml(r._campName||'')}</td>
+          <td style="font-size:11px">${escHtml(r._frLabel||'')}</td>
+          <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis">${escHtml(dn.notes||'')}</td>
           <td onclick="event.stopPropagation()">
             ${can('edit') ? `<button class="btn btn-danger btn-sm" onclick="deleteDonFromPanel('${donor.id}',${r.idx})">🗑️</button>` : ''}
           </td>
@@ -6461,7 +6461,7 @@ function printGroupReport(grpId) {
   }).filter(Boolean);
   const w = window.open('','_blank','width=800,height=600');
   w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-    <title>דוח קבוצה — ${grp.name}</title>
+    <title>דוח קבוצה — ${escHtml(grp.name)}</title>
     <style>
       body{font-family:Arial,sans-serif;margin:40px;color:#17408f;direction:rtl}
       .org{font-size:22px;font-weight:900;color:#17408f;border-bottom:3px solid #c07d10;padding-bottom:8px;margin-bottom:6px}
@@ -6472,11 +6472,11 @@ function printGroupReport(grpId) {
       @media print{body{margin:20px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}
     </style></head><body>
     <div class="org">${ORG_NAME}</div>
-    <div class="camp">${ac?'מגבית: '+ac.name+' '+( ac.year||''):''}</div>
-    <div class="grp-title">קבוצה: ${grp.name}</div>
-    <div class="grp-code">קוד קבוצה: ${grp.code||'—'} | וועד: ${grp.vaad||'—'}</div>
+    <div class="camp">${ac?'מגבית: '+escHtml(ac.name)+' '+escHtml(ac.year||''):''}</div>
+    <div class="grp-title">קבוצה: ${escHtml(grp.name)}</div>
+    <div class="grp-code">קוד קבוצה: ${escHtml(grp.code||'—')} | וועד: ${escHtml(grp.vaad||'—')}</div>
     <h3 style="margin-top:20px;font-size:14px">חברי הקבוצה (${members.length})</h3>
-    <div>${members.map(m=>`<span class="member">${m}</span>`).join('')}</div>
+    <div>${members.map(m=>`<span class="member">${escHtml(m)}</span>`).join('')}</div>
     <div style="margin-top:30px;font-size:12px;color:#aaa">הודפס: ${new Date().toLocaleDateString('he-IL')}</div>
     <script>window.onload=()=>window.print();<\/script>
     </body></html>`);
@@ -6544,9 +6544,9 @@ function printLabels() {
       top:${marginT + Math.floor(i/fmt.cols)*fmt.h}mm;
       width:${fmt.w-4}mm;height:${fmt.h-3}mm;
       overflow:hidden;padding:2mm 3mm;box-sizing:border-box">
-      <div style="font-size:9pt;font-weight:700">לכבוד ${title} ${name}</div>
-      <div style="font-size:8pt;margin-top:1mm">${addr}</div>
-      ${closing?`<div style="font-size:7pt;color:#555;margin-top:1mm">${closing}</div>`:''}
+      <div style="font-size:9pt;font-weight:700">לכבוד ${escHtml(title)} ${escHtml(name)}</div>
+      <div style="font-size:8pt;margin-top:1mm">${escHtml(addr)}</div>
+      ${closing?`<div style="font-size:7pt;color:#555;margin-top:1mm">${escHtml(closing)}</div>`:''}
     </div>`;
   });
   
@@ -6592,10 +6592,10 @@ function openReportsModal() {
   fills.forEach(([id, vals]) => {
     const el = document.getElementById(id);
     if(!el) return;
-    el.innerHTML = '<option value="">הכל</option>' + vals.map(v=>`<option>${v}</option>`).join('');
+    el.innerHTML = '<option value="">הכל</option>' + vals.map(v=>`<option>${escHtml(v)}</option>`).join('');
   });
   const campEl = document.getElementById('rpt_camp');
-  if(campEl) campEl.innerHTML = '<option value="">הכל</option>' + DB.campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(campEl) campEl.innerHTML = '<option value="">הכל</option>' + DB.campaigns.map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
   runReport();
   openModal('reportsModal');
 }
@@ -6655,10 +6655,10 @@ function runReport() {
         const tot = dons.reduce((s,dn)=>s+parseFloat(dn.amount||0),0);
         const lastDate = dons.map(dn=>dn.date||'').sort().pop()||'';
         return `<tr style="border-bottom:1px solid var(--slate-200);cursor:pointer" onclick="openDonorById('${d.id}')">
-          <td style="padding:6px 10px"><strong>${d.title||''} ${donorName(d)}</strong></td>
-          <td style="padding:6px 10px;font-size:11px">${d.address||''}</td>
-          <td style="padding:6px 10px;font-size:11px">${d.phone||d.mobile||''}</td>
-          <td style="padding:6px 10px;font-size:11px">${d.affil||''}</td>
+          <td style="padding:6px 10px"><strong>${escHtml(d.title||'')} ${escHtml(donorName(d))}</strong></td>
+          <td style="padding:6px 10px;font-size:11px">${escHtml(d.address||'')}</td>
+          <td style="padding:6px 10px;font-size:11px">${escHtml(d.phone||d.mobile||'')}</td>
+          <td style="padding:6px 10px;font-size:11px">${escHtml(d.affil||'')}</td>
           <td style="padding:6px 10px;font-weight:700;color:var(--success)">\u20aa${Math.round(tot).toLocaleString()}</td>
           <td style="padding:6px 10px;font-size:11px">${fmt(lastDate)}</td>
         </tr>`;
@@ -6694,13 +6694,13 @@ function printReport() {
   const w = window.open('','_blank','width=1000,height=700');
   w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d3\u05d5\u05d7 \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</title><style>body{font-family:Arial,sans-serif;margin:20px 30px;color:#17408f;direction:rtl;font-size:11px}.org{font-size:18px;font-weight:900;border-bottom:3px solid #c07d10;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#17408f;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top;font-size:10px}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:10px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}</style></head><body>');
   w.document.write(`<div class="org">${ORG}</div>`);
-  w.document.write(`<div class="sub">${ac?ac.name+' '+(ac.year||''):''} | ${rows.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd | ${new Date().toLocaleDateString('he-IL')}</div>`);
-  w.document.write('<table><thead><tr><th>\u05e9\u05dd</th><th>\u05db\u05ea\u05d5\u05d1\u05ea</th><th>\u05d8\u05dc\u05e4\u05d5\u05df</th><th>\u05d4\u05e2\u05e8\u05d5\u05ea</th><th>\u05ea\u05e8\u05d5\u05de\u05d4 \u05d2\u05d1\u05d5\u05d4\u05d4</th>'+prev3.map(c=>`<th>${c.name}</th>`).join('')+'</tr></thead><tbody>');
+  w.document.write(`<div class="sub">${ac?escHtml(ac.name)+' '+escHtml(ac.year||''):''} | ${rows.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd | ${new Date().toLocaleDateString('he-IL')}</div>`);
+  w.document.write('<table><thead><tr><th>\u05e9\u05dd</th><th>\u05db\u05ea\u05d5\u05d1\u05ea</th><th>\u05d8\u05dc\u05e4\u05d5\u05df</th><th>\u05d4\u05e2\u05e8\u05d5\u05ea</th><th>\u05ea\u05e8\u05d5\u05de\u05d4 \u05d2\u05d1\u05d5\u05d4\u05d4</th>'+prev3.map(c=>`<th>${escHtml(c.name)}</th>`).join('')+'</tr></thead><tbody>');
   rows.forEach(d => {
     const dons=d.donations||[];
     const maxDon=Math.max(0,...dons.map(dn=>parseFloat(dn.amount||0)));
     const prev3Tots=prev3.map(c=>dons.filter(dn=>dn.campaignId===c.id).reduce((s,dn)=>s+parseFloat(dn.amount||0),0));
-    w.document.write(`<tr><td><strong>${d.title||''} ${donorName(d)}</strong></td><td>${d.address||''}</td><td>${[d.phone,d.mobile].filter(Boolean).join(' | ')}</td><td>${d.notes||''}</td><td style="text-align:center;font-weight:700">${maxDon>0?'\u20aa'+maxDon.toLocaleString():''}</td>${prev3Tots.map(t=>`<td style="text-align:center">${t>0?'\u20aa'+t.toLocaleString():''}</td>`).join('')}</tr>`);
+    w.document.write(`<tr><td><strong>${escHtml(d.title||'')} ${escHtml(donorName(d))}</strong></td><td>${escHtml(d.address||'')}</td><td>${escHtml([d.phone,d.mobile].filter(Boolean).join(' | '))}</td><td>${escHtml(d.notes||'')}</td><td style="text-align:center;font-weight:700">${maxDon>0?'\u20aa'+maxDon.toLocaleString():''}</td>${prev3Tots.map(t=>`<td style="text-align:center">${t>0?'\u20aa'+t.toLocaleString():''}</td>`).join('')}</tr>`);
   });
   w.document.write('</tbody></table>'+mapSection+'<div style="margin-top:10px;font-size:9px;color:#aaa">\u05d4\u05d5\u05d3\u05e4\u05e1: '+new Date().toLocaleDateString('he-IL')+'</div><script>window.onload=()=>window.print();<\/script></body></html>');
   w.document.close();
@@ -6723,7 +6723,7 @@ const LB_FMTS = {
 function openLabelsWizard() {
   closeModal('printModal');
   const grpSel = document.getElementById('lb_group_sel');
-  if(grpSel) grpSel.innerHTML = '<option value="">\u05db\u05dc \u05d4\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</option>' + DB.groups.map(g=>`<option value="${g.id}">${g.name} (${g.code||''})</option>`).join('');
+  if(grpSel) grpSel.innerHTML = '<option value="">\u05db\u05dc \u05d4\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</option>' + DB.groups.map(g=>`<option value="${g.id}">${escHtml(g.name)} (${escHtml(g.code||'')})</option>`).join('');
   const srcEl = document.getElementById('lb_source');
   if(srcEl) srcEl.onchange = function() {
     const el = document.getElementById('lb_group_sel');
@@ -6746,12 +6746,12 @@ function previewLabel() {
   let lines = [];
   if(showGreeting) lines.push('<div>\u05dc\u05db\u05d1\u05d5\u05d3</div>');
   const nameLine = [showTitle?sample.title||'':'', showName?donorName(sample):''].filter(Boolean).join(' ');
-  if(nameLine.trim()) lines.push(`<div><strong>${nameLine.trim()}</strong></div>`);
-  if(showClosing && sample.closingName) lines.push(`<div>${sample.closingName}</div>`);
-  if(showAddr && sample.address) lines.push(`<div>${sample.address}</div>`);
-  if(showPhone && (sample.phone||sample.mobile)) lines.push(`<div>${sample.phone||sample.mobile}</div>`);
+  if(nameLine.trim()) lines.push(`<div><strong>${escHtml(nameLine.trim())}</strong></div>`);
+  if(showClosing && sample.closingName) lines.push(`<div>${escHtml(sample.closingName)}</div>`);
+  if(showAddr && sample.address) lines.push(`<div>${escHtml(sample.address)}</div>`);
+  if(showPhone && (sample.phone||sample.mobile)) lines.push(`<div>${escHtml(sample.phone||sample.mobile)}</div>`);
   const prev = document.getElementById('lb_preview');
-  if(prev) prev.innerHTML = lines.map(l=>`<div style="font-family:${font};font-size:${fs}pt">${l}</div>`).join('');
+  if(prev) prev.innerHTML = lines.map(l=>`<div style="font-family:${escHtml(font)};font-size:${fs}pt">${l}</div>`).join('');
 }
 
 function runPrintLabels() {
@@ -6788,11 +6788,11 @@ function runPrintLabels() {
       let lines = [];
       if(showGreeting) lines.push('<div>\u05dc\u05db\u05d1\u05d5\u05d3</div>');
       const nl = [showTitle?d.title||'':'',showName?donorName(d):''].filter(Boolean).join(' ');
-      if(nl.trim()) lines.push(`<div><strong>${nl.trim()}</strong></div>`);
-      if(showClosing&&d.closingName) lines.push(`<div>${d.closingName}</div>`);
-      if(showAddr&&d.address) lines.push(`<div>${d.address}</div>`);
-      if(showPhone&&(d.phone||d.mobile)) lines.push(`<div>${d.phone||d.mobile}</div>`);
-      return `<div style="position:absolute;left:${fmt.ml+col*fmt.lw}mm;top:${fmt.mt+row2*fmt.lh}mm;width:${fmt.lw-4}mm;height:${fmt.lh-2}mm;overflow:hidden;padding:2mm 3mm;font-family:${font};font-size:${fs}pt;line-height:1.3;box-sizing:border-box">${lines.join('')}</div>`;
+      if(nl.trim()) lines.push(`<div><strong>${escHtml(nl.trim())}</strong></div>`);
+      if(showClosing&&d.closingName) lines.push(`<div>${escHtml(d.closingName)}</div>`);
+      if(showAddr&&d.address) lines.push(`<div>${escHtml(d.address)}</div>`);
+      if(showPhone&&(d.phone||d.mobile)) lines.push(`<div>${escHtml(d.phone||d.mobile)}</div>`);
+      return `<div style="position:absolute;left:${fmt.ml+col*fmt.lw}mm;top:${fmt.mt+row2*fmt.lh}mm;width:${fmt.lw-4}mm;height:${fmt.lh-2}mm;overflow:hidden;padding:2mm 3mm;font-family:${escHtml(font)};font-size:${fs}pt;line-height:1.3;box-sizing:border-box">${lines.join('')}</div>`;
     }).join('');
     pages.push(`<div style="position:relative;width:210mm;height:297mm;page-break-after:always">${divs}</div>`);
   }
@@ -6808,9 +6808,9 @@ function runPrintLabels() {
 function openFundraisingPrint() {
   closeModal('printModal');
   const grpSel = document.getElementById('frp_group');
-  if(grpSel) grpSel.innerHTML = '<option value="">\u05db\u05dc \u05d4\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</option>' + DB.groups.map(g=>`<option value="${g.id}">${g.name} (${g.code||''})</option>`).join('');
+  if(grpSel) grpSel.innerHTML = '<option value="">\u05db\u05dc \u05d4\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</option>' + DB.groups.map(g=>`<option value="${g.id}">${escHtml(g.name)} (${escHtml(g.code||'')})</option>`).join('');
   const campSel = document.getElementById('frp_camp');
-  if(campSel) campSel.innerHTML = '<option value="">\u05de\u05d2\u05d1\u05d9\u05ea \u05e4\u05e2\u05d9\u05dc\u05d4</option>' + DB.campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(campSel) campSel.innerHTML = '<option value="">\u05de\u05d2\u05d1\u05d9\u05ea \u05e4\u05e2\u05d9\u05dc\u05d4</option>' + DB.campaigns.map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
   openModal('frPrintModal');
 }
 
@@ -6861,15 +6861,15 @@ function runFrPrint() {
   const w = window.open('','_blank','width=1000,height=700');
   w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d2\u05d9\u05dc\u05d9\u05d5\u05df \u05d4\u05ea\u05e8\u05de\u05d4</title><style>body{font-family:Arial,sans-serif;margin:25px 30px;color:#17408f;direction:rtl;font-size:11px}.org{font-size:20px;font-weight:900;border-bottom:3px solid #c07d10;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:10px}.mbrs{background:#f0f4ff;padding:6px 12px;border-radius:6px;font-size:10px;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#17408f;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}td{max-height:none;word-break:break-word;overflow-wrap:break-word}}</style></head><body>`);
   w.document.write(`<div class="org">${ORG}</div>`);
-  w.document.write(`<div class="sub">${ac?ac.name+' '+(ac.year||''):''} ${grp?'| \u05e7\u05d1\u05d5\u05e6\u05d4: '+grp.name+' ('+grp.code+')':''} | ${donors.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</div>`);
-  if(members.length) w.document.write(`<div class="mbrs">\u05d7\u05d1\u05e8\u05d9 \u05d4\u05e7\u05d1\u05d5\u05e6\u05d4: ${members.join(' | ')}</div>`);
-  w.document.write('<table><thead><tr><th>\u05e9\u05dd</th><th>\u05db\u05ea\u05d5\u05d1\u05ea</th><th>\u05d8\u05dc\u05e4\u05d5\u05df</th><th>\u05d4\u05e2\u05e8\u05d5\u05ea</th><th>\u05ea\u05e8\u05d5\u05de\u05d4 \u05d2\u05d1\u05d5\u05d4\u05d4</th>'+prev3.map(c=>`<th>${c.name}</th>`).join('')+'</tr></thead><tbody>');
+  w.document.write(`<div class="sub">${ac?escHtml(ac.name)+' '+escHtml(ac.year||''):''} ${grp?'| \u05e7\u05d1\u05d5\u05e6\u05d4: '+escHtml(grp.name)+' ('+escHtml(grp.code)+')':''} | ${donors.length} \u05ea\u05d5\u05e8\u05de\u05d9\u05dd</div>`);
+  if(members.length) w.document.write(`<div class="mbrs">\u05d7\u05d1\u05e8\u05d9 \u05d4\u05e7\u05d1\u05d5\u05e6\u05d4: ${escHtml(members.join(' | '))}</div>`);
+  w.document.write('<table><thead><tr><th>\u05e9\u05dd</th><th>\u05db\u05ea\u05d5\u05d1\u05ea</th><th>\u05d8\u05dc\u05e4\u05d5\u05df</th><th>\u05d4\u05e2\u05e8\u05d5\u05ea</th><th>\u05ea\u05e8\u05d5\u05de\u05d4 \u05d2\u05d1\u05d5\u05d4\u05d4</th>'+prev3.map(c=>`<th>${escHtml(c.name)}</th>`).join('')+'</tr></thead><tbody>');
   donors.forEach(d => {
     const dons=d.donations||[];
     const maxDon=Math.max(0,...dons.map(dn=>parseFloat(dn.amount||0)));
     const prev3Tots=prev3.map(c=>dons.filter(dn=>dn.campaignId===c.id).reduce((s,dn)=>s+parseFloat(dn.amount||0),0));
     const tel=[d.phone,d.mobile].filter(Boolean).join(' | ');
-    w.document.write(`<tr><td>${d.title||''} ${donorName(d)}</td><td>${d.address||''}</td><td>${tel}</td><td>${d.notes||''}</td><td style="text-align:center;font-weight:700">${maxDon>0?'\u20aa'+maxDon.toLocaleString():''}</td>${prev3Tots.map(p=>`<td style="text-align:center">${p>0?'\u20aa'+p.toLocaleString():''}</td>`).join('')}</tr>`);
+    w.document.write(`<tr><td>${escHtml(d.title||'')} ${escHtml(donorName(d))}</td><td>${escHtml(d.address||'')}</td><td>${escHtml(tel)}</td><td>${escHtml(d.notes||'')}</td><td style="text-align:center;font-weight:700">${maxDon>0?'\u20aa'+maxDon.toLocaleString():''}</td>${prev3Tots.map(p=>`<td style="text-align:center">${p>0?'\u20aa'+p.toLocaleString():''}</td>`).join('')}</tr>`);
   });
   w.document.write('</tbody></table>'+mapSection+'<div style="margin-top:10px;font-size:9px;color:#aaa">\u05d4\u05d5\u05d3\u05e4\u05e1: '+new Date().toLocaleDateString('he-IL')+'</div><script>window.onload=()=>window.print();<\/script></body></html>');
   w.document.close();
@@ -6882,12 +6882,12 @@ function printGroupsOverview() {
   const ORG = '\u05e2\u05d6\u05e8 \u05ea\u05d5\u05e8\u05d4 \u2013 \u05ea\u05d5\u05e9\u05d9\u05d4 \u05ea\u05e4\u05e8\u05d7';
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</title><style>body{font-family:Arial,sans-serif;margin:25px;direction:rtl;font-size:12px}table{width:100%;border-collapse:collapse}th{background:#17408f;color:white;padding:6px 10px;text-align:right}td{padding:5px 10px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}td{max-height:none;word-break:break-word;overflow-wrap:break-word}}</style></head><body>`);
-  w.document.write(`<h2 style="color:#17408f">${ORG}</h2><p style="color:#666">${ac?ac.name+' '+(ac.year||''):''} | ${DB.groups.length} \u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</p>`);
+  w.document.write(`<h2 style="color:#17408f">${ORG}</h2><p style="color:#666">${ac?escHtml(ac.name)+' '+escHtml(ac.year||''):''} | ${DB.groups.length} \u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</p>`);
   w.document.write('<table><thead><tr><th>\u05e7\u05d5\u05d3</th><th>\u05e9\u05dd</th><th>\u05d5\u05d5\u05e2\u05d3</th><th>\u05d7\u05d1\u05e8\u05d9\u05dd</th><th>\u05d2\u05d9\u05d5\u05e1</th><th>\u05d9\u05e2\u05d3</th></tr></thead><tbody>');
   DB.groups.forEach(g => {
     const members=(g.memberIds||[]).map(id=>frNameById(id)).filter(Boolean);
     const raised=grpRaisedCamp(g,ac?.id);
-    w.document.write(`<tr><td>${g.code||'\u2014'}</td><td>${g.name}</td><td>${g.vaad||''}</td><td>${members.join(', ')}</td><td style="text-align:center">${raised>0?'\u20aa'+raised.toLocaleString():''}</td><td style="text-align:center">${g.target?'\u20aa'+parseFloat(g.target).toLocaleString():''}</td></tr>`);
+    w.document.write(`<tr><td>${escHtml(g.code||'\u2014')}</td><td>${escHtml(g.name)}</td><td>${escHtml(g.vaad||'')}</td><td>${escHtml(members.join(', '))}</td><td style="text-align:center">${raised>0?'\u20aa'+raised.toLocaleString():''}</td><td style="text-align:center">${g.target?'\u20aa'+parseFloat(g.target).toLocaleString():''}</td></tr>`);
   });
   w.document.write('</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>');
   w.document.close();
@@ -6902,7 +6902,7 @@ function printCampaignSummary() {
   const ORG = '\u05e2\u05d6\u05e8 \u05ea\u05d5\u05e8\u05d4 \u2013 \u05ea\u05d5\u05e9\u05d9\u05d4 \u05ea\u05e4\u05e8\u05d7';
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05e1\u05d9\u05db\u05d5\u05dd</title><style>body{font-family:Arial,sans-serif;margin:40px;direction:rtl;text-align:center}.bar-bg{background:#eee;border-radius:8px;height:30px;margin:12px auto;max-width:450px}.bar-fg{background:#c07d10;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#17408f;font-weight:700}@media print{body{margin:20px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}</style></head><body>`);
-  w.document.write(`<h1 style="color:#17408f">${ORG}</h1><h2 style="color:#555">${ac.name} ${ac.year||''}</h2><div style="font-size:48px;font-weight:900;color:#17408f">\u20aa${Math.round(tot).toLocaleString()}</div><div style="font-size:18px;color:#666">\u05de\u05ea\u05d5\u05da \u05d9\u05e2\u05d3 \u20aa${Math.round(target).toLocaleString()}</div><div class="bar-bg"><div class="bar-fg" style="width:${Math.min(pct,100)}%">${pct}%</div></div>`);
+  w.document.write(`<h1 style="color:#17408f">${ORG}</h1><h2 style="color:#555">${escHtml(ac.name)} ${escHtml(ac.year||'')}</h2><div style="font-size:48px;font-weight:900;color:#17408f">\u20aa${Math.round(tot).toLocaleString()}</div><div style="font-size:18px;color:#666">\u05de\u05ea\u05d5\u05da \u05d9\u05e2\u05d3 \u20aa${Math.round(target).toLocaleString()}</div><div class="bar-bg"><div class="bar-fg" style="width:${Math.min(pct,100)}%">${pct}%</div></div>`);
   w.document.write('<script>window.onload=()=>window.print();<\/script></body></html>');
   w.document.close();
 }
@@ -7023,7 +7023,7 @@ function renderFRPage() {
   const vaadSel = document.getElementById('frVaad');
   if (vaadSel) {
     const vaads = [...new Set(DB.fundraisers.map(f => f.vaad).filter(Boolean))].sort();
-    vaadSel.innerHTML = '<option value="">כל הוועדים</option>' + vaads.map(v=>`<option>${v}</option>`).join('');
+    vaadSel.innerHTML = '<option value="">כל הוועדים</option>' + vaads.map(v=>`<option>${escHtml(v)}</option>`).join('');
   }
   if (!can('edit')) {
     const btns = document.getElementById('frBtns');
@@ -7067,13 +7067,13 @@ function renderFRList() {
         const milestone = target > 0 && raised >= target ? ' 🏆' : target > 0 && raised >= target*0.5 ? ' 🎯' : '';
         return `<tr onclick="openFRModal('${f.id}')">
           <td onclick="event.stopPropagation()" style="padding:6px"><input type="checkbox" class="fr-row-cb" data-id="${f.id}" onchange="updateFRBulkBar()"></td>
-          <td><strong>${f.code||''}</strong></td>
-          <td>${(f.firstName||'')} ${(f.lastName||'')}${milestone}</td>
-          <td>${f.vaad||''}</td>
-          <td style="font-size:11px">${f.homePhone||''}</td>
-          <td style="font-size:11px">${f.parentMobile||f.mobile||''}</td>
-          <td style="font-size:11px">${f.studentMobile||''}</td>
-          <td style="font-size:11px;font-weight:600">${avail}</td>
+          <td><strong>${escHtml(f.code||'')}</strong></td>
+          <td>${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')}${milestone}</td>
+          <td>${escHtml(f.vaad||'')}</td>
+          <td style="font-size:11px">${escHtml(f.homePhone||'')}</td>
+          <td style="font-size:11px">${escHtml(f.parentMobile||f.mobile||'')}</td>
+          <td style="font-size:11px">${escHtml(f.studentMobile||'')}</td>
+          <td style="font-size:11px;font-weight:600">${escHtml(avail)}</td>
           <td>${target > 0 ? '₪'+target.toLocaleString() : ''}</td>
           <td><strong style="color:var(--success)">₪${raised.toLocaleString()}</strong></td>
           <td style="min-width:100px">
@@ -7473,7 +7473,7 @@ function searchFRinForm(searchId, resultsId, hiddenId) {
   ).slice(0,8) : [];
   document.getElementById(resultsId).innerHTML = res.map(f =>
     `<div class="pick-item" onclick="pickFRinForm('${f.id}','${searchId}','${resultsId}','${hiddenId}')">
-      ${f.firstName||''} ${f.lastName||''} <span style="font-size:10px;color:var(--muted)">${f.code||''} ${f.vaad?'| '+f.vaad:''}</span>
+      ${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')} <span style="font-size:10px;color:var(--muted)">${escHtml(f.code||'')} ${f.vaad?'| '+escHtml(f.vaad):''}</span>
     </div>`
   ).join('') || (q ? '<p style="font-size:11px;color:var(--muted);padding:5px">לא נמצאו</p>' : '');
 }
@@ -7551,10 +7551,10 @@ function renderGroupsPage() {
     return `<div class="grp-card" style="cursor:pointer" onclick="openGroupModal('${g.id}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
         <div>
-          <strong style="font-size:15px">${g.name} ${milestones.join('')}</strong><br>
-          <span class="badge" style="background:var(--slate-200);color:var(--muted)">${g.code||''}</span>
-          ${g.vaad ? `<span class="badge" style="background:var(--teal-bg);color:var(--teal);margin-right:4px">${g.vaad}</span>` : ''}
-          ${fd ? `<span class="badge" style="background:var(--gold-bg);color:#7a5c00;margin-right:4px;font-size:10px">${fd.label}</span>` : ''}
+          <strong style="font-size:15px">${escHtml(g.name)} ${milestones.join('')}</strong><br>
+          <span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(g.code||'')}</span>
+          ${g.vaad ? `<span class="badge" style="background:var(--teal-bg);color:var(--teal);margin-right:4px">${escHtml(g.vaad)}</span>` : ''}
+          ${fd ? `<span class="badge" style="background:var(--gold-bg);color:#7a5c00;margin-right:4px;font-size:10px">${escHtml(fd.label)}</span>` : ''}
         </div>
         <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
           <button class="btn btn-outline btn-sm" onclick="printFundraisingSheet('${g.id}')">📋</button>
@@ -7576,8 +7576,8 @@ function renderGroupsPage() {
       </div>
       ${target > 0 ? `<div class="progress-bar" style="height:8px"><div class="progress-fill ${over?'over':''}" style="width:${pct}%"></div></div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${Math.round(pct)}%${over?' ✓':''}</div>` : ''}
-      ${memberNames.length > 0 ? `<div style="margin-top:8px;font-size:12px;color:var(--muted)">👤 ${memberNames.join(' | ')}</div>` : ''}
-      ${g.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">📝 ${g.notes}</div>` : ''}
+      ${memberNames.length > 0 ? `<div style="margin-top:8px;font-size:12px;color:var(--muted)">👤 ${escHtml(memberNames.join(' | '))}</div>` : ''}
+      ${g.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">📝 ${escHtml(g.notes)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -7595,11 +7595,11 @@ function openGroupModal(id) {
   // Populate fundraisingDate dropdown
   const fdSel = document.getElementById('grp_fundraisingDateId');
   fdSel.innerHTML = '<option value="">-- בחר תאריך --</option>' +
-    (DB.fundraisingDates||[]).map(fd => `<option value="${fd.id}">${fd.label}</option>`).join('');
+    (DB.fundraisingDates||[]).map(fd => `<option value="${fd.id}">${escHtml(fd.label)}</option>`).join('');
 
   // Populate routes dropdown
   const rtSel = document.getElementById('grp_routeIds');
-  rtSel.innerHTML = (DB.routes||[]).map(r => `<option value="${r.id}">${r.name||r.id}</option>`).join('');
+  rtSel.innerHTML = (DB.routes||[]).map(r => `<option value="${r.id}">${escHtml(r.name||r.id)}</option>`).join('');
 
   if (isEdit) {
     const g = DB.groups.find(x => x.id === id); if (!g) return;
@@ -7647,7 +7647,7 @@ function renderGrpMembers() {
     const f = DB.fundraisers.find(x => x.id === id);
     if (!f) return '';
     return `<span style="background:var(--teal-bg);color:var(--teal);padding:3px 10px;border-radius:20px;font-size:12px;display:inline-flex;align-items:center;gap:5px">
-      ${f.firstName||''} ${f.lastName||''} (${f.code||''})
+      ${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')} (${escHtml(f.code||'')})
       <button onclick="removeTempMember('${id}')" style="background:none;border:none;cursor:pointer;color:var(--teal);font-size:14px;line-height:1">✕</button>
     </span>`;
   }).join('');
@@ -7661,7 +7661,7 @@ function searchFRforGroup() {
   ).slice(0,8) : [];
   document.getElementById('grp_member_results').innerHTML = res.map(f =>
     `<div class="pick-item" onclick="addTempMember('${f.id}')">
-      ${f.firstName||''} ${f.lastName||''} <span style="font-size:10px;color:var(--muted)">${f.code||''} ${f.vaad?'| '+f.vaad:''}</span>
+      ${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')} <span style="font-size:10px;color:var(--muted)">${escHtml(f.code||'')} ${f.vaad?'| '+escHtml(f.vaad):''}</span>
     </div>`
   ).join('') || (q ? '<p style="font-size:11px;color:var(--muted);padding:5px">לא נמצאו</p>' : '');
 }
@@ -7682,7 +7682,7 @@ function renderGrpDonors() {
     const d = DB.donors.find(x => x.id === id);
     if (!d) return '';
     return `<span style="background:var(--gold-bg);color:#7a5c00;padding:3px 10px;border-radius:20px;font-size:12px;display:inline-flex;align-items:center;gap:5px">
-      ${donorName(d)} (${d.code||''})
+      ${escHtml(donorName(d))} (${escHtml(d.code||'')})
       <button onclick="removeTempDonor('${id}')" style="background:none;border:none;cursor:pointer;color:#7a5c00;font-size:14px;line-height:1">✕</button>
     </span>`;
   }).join('');
@@ -7695,7 +7695,7 @@ function searchDonorForGroup() {
   ).slice(0,8) : [];
   document.getElementById('grp_donor_results').innerHTML = res.map(d =>
     `<div class="pick-item" onclick="addTempDonor('${d.id}')">
-      ${donorName(d)} <span style="font-size:10px;color:var(--muted)">${d.code||''} ${d.address?'| '+d.address:''}</span>
+      ${escHtml(donorName(d))} <span style="font-size:10px;color:var(--muted)">${escHtml(d.code||'')} ${d.address?'| '+escHtml(d.address):''}</span>
     </div>`
   ).join('') || (q ? '<p style="font-size:11px;color:var(--muted);padding:5px">לא נמצאו</p>' : '');
 }
@@ -7785,7 +7785,7 @@ function makeSelectAddable(selId, settingsKey, addBlank) {
   if (!el) return;
   const curVal = el.value;
   el.innerHTML = (addBlank ? '<option value="">-</option>' : '') +
-    vals.map(v => `<option value="${v}"${v===curVal?' selected':''}>${v}</option>`).join('') +
+    vals.map(v => `<option value="${escHtml(v)}"${v===curVal?' selected':''}>${escHtml(v)}</option>`).join('') +
     '<option value="__add__">➕ הוסף חדש...</option>';
   
   // Create or reuse the add-row beneath the select
@@ -7899,9 +7899,9 @@ function renderFRDonations() {
         const pct = target > 0 ? Math.min(Math.round(total/target*100), 999) : 0;
         const pctColor = pct >= 100 ? 'var(--success)' : pct >= 70 ? 'var(--gold)' : 'var(--muted)';
         return `<tr>
-          <td><strong>${fr.firstName||''} ${fr.lastName||''}</strong></td>
-          <td style="font-size:12px;color:var(--muted)">${fr.code||''}</td>
-          <td style="font-size:12px">${grp ? grp.name : '—'}</td>
+          <td><strong>${escHtml(fr.firstName||'')} ${escHtml(fr.lastName||'')}</strong></td>
+          <td style="font-size:12px;color:var(--muted)">${escHtml(fr.code||'')}</td>
+          <td style="font-size:12px">${grp ? escHtml(grp.name) : '—'}</td>
           <td style="font-weight:700;color:var(--slate-900)">₪${Math.round(direct).toLocaleString()}</td>
           <td style="color:var(--teal,#0891b2)">₪${Math.round(groupShare).toLocaleString()}</td>
           <td style="font-weight:900;color:var(--success)">₪${Math.round(total).toLocaleString()}</td>
@@ -7923,8 +7923,8 @@ function searchGroupInForm(prefix) {
   ).slice(0, 8);
   resultsEl.innerHTML = matches.length
     ? matches.map(g => `<div class="pick-item" onclick="pickGroupInForm('${prefix}','${g.id}')">
-        <strong>${g.name}</strong>
-        <span style="float:left;font-size:10px;color:var(--muted)">${g.code||''} | ${g.memberIds?.length||0} חברים</span>
+        <strong>${escHtml(g.name)}</strong>
+        <span style="float:left;font-size:10px;color:var(--muted)">${escHtml(g.code||'')} | ${g.memberIds?.length||0} חברים</span>
       </div>`).join('')
     : (q ? '<div style="padding:7px;font-size:12px;color:var(--muted)">לא נמצאה קבוצה</div>' : '');
   resultsEl.style.display = '';
@@ -8081,7 +8081,7 @@ function renderPendingDonations() {
       <td>${fmt(dn.date)}</td>
       <td style="font-size:11px">${toHeb(dn.date)}</td>
       <td><strong style="color:var(--success)">₪${parseFloat(dn.amount||0).toLocaleString()}</strong></td>
-      <td>${dn.method||''}</td>
+      <td>${escHtml(dn.method||'')}</td>
       <td><button class="btn btn-danger btn-sm" onclick="removePending('don',${i})">🗑️</button></td>
     </tr>`).join('');
 }
@@ -8097,7 +8097,7 @@ function renderPendingFuture() {
     <tr>
       <td>${fmt(f.date)}</td>
       <td>${f.expectedAmount ? '₪'+parseFloat(f.expectedAmount).toLocaleString() : '—'}</td>
-      <td>${f.notes||''}</td>
+      <td>${escHtml(f.notes||'')}</td>
       <td><button class="btn btn-danger btn-sm" onclick="removePending('future',${i})">🗑️</button></td>
     </tr>`).join('');
 }
@@ -8112,8 +8112,8 @@ function renderPendingRelations() {
   body.innerHTML = _pendingRelations.map((r,i) => {
     const other = DB.donors.find(x=>x.id===r.relId);
     return `<tr>
-      <td>${other ? donorName(other) : r.relId}</td>
-      <td>${r.relType||''}</td>
+      <td>${escHtml(other ? donorName(other) : r.relId)}</td>
+      <td>${escHtml(r.relType||'')}</td>
       <td><button class="btn btn-danger btn-sm" onclick="removePending('rel',${i})">🗑️</button></td>
     </tr>`;
   }).join('');
@@ -8158,7 +8158,7 @@ function toggleDonMode(prefix) {
     const sel = document.getElementById(prefix+'_grp_sel');
     if (sel) {
       sel.innerHTML = '<option value="">-- בחר קבוצה --</option>' +
-        DB.groups.map(g => `<option value="${g.id}">${g.name} (${g.code||''}) — ${g.memberIds?.length||0} חברים</option>`).join('');
+        DB.groups.map(g => `<option value="${g.id}">${escHtml(g.name)} (${escHtml(g.code||'')}) — ${g.memberIds?.length||0} חברים</option>`).join('');
     }
   }
 }
@@ -8341,9 +8341,9 @@ function renderAuditLog() {
         const bg = typeBg[e.type] || 'transparent';
         return `<tr>
           <td style="font-size:12px;white-space:nowrap">${dateStr}</td>
-          <td style="font-size:12px;font-weight:600">${e.user}</td>
-          <td><span style="background:${bg};padding:2px 7px;border-radius:12px;font-size:11px;white-space:nowrap">${typeLabels[e.type]||e.type}</span></td>
-          <td style="font-size:12px">${e.description}</td>
+          <td style="font-size:12px;font-weight:600">${escHtml(e.user)}</td>
+          <td><span style="background:${bg};padding:2px 7px;border-radius:12px;font-size:11px;white-space:nowrap">${typeLabels[e.type]||escHtml(e.type)}</span></td>
+          <td style="font-size:12px">${escHtml(e.description)}</td>
           <td>${e.undoData ? `<button class="btn btn-outline btn-sm" onclick="undoAuditEntry('${e.id}')">↩ שחזר</button>` : ''}</td>
         </tr>`;
       }).join('');
@@ -8601,10 +8601,10 @@ function renderMsgThreads() {
       <div style="font-size:24px">👤</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong style="font-size:13px">${partnerDisplay}</strong>
+          <strong style="font-size:13px">${escHtml(partnerDisplay)}</strong>
           ${unread ? `<span style="background:var(--danger);color:white;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700">${unread}</span>` : ''}
         </div>
-        <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${last.subject}</div>
+        <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(last.subject)}</div>
       </div>
     </div>`;
   }).join('');
@@ -8621,7 +8621,7 @@ function openMsgThread(partner) {
   const view = document.getElementById('msgThreadView');
   view.innerHTML = `
     <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-      <strong>שיחה עם ${partnerDisplay}</strong>
+      <strong>שיחה עם ${escHtml(partnerDisplay)}</strong>
       <button class="btn btn-gold btn-sm" onclick="replyToUser('${partner}')">↩ השב</button>
     </div>
     <div style="flex:1;overflow-y:auto">
@@ -8630,10 +8630,10 @@ function openMsgThread(partner) {
         const dt = new Date(m.ts).toLocaleString('he-IL');
         return `<div style="margin-bottom:14px;display:flex;flex-direction:column;align-items:${isMine?'flex-end':'flex-start'}">
           <div style="background:${isMine?'var(--slate-900)':'var(--bg-app)'};color:${isMine?'white':'var(--text)'};border-radius:12px;padding:10px 14px;max-width:80%">
-            <div style="font-weight:700;font-size:12px;margin-bottom:4px">${m.subject}</div>
-            <div style="font-size:13px;white-space:pre-wrap">${m.body||''}</div>
+            <div style="font-weight:700;font-size:12px;margin-bottom:4px">${escHtml(m.subject)}</div>
+            <div style="font-size:13px;white-space:pre-wrap">${escHtml(m.body||'')}</div>
           </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">${m.fromDisplay||m.from} · ${dt}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${escHtml(m.fromDisplay||m.from)} · ${dt}</div>
         </div>`;
       }).join('')}
     </div>`;
@@ -8672,7 +8672,7 @@ function openSelfServiceForDonor(donorId) {
   const el = document.getElementById('selfServiceContent');
   el.innerHTML = `
     <div style="margin-bottom:14px">
-      <div style="font-weight:700;margin-bottom:6px">תורם: ${donorName(d)}</div>
+      <div style="font-weight:700;margin-bottom:6px">תורם: ${escHtml(donorName(d))}</div>
       <div style="background:var(--bg-app);border-radius:8px;padding:10px;font-size:12px;word-break:break-all;font-family:monospace;direction:ltr;text-align:left">${url}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -8710,7 +8710,7 @@ function searchDonorForSS(q) {
     (d.code||'').includes(q)
   ).slice(0, 8) : [];
   document.getElementById('ssSearchResults').innerHTML = res.map(d =>
-    `<div class="pick-item" onclick="showSSForDonor('${d.id}')">${donorName(d)} <span style="font-size:10px;color:var(--muted)">${d.code||''}</span></div>`
+    `<div class="pick-item" onclick="showSSForDonor('${d.id}')">${escHtml(donorName(d))} <span style="font-size:10px;color:var(--muted)">${escHtml(d.code||'')}</span></div>`
   ).join('') || (q ? '<p style="font-size:11px;color:var(--muted);padding:5px">לא נמצאו</p>' : '');
 }
 
@@ -8721,7 +8721,7 @@ function showSSForDonor(donorId) {
   document.getElementById('selfServiceContent').innerHTML = `
     <div style="margin-bottom:14px">
       <button onclick="openSelfServicePanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-family:'Heebo',sans-serif;margin-bottom:10px">← חזרה</button>
-      <div style="font-weight:700;margin-bottom:8px">תורם: ${donorName(d)}</div>
+      <div style="font-weight:700;margin-bottom:8px">תורם: ${escHtml(donorName(d))}</div>
       <div style="background:var(--bg-app);border-radius:8px;padding:10px;font-size:11px;word-break:break-all;font-family:monospace;direction:ltr;text-align:left;margin-bottom:10px">${url}</div>
       <button class="btn btn-navy btn-sm" onclick="copyToClipboard('${url.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">📋 העתק קישור</button>
     </div>`;
@@ -8852,12 +8852,12 @@ function renderPendingEdits() {
     const dt = new Date(pe.ts).toLocaleString('he-IL');
     const changes = Object.entries(pe.edits).filter(([k,v]) => v && d && d[k] !== v).map(([k,v]) => {
       const labels = {firstName:'שם פרטי',lastName:'שם משפחה',address:'כתובת',phone:'טלפון',mobile:'סלולרי',email:'מייל'};
-      return `<div style="font-size:12px;padding:4px 0"><span style="color:var(--muted)">${labels[k]||k}:</span> <s style="color:var(--danger)">${d?.[k]||'(ריק)'}</s> → <strong style="color:var(--success)">${v}</strong></div>`;
+      return `<div style="font-size:12px;padding:4px 0"><span style="color:var(--muted)">${escHtml(labels[k]||k)}:</span> <s style="color:var(--danger)">${escHtml(d?.[k]||'(ריק)')}</s> → <strong style="color:var(--success)">${escHtml(v)}</strong></div>`;
     }).join('');
     return `<div style="background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
-          <strong>${d ? donorName(d) : pe.donorId}</strong>
+          <strong>${escHtml(d ? donorName(d) : pe.donorId)}</strong>
           <span style="font-size:11px;color:var(--muted);margin-right:8px">${dt}</span>
         </div>
         <div style="display:flex;gap:6px">
@@ -9034,7 +9034,7 @@ function updateDonorEmailPreview() {
   if (type === 'link') {
     msgFields.style.display = 'none'; preview.style.display = 'block';
     const d = _emailDonorId ? DB.donors.find(x => x.id === _emailDonorId) : null;
-    preview.innerHTML = '<strong>תוכן:</strong> קישור אישי לתורם ' + (d ? donorName(d) : '') + ' לעדכון פרטיו עצמאית';
+    preview.innerHTML = '<strong>תוכן:</strong> קישור אישי לתורם ' + escHtml(d ? donorName(d) : '') + ' לעדכון פרטיו עצמאית';
   } else {
     msgFields.style.display = ''; preview.style.display = 'none';
   }
@@ -9227,7 +9227,7 @@ function checkFieldDuplicate(field, value) {
   title.textContent = `⚠️ ${fieldLabels[field]} "${v}" כבר קיים אצל תורם אחר!`;
   list.innerHTML = matches.map(d =>
     `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px">
-      <span><strong>${donorName(d)}</strong> <span style="color:var(--muted);font-size:11px">${d.code||''}</span></span>
+      <span><strong>${escHtml(donorName(d))}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')}</span></span>
       <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${d.id}'),100)">פתח כרטיס</button>
     </div>`
   ).join('');
@@ -9471,7 +9471,7 @@ function renderRoutesPage() {
   sv('rpStatNbh', nbhSet.size);
   const ac = activeCampaign();
   const campEl = document.getElementById('rpStatCamp');
-  if (campEl) campEl.innerHTML = ac ? `<span style="font-size:11px;color:var(--primary);font-weight:600">🎯 ${ac.name}</span>` : '';
+  if (campEl) campEl.innerHTML = ac ? `<span style="font-size:11px;color:var(--primary);font-weight:600">🎯 ${escHtml(ac.name)}</span>` : '';
 
   // Sidebar
   rpRenderSidebar(routes, '');
@@ -9584,7 +9584,7 @@ function rpDrawRoute(r, highlight) {
       iconSize:[24,24], iconAnchor:[12,12]
     });
     const marker = L.marker([d.lat,d.lng],{icon:ic}).addTo(_rpMap);
-    marker.bindTooltip(`<strong>${i+1}. ${donorName(d)}</strong><br><span style="font-size:11px">${d.address||''}</span>`, {direction:'top'});
+    marker.bindTooltip(`<strong>${i+1}. ${escHtml(donorName(d))}</strong><br><span style="font-size:11px">${escHtml(d.address||'')}</span>`, {direction:'top'});
     marker.on('click', ()=>rpOpenDetail(r.id));
     layers.push(marker);
   });
@@ -9648,8 +9648,8 @@ function rpRenderDetailBody(r) {
       <span class="rp-drow-drag">⠿</span>
       <span class="rp-drow-num">${i+1}</span>
       <div class="rp-drow-info">
-        <div class="rp-drow-name">${donorName(d)}</div>
-        <div class="rp-drow-addr">${d.address||''}</div>
+        <div class="rp-drow-name">${escHtml(donorName(d))}</div>
+        <div class="rp-drow-addr">${escHtml(d.address||'')}</div>
       </div>
     </div>`).join('');
 }
@@ -9705,9 +9705,9 @@ function rpPrint() {
   ${routes.map((r,ri)=>{
     const donors=(r.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
     return `<div class="${ri<routes.length-1?'pb':''}">
-      <h2>📍 ${r.code} — ${r.neighborhood}</h2>
+      <h2>📍 ${escHtml(r.code)} — ${escHtml(r.neighborhood)}</h2>
       <table><thead><tr><th>#</th><th>שם</th><th>כתובת</th><th>טלפון</th></tr></thead>
-      <tbody>${donors.map((d,i)=>`<tr><td>${i+1}</td><td>${donorName(d)}</td><td>${d.address||''}</td><td>${d.mobile||d.phone||''}</td></tr>`).join('')}</tbody></table>
+      <tbody>${donors.map((d,i)=>`<tr><td>${i+1}</td><td>${escHtml(donorName(d))}</td><td>${escHtml(d.address||'')}</td><td>${escHtml(d.mobile||d.phone||'')}</td></tr>`).join('')}</tbody></table>
     </div>`;
   }).join('')}</body></html>`);
   w.document.close(); w.print();
@@ -9803,10 +9803,10 @@ function renderDuplicateModal(groups) {
   body.innerHTML=groups.map((g,gi)=>{
     const donors=g.ids.map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
     return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
-      <div style="font-weight:700;font-size:13px;color:var(--slate-900);margin-bottom:8px">⚠️ ${g.reason}</div>
+      <div style="font-weight:700;font-size:13px;color:var(--slate-900);margin-bottom:8px">⚠️ ${escHtml(g.reason)}</div>
       ${donors.map(d=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-app);border-radius:8px;padding:9px 12px;margin-bottom:6px;font-size:12px">
-        <div><strong>${donorName(d)}</strong> <span style="color:var(--muted)">${d.code||''}</span><br>
-        <span>${d.address||''}</span> <span style="color:var(--muted)">${[d.phone,d.mobile,d.email].filter(Boolean).join(' | ')}</span></div>
+        <div><strong>${escHtml(donorName(d))}</strong> <span style="color:var(--muted)">${escHtml(d.code||'')}</span><br>
+        <span>${escHtml(d.address||'')}</span> <span style="color:var(--muted)">${escHtml([d.phone,d.mobile,d.email].filter(Boolean).join(' | '))}</span></div>
         <button class="btn btn-outline btn-sm" onclick="openDonorModal('${d.id}')">✏️ פתח</button>
       </div>`).join('')}
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
@@ -9823,7 +9823,7 @@ function openMergeModal(gi) {
     <p style="font-size:13px;margin-bottom:12px">בחר את הכרטיס ה<strong>ראשי</strong> שישמר. כל התרומות מהכרטיסים האחרים יועברו אליו.</p>
     ${donors.map((d,i)=>`<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-app);border-radius:8px;margin-bottom:6px;cursor:pointer">
       <input type="radio" name="mergeBase" value="${d.id}" ${i===0?'checked':''}> 
-      <span><strong>${donorName(d)}</strong> <span style="font-size:11px;color:var(--muted)">${d.code||''} | ${d.address||''}</span></span>
+      <span><strong>${escHtml(donorName(d))}</strong> <span style="font-size:11px;color:var(--muted)">${escHtml(d.code||'')} | ${escHtml(d.address||'')}</span></span>
     </label>`).join('')}`;
   window._mergeIds=g.ids;
   openModal('mergeModal');
@@ -9930,17 +9930,17 @@ function openDonationFormPage() {
   const orgName=nd.orgName||getEmailSettings().orgName||'עזר תורה';
   const params=new URLSearchParams({mosad:nd.mosad,ApiValid:nd.apiKey||'',Teur:nd.desc||'תרומה',Currency:'1',CallBack:'postMessage'});
   const html=`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תרומה — ${orgName}</title>
+<title>תרומה — ${escHtml(orgName)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>*{box-sizing:border-box}body{margin:0;padding:0;font-family:'DM Sans',Arial,sans-serif;background:linear-gradient(135deg,#17408f 0%,#2360d8 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}.wrap{background:white;border-radius:20px;box-shadow:0 16px 60px rgba(0,0,0,.25);padding:28px 24px;width:520px;max-width:100%}.logo{font-size:24px;font-weight:900;color:#17408f;border-bottom:3px solid #c07d10;padding-bottom:10px;margin-bottom:20px}.loading{text-align:center;padding:40px;color:#888;font-size:14px}iframe{width:100%;min-height:580px;border:none;border-radius:12px;display:none}</style>
 </head><body><div class="wrap">
-<div class="logo">✡️ ${orgName}</div>
+<div class="logo">✡️ ${escHtml(orgName)}</div>
 <div id="loading" class="loading">⏳ טוען טופס תרומה...</div>
 <iframe id="donIframe" src="https://matara.pro/nedarimplus/online/?${params.toString()}" onload="iframeReady()"></iframe>
 <div id="successMsg" style="display:none;text-align:center;padding:32px 20px;color:#16a34a">
   <div style="font-size:48px;margin-bottom:12px">✅</div>
   <div style="font-size:20px;font-weight:700">תרומתך התקבלה בהצלחה!</div>
-  <div style="font-size:14px;color:#555;margin-top:8px">תודה רבה על תרומתך ל${orgName}</div>
+  <div style="font-size:14px;color:#555;margin-top:8px">תודה רבה על תרומתך ל${escHtml(orgName)}</div>
 </div>
 </div>
 <script>
@@ -9972,10 +9972,10 @@ function searchRelDonors() {
   let res;
   if (_relMode==='fr') {
     res=(DB.fundraisers||[]).filter(f=>(f.firstName+' '+f.lastName).toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)).slice(0,8);
-    document.getElementById('relResults').innerHTML=res.map(f=>`<div class="pick-item" onclick="addRelSelected('fr_${f.id}')">${(f.firstName||'')+' '+(f.lastName||'')} <span style="color:var(--muted);font-size:11px">${f.code||''}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
+    document.getElementById('relResults').innerHTML=res.map(f=>`<div class="pick-item" onclick="addRelSelected('fr_${f.id}')">${escHtml((f.firstName||'')+' '+(f.lastName||''))} <span style="color:var(--muted);font-size:11px">${escHtml(f.code||'')}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
   } else {
     res=DB.donors.filter(d=>d.id!==currentDonorId&&!_relSelectedIds.includes(d.id)&&(donorName(d).toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q))).slice(0,8);
-    document.getElementById('relResults').innerHTML=res.map(d=>`<div class="pick-item" onclick="addRelSelected('${d.id}')">${donorName(d)} <span style="color:var(--muted);font-size:11px">${d.code||''}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
+    document.getElementById('relResults').innerHTML=res.map(d=>`<div class="pick-item" onclick="addRelSelected('${d.id}')">${escHtml(donorName(d))} <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')}</span></div>`).join('')||(q?'<p style="font-size:13px;color:var(--muted)">לא נמצאו</p>':'');
   }
 }
 function addRelSelected(id) {
@@ -9997,7 +9997,7 @@ function renderRelSelectedList() {
     if(id.startsWith('fr_')){const f=DB.fundraisers.find(x=>x.id===id.slice(3));name=f?((f.firstName||'')+' '+(f.lastName||'')).trim()+' 👤':'?';}
     else{const d=DB.donors.find(x=>x.id===id);name=d?donorName(d):'?';}
     return `<div style="display:flex;align-items:center;gap:6px;background:var(--bg-app);padding:5px 9px;border-radius:8px;margin-bottom:4px;font-size:12px">
-      <span style="flex:1">${name}</span>
+      <span style="flex:1">${escHtml(name)}</span>
       <button style="border:none;background:none;cursor:pointer;color:var(--danger);font-size:16px;padding:0" onclick="removeRelSelected('${id}')">✕</button>
     </div>`;
   }).join('');
@@ -10071,10 +10071,10 @@ function searchRelAddItems(){
   let items;
   if(_relAddMode==='fr'){
     items=(DB.fundraisers||[]).filter(f=>(f.firstName+' '+f.lastName).toLowerCase().includes(q)||(f.code||'').toLowerCase().includes(q)).slice(0,8);
-    res.innerHTML=items.map(f=>`<div class="pick-item" onclick="selectRelAddItem('fr_${f.id}','${escHtml((f.firstName||'')+' '+(f.lastName||''))}')">${(f.firstName||'')+' '+(f.lastName||'')} <span style="color:var(--muted);font-size:11px">${f.code||''} 👤 מתרים</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
+    res.innerHTML=items.map(f=>`<div class="pick-item" onclick="selectRelAddItem('fr_${f.id}','${escHtml((f.firstName||'')+' '+(f.lastName||''))}')">${escHtml((f.firstName||'')+' '+(f.lastName||''))} <span style="color:var(--muted);font-size:11px">${escHtml(f.code||'')} 👤 מתרים</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
   } else {
     items=DB.donors.filter(d=>d.id!==currentDonorId&&(donorName(d).toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q))).slice(0,8);
-    res.innerHTML=items.map(d=>`<div class="pick-item" onclick="selectRelAddItem('${d.id}','${escHtml(donorName(d))}')">${donorName(d)} <span style="color:var(--muted);font-size:11px">${d.code||''}</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
+    res.innerHTML=items.map(d=>`<div class="pick-item" onclick="selectRelAddItem('${d.id}','${escHtml(donorName(d))}')">${escHtml(donorName(d))} <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')}</span></div>`).join('')||'<p style="font-size:12px;color:var(--muted);padding:8px">לא נמצאו</p>';
   }
   res.style.display='';
 }
@@ -10118,7 +10118,7 @@ function printFundraisingSheet(grpId) {
   const grp=DB.groups.find(g=>g.id===grpId); if(!grp)return;
   const ac=activeCampaign();
   const prev3=[...DB.campaigns].sort((a,b)=>(b.year||'').localeCompare(a.year||'')).filter(c=>!c.active).slice(0,3);
-  const ORG_NAME=getSettings().orgName||'עזר תורה — תושיה תפרח';
+  const ORG_NAME=escHtml(getSettings().orgName||'עזר תורה — תושיה תפרח');
   const members=(grp.memberIds||[]).map(id=>{const f=DB.fundraisers.find(x=>x.id===id);return f?((f.firstName||'')+' '+(f.lastName||'')).trim():'';}).filter(Boolean);
   const donors=(grp.donorIds||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
 
@@ -10127,11 +10127,11 @@ function printFundraisingSheet(grpId) {
     const prev3Tots=prev3.map(c=>(d.donations||[]).filter(dn=>dn.campaignId===c.id).reduce((s,dn)=>s+parseFloat(dn.amount||0),0));
     const addr=(d.address||'')+(d.entrance?' '+d.entrance:'');
     const tel=[d.phone,d.mobile].filter(Boolean).join(' | ');
-    return `<tr><td class="nc">${d.title?d.title+' ':''}${donorName(d)}</td><td>${addr}</td><td style="white-space:nowrap">${tel}</td><td class="notec">${d.notes||''}</td><td class="mc">${maxDon>0?'₪'+maxDon.toLocaleString():''}</td>${prev3Tots.map(t=>`<td class="mc">${t>0?'₪'+t.toLocaleString():''}</td>`).join('')}<td class="curc"></td></tr>`;
+    return `<tr><td class="nc">${d.title?escHtml(d.title)+' ':''}${escHtml(donorName(d))}</td><td>${escHtml(addr)}</td><td style="white-space:nowrap">${escHtml(tel)}</td><td class="notec">${escHtml(d.notes||'')}</td><td class="mc">${maxDon>0?'₪'+maxDon.toLocaleString():''}</td>${prev3Tots.map(t=>`<td class="mc">${t>0?'₪'+t.toLocaleString():''}</td>`).join('')}<td class="curc"></td></tr>`;
   }).join('');
 
   const mappable=donors.filter(d=>d.lat&&d.lng);
-  const markerData=JSON.stringify(mappable.map((d,i)=>({lat:d.lat,lng:d.lng,name:(d.title?d.title+' ':'')+donorName(d),addr:d.address||'',idx:i+1})));
+  const markerData=JSON.stringify(mappable.map((d,i)=>({lat:d.lat,lng:d.lng,name:escHtml((d.title?d.title+' ':'')+donorName(d)),addr:escHtml(d.address||''),idx:i+1})));
   const mapHtml=mappable.length>0?`
     <div class="mapsec">
       <h3>🗺 מפת האיסוף <span style="font-size:11px;font-weight:400;color:#666">(${mappable.length} כתובות)</span></h3>
@@ -10156,7 +10156,7 @@ function printFundraisingSheet(grpId) {
 
   const w=window.open('','_blank','width=1000,height=750');
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>גליית התרמה — ${grp.name}</title>
+<title>גליית התרמה — ${escHtml(grp.name)}</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;margin:28px 32px;color:#17408f;direction:rtl;font-size:12px}
@@ -10181,13 +10181,13 @@ th.curc{background:#c07d10;color:#17408f}
 </style></head><body>
 <button class="pbtn" onclick="window.print()"><i data-lucide="printer" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> הדפס</button>
 <div class="org">${ORG_NAME}</div>
-<div class="sub">${ac?'מגבית: '+ac.name+' '+(ac.year||''):''} | קבוצה: <strong>${grp.name}</strong> | קוד: ${grp.code||'—'} | ${donors.length} תורמים | ${new Date().toLocaleDateString('he-IL')}</div>
-${members.length?`<div class="memb">👥 מתרימים: ${members.join(' &bull; ')}</div>`:''}
+<div class="sub">${ac?'מגבית: '+escHtml(ac.name)+' '+escHtml(ac.year||''):''} | קבוצה: <strong>${escHtml(grp.name)}</strong> | קוד: ${escHtml(grp.code||'—')} | ${donors.length} תורמים | ${new Date().toLocaleDateString('he-IL')}</div>
+${members.length?`<div class="memb">👥 מתרימים: ${escHtml(members.join(' • '))}</div>`:''}
 <table>
 <thead><tr>
   <th class="nc">שם תורם</th><th>כתובת</th><th>טלפון</th><th class="notec">הערות</th>
   <th class="mc">תרומה גבוהה</th>
-  ${prev3.map(c=>`<th class="mc">${c.name}</th>`).join('')}
+  ${prev3.map(c=>`<th class="mc">${escHtml(c.name)}</th>`).join('')}
   <th class="curc">תרומה נוכחית</th>
 </tr></thead>
 <tbody>${donorRows}</tbody>
@@ -10474,7 +10474,7 @@ function printDonationsPanel() {
   // Gather current filtered data
   const rows = _lastDonsRows || [];
   const ac = activeCampaign();
-  const ORG_NAME = getSettings().orgName || 'עזר תורה — תושיה תפרח';
+  const ORG_NAME = escHtml(getSettings().orgName || 'עזר תורה — תושיה תפרח');
   const total = rows.reduce((s,r) => s + parseFloat(r.amount||0), 0);
 
   const tableRows = rows.map(r => {
@@ -10484,13 +10484,13 @@ function printDonationsPanel() {
     if (r.frId) { const fr = DB.fundraisers.find(f => f.id === r.frId); if(fr) frLabel = ((fr.firstName||'')+' '+(fr.lastName||'')).trim(); }
     else if (r.groupId) { const g = DB.groups.find(x => x.id === r.groupId); if(g) frLabel = g.name; }
     return `<tr>
-      <td>${r.date||''}</td>
-      <td>${d ? donorName(d) : ''}</td>
+      <td>${escHtml(r.date||'')}</td>
+      <td>${d ? escHtml(donorName(d)) : ''}</td>
       <td style="font-weight:700;color:#16a34a">₪${parseFloat(r.amount||0).toLocaleString()}</td>
-      <td>${r.method||''}</td>
-      <td>${camp ? camp.name : ''}</td>
-      <td>${frLabel}</td>
-      <td style="font-size:10px;color:#666">${r.notes||''}</td>
+      <td>${escHtml(r.method||'')}</td>
+      <td>${camp ? escHtml(camp.name) : ''}</td>
+      <td>${escHtml(frLabel)}</td>
+      <td style="font-size:10px;color:#666">${escHtml(r.notes||'')}</td>
     </tr>`;
   }).join('');
 
@@ -10686,7 +10686,7 @@ function renderLabelPreview() {
   const sampleDonor = (window.donors||[]).find(d=>d.city)||{firstName:'ישראל',lastName:'ישראלי',street:'הרצל',houseNum:'1',city:'ירושלים',zip:'9100001',phone:'02-1234567',mobile:'050-1234567',code:'D001'};
   if(!_lblRows.length) { sp.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">הוסף שורות לתצוגה</div>'; return; }
   sp.innerHTML = _lblRows.map(row =>
-    `<div style="font-size:${fontSz}pt;font-weight:${row.bold?'700':'400'};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getLblVal(sampleDonor,row.field)||' '}</div>`
+    `<div style="font-size:${fontSz}pt;font-weight:${row.bold?'700':'400'};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(getLblVal(sampleDonor,row.field))||' '}</div>`
   ).join('');
   // Page layout sample
   const ps = document.getElementById('lblPageSample');
@@ -10878,7 +10878,7 @@ function wizGeneratePreview() {
       const total=dons.reduce((s,dn)=>s+(parseFloat(dn.amount)||0),0);
       const sorted=[...dons].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
       const row={code:d.code||'',firstName:d.firstName||'',lastName:d.lastName||'',affiliation:d.affiliation||'',prefTime:d.prefTime||'',notes:d.notes||'',street:d.street||'',city:d.city||'',zip:d.zip||'',phone:d.phone||'',mobile:d.mobile||'',email:d.email||'',totalDonations:total?'₪'+total.toLocaleString():'',lastDonation:sorted[0]?'₪'+(parseFloat(sorted[0].amount)||0).toLocaleString():'',maxDonation:dons.length?'₪'+Math.max(...dons.map(dn=>parseFloat(dn.amount)||0)).toLocaleString():'',donationCount:dons.length||'',lastCampaign:sorted[0]?.campaign||sorted[0]?.campaignId||''};
-      html+=`<tr style="background:${i%2?'#f9f9f9':'white'}">`+cols.map(c=>`<td style="padding:3px 6px;border:1px solid #eee">${row[c]||''}</td>`).join('')+'</tr>';
+      html+=`<tr style="background:${i%2?'#f9f9f9':'white'}">`+cols.map(c=>`<td style="padding:3px 6px;border:1px solid #eee">${escHtml(row[c]||'')}</td>`).join('')+'</tr>';
     });
     if(wizFilteredDonors.length>20) html+=`<tr><td colspan="${cols.length}" style="text-align:center;padding:6px;color:var(--muted);font-style:italic">... ועוד ${wizFilteredDonors.length-20} רשומות</td></tr>`;
     html+='</table>';
@@ -10891,7 +10891,7 @@ function wizGeneratePreview() {
     el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:10px">📄 ${Math.min(wizFilteredDonors.length,perPage)} מדבקות — עמוד 1 מתוך ${Math.ceil(wizFilteredDonors.length/perPage)||1}</div>
     <div style="display:grid;grid-template-columns:repeat(${cfg.cols},1fr);gap:4px">
     ${wizFilteredDonors.slice(0,perPage).map(d=>`<div style="border:1px solid #bbb;padding:3px 5px;font-family:'Heebo',sans-serif;min-height:30px">
-      ${_lblRows.map(r=>`<div style="font-size:${fontSz}pt;font-weight:${r.bold?'700':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getLblVal(d,r.field)||' '}</div>`).join('')}
+      ${_lblRows.map(r=>`<div style="font-size:${fontSz}pt;font-weight:${r.bold?'700':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(getLblVal(d,r.field))||' '}</div>`).join('')}
     </div>`).join('')}
     </div>`;
   } else {
@@ -10946,7 +10946,7 @@ function quickPdfExport(context) {
     const rows=(window.fundraisers||[]).map(fr=>[fr.code||'',fr.firstName||'',fr.lastName||'',fr.vaad||'',fr.groupCode||'',fr.homePhone||'',fr.mobile||'',fr.target||'']);
     const inst='עזר תורה - תושיה'; const camp=(window.campaigns||[]).find(c=>c.active)?.name||'';
     const pw=window.open('','_blank','width=900,height=700');
-    pw.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><title>רשימת מתרימים</title><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap');body{font-family:'Heebo',sans-serif;font-size:9px;margin:10mm;direction:rtl}.hdr{text-align:center;margin-bottom:10px;border-bottom:2px solid #17408f;padding-bottom:8px}.hdr h1{font-size:18px;margin:0;color:#17408f}table{border-collapse:collapse;width:100%}th{background:#17408f;color:white;padding:4px 6px;font-size:8px;border:1px solid #555}td{padding:2px 4px;border:1px solid #ddd;font-size:8px}tr:nth-child(even){background:#f8f8f8}@page{size:A4;margin:10mm}</style></head><body><div class="hdr"><h1>${inst}</h1><h2>${camp}</h2><p style="font-size:8px;color:#888">רשימת מתרימים | ${new Date().toLocaleDateString('he-IL')}</p></div><table><thead><tr>${hdr.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2?'#f8f8f8':'white'}">${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000)}<\/script></body></html>`);
+    pw.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><title>רשימת מתרימים</title><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap');body{font-family:'Heebo',sans-serif;font-size:9px;margin:10mm;direction:rtl}.hdr{text-align:center;margin-bottom:10px;border-bottom:2px solid #17408f;padding-bottom:8px}.hdr h1{font-size:18px;margin:0;color:#17408f}table{border-collapse:collapse;width:100%}th{background:#17408f;color:white;padding:4px 6px;font-size:8px;border:1px solid #555}td{padding:2px 4px;border:1px solid #ddd;font-size:8px}tr:nth-child(even){background:#f8f8f8}@page{size:A4;margin:10mm}</style></head><body><div class="hdr"><h1>${inst}</h1><h2>${escHtml(camp)}</h2><p style="font-size:8px;color:#888">רשימת מתרימים | ${new Date().toLocaleDateString('he-IL')}</p></div><table><thead><tr>${hdr.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2?'#f8f8f8':'white'}">${r.map(v=>`<td>${escHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000)}<\/script></body></html>`);
     pw.document.close(); return;
   }
   const tbl=context==='donors'?document.getElementById('donorsTable'):document.getElementById('donationsTable');
@@ -10971,7 +10971,7 @@ tr:nth-child(even){background:#f8f8f8}
 th:first-child,td:first-child{display:none}
 @page{size:A4;margin:10mm}
 </style></head><body>
-<div class="hdr"><h1>${inst}</h1><h2>${camp}</h2><p style="font-size:8px;color:#888">${title} | ${new Date().toLocaleDateString('he-IL')}</p></div>
+<div class="hdr"><h1>${inst}</h1><h2>${escHtml(camp)}</h2><p style="font-size:8px;color:#888">${title} | ${new Date().toLocaleDateString('he-IL')}</p></div>
 ${clone.outerHTML}
 <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000)}<\/script>
 </body></html>`);
@@ -11065,14 +11065,14 @@ tr:nth-child(even){background:#f8f8f8}
 @media print{body{margin:0;padding:0}}
 </style></head><body>
 <div class="page-hdr">
-  <h1>${inst}</h1><h2>${campName}</h2>
+  <h1>${escHtml(inst)}</h1><h2>${escHtml(campName)}</h2>
   <p style="font-size:9px;color:#888;margin:4px 0">${new Date().toLocaleDateString('he-IL')} | ${wizFilteredDonors.length} תורמים</p>
 </div>
 <table>
 <thead><tr>${cols.map((c,i)=>`<th style="width:${scaledW[i]}mm">${LABELS[c]||c}</th>`).join('')}</tr></thead>
 <tbody>${rows.map(row=>`<tr>${row.map((v,i)=>{
   const isLong=['address','notes'].includes(cols[i]);
-  return `<td style="width:${scaledW[i]}mm" data-long="${isLong}">${v||''}</td>`;
+  return `<td style="width:${scaledW[i]}mm" data-long="${isLong}">${escHtml(v||'')}</td>`;
 }).join('')}</tr>`).join('')}</tbody>
 </table>
 <script>
@@ -11126,16 +11126,16 @@ function wizDoPdfPackets() {
     const frIds=new Set(grpFrs.map(fr=>fr.id));
     const relDonorIds=new Set((window.relations||window.donorRelations||[]).filter(r=>frIds.has(r.fundraiserId||r.frId)).map(r=>r.donorId));
     const grpDonors=wizFilteredDonors.filter(d=>relDonorIds.has(d.id));
-    const memberRows=grpFrs.map(fr=>`<tr><td style="padding:3px 8px;border:1px solid #ddd">${fr.firstName||''} ${fr.lastName||''}</td><td style="padding:3px 8px;border:1px solid #ddd">${fr.mobile||fr.homePhone||''}</td></tr>`).join('');
+    const memberRows=grpFrs.map(fr=>`<tr><td style="padding:3px 8px;border:1px solid #ddd">${escHtml(fr.firstName||'')} ${escHtml(fr.lastName||'')}</td><td style="padding:3px 8px;border:1px solid #ddd">${escHtml(fr.mobile||fr.homePhone||'')}</td></tr>`).join('');
     const donorRows=grpDonors.map((d,i)=>{
       const bg1=i%2===0?'white':'#f0f5ff';
       const bg2=i%2===0?'#e8ecf8':'#dde5ff';
       return `
       <tr style="background:${bg1};border-top:1.5px solid #bbb">
-        ${topCols.map(c=>`<td style="padding:2px 5px;font-size:9px;border:1px solid #ddd">${getDonorVal(d,c)}</td>`).join('')}
+        ${topCols.map(c=>`<td style="padding:2px 5px;font-size:9px;border:1px solid #ddd">${escHtml(getDonorVal(d,c))}</td>`).join('')}
       </tr>
       <tr style="background:${bg2}">
-        ${btmCols.map(c=>`<td style="padding:2px 5px;font-size:9px;border:1px solid #ddd;color:#333;font-style:italic">${getDonorVal(d,c)}</td>`).join('')}
+        ${btmCols.map(c=>`<td style="padding:2px 5px;font-size:9px;border:1px solid #ddd;color:#333;font-style:italic">${escHtml(getDonorVal(d,c))}</td>`).join('')}
         ${topCols.length>btmCols.length?`<td colspan="${topCols.length-btmCols.length}" style="border:1px solid #ddd;background:white"></td>`:''}
       </tr>`;
     }).join('');
@@ -11146,7 +11146,7 @@ function wizDoPdfPackets() {
       const mapUrl=`https://maps.googleapis.com/maps/api/staticmap?size=640x480&maptype=roadmap&markers=${markers}&language=he&key=${mapsKey}`;
       mapSection=`<div class="page-break">
         <div style="text-align:center;background:#17408f;color:white;padding:10px;border-radius:8px;margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700">🗺️ מפת התמצאות — קבוצה ${grp.code} | ${grp.name||''}</div>
+          <div style="font-size:13px;font-weight:700">🗺️ מפת התמצאות — קבוצה ${escHtml(grp.code)} | ${escHtml(grp.name||'')}</div>
           <div style="font-size:10px;opacity:.8;margin-top:4px">${grpDonors.length} תורמים</div>
         </div>
         <div style="text-align:center">
@@ -11158,9 +11158,9 @@ function wizDoPdfPackets() {
     pagesHTML+=`
     <div class="${gi>0?'page-break':''}">
       <div style="text-align:center;border-bottom:2px solid #17408f;padding-bottom:10px;margin-bottom:12px">
-        <div style="font-size:13px;color:#666;font-weight:600">${inst}</div>
-        <div style="font-size:18px;font-weight:700;color:#17408f">${campName}</div>
-        <div style="font-size:15px;font-weight:700;margin-top:6px">קבוצה ${grp.code} — ${grp.name||''}</div>
+        <div style="font-size:13px;color:#666;font-weight:600">${escHtml(inst)}</div>
+        <div style="font-size:18px;font-weight:700;color:#17408f">${escHtml(campName)}</div>
+        <div style="font-size:15px;font-weight:700;margin-top:6px">קבוצה ${escHtml(grp.code)} — ${escHtml(grp.name||'')}</div>
         <div style="font-size:10px;color:#888;margin-top:4px">${new Date().toLocaleDateString('he-IL')} | ${grpDonors.length} תורמים</div>
       </div>
       ${memberRows?`<table style="border-collapse:collapse;margin-bottom:14px;font-size:10px;border:1px solid #bbb;background:#f8f8f8">
@@ -11212,7 +11212,7 @@ function wizDoPdfLabels() {
 
   function buildLabel(d) {
     if(!d) return '<div class="label"></div>';
-    return `<div class="label">${rows.map(r=>`<div class="${r.bold?'lb':'lr'}">${getLblVal(d,r.field)||' '}</div>`).join('')}</div>`;
+    return `<div class="label">${rows.map(r=>`<div class="${r.bold?'lb':'lr'}">${escHtml(getLblVal(d,r.field))||' '}</div>`).join('')}</div>`;
   }
 
   const perPage=cfg.cols*cfg.rows;
@@ -11850,7 +11850,7 @@ function renderSmartAlerts() {
     const daysLeft=Math.floor((new Date(ac.deadline)-now)/86400000);
     const raised=DB.donors.reduce((s,d)=>s+(d.donations||[]).filter(dn=>dn.campaignId===ac.id).reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0),0);
     const pct=(raised/parseFloat(ac.goal))*100;
-    if(daysLeft>=0&&daysLeft<14&&pct<60) alerts.push({icon:'🎯',color:'#ef4444',bg:'#fef2f2',text:`המגבית "${ac.name}" ב-${Math.round(pct)}% מהיעד, נותרו ${daysLeft} ימים`,action:`showPage('campaign')`,btnText:'לפאנל'});
+    if(daysLeft>=0&&daysLeft<14&&pct<60) alerts.push({icon:'🎯',color:'#ef4444',bg:'#fef2f2',text:`המגבית "${escHtml(ac.name)}" ב-${Math.round(pct)}% מהיעד, נותרו ${daysLeft} ימים`,action:`showPage('campaign')`,btnText:'לפאנל'});
   }
   // 5. Future donations due this week
   const weekAhead=new Date(now); weekAhead.setDate(weekAhead.getDate()+7);
