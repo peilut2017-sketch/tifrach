@@ -9203,12 +9203,45 @@ function openSelfServicePanel() {
       </div>
       <hr style="border:none;border-top:1px solid var(--border)">
       <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">🩺 בדיקת חיבור לשרת (Edge Function):</div>
+        <button class="btn btn-outline btn-sm" id="ssDiagBtn" onclick="runSelfServiceDiag()">בדוק עכשיו</button>
+        <div id="ssDiagOut" style="font-size:12px;margin-top:6px"></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border)">
+      <div>
         <div style="font-size:13px;font-weight:600;margin-bottom:6px">ייצוא לכל התורמים:</div>
         <button class="btn btn-outline btn-sm" onclick="exportAllSelfServiceLinks()">📥 ייצוא Excel עם כל הקישורים</button>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">ייוצא קובץ עם קישור ייחודי לכל תורם</div>
       </div>
     </div>`;
   openModal('selfServiceModal');
+}
+
+// Calls the edge function's "diag" action: is it deployed, can it read the DB,
+// and are the SQL helpers from migration 0002 callable? Explains what to fix.
+async function runSelfServiceDiag() {
+  const out = document.getElementById('ssDiagOut'), btn = document.getElementById('ssDiagBtn');
+  if (!out) return;
+  if (btn) btn.disabled = true;
+  out.innerHTML = '<span style="color:var(--muted)">בודק…</span>';
+  const line = (ok, txt) => `<div style="color:${ok ? 'var(--success, #16a34a)' : '#b91c1c'}">${ok ? '✓' : '✕'} ${txt}</div>`;
+  try {
+    const { ok, out: r } = await _ssPost({ action: 'diag' });
+    if (!ok || !r || !r.ok) {
+      const known = r && (r.error === 'unknown action' || r.error === 'missing action');
+      out.innerHTML = line(false, known
+        ? 'הפונקציה פרוסה אך בגרסה ישנה — יש לפרוס מחדש את self-service (supabase functions deploy self-service)'
+        : 'הפונקציה לא נגישה: ' + escHtml(_ssErrText(r)) + ' — יש לוודא שהיא פרוסה בפרויקט ' + escHtml(SUPABASE_URL));
+      return;
+    }
+    let html = line(true, 'הפונקציה פרוסה ונגישה (גרסה ' + escHtml(r.version || '?') + ')');
+    html += line(!!r.dbRead, r.dbRead ? 'קריאה מבסיס הנתונים תקינה' : 'קריאה מבסיס הנתונים נכשלה: ' + escHtml(r.dbReadError || ''));
+    if (r.rpc === 'ok') html += line(true, 'פונקציות ה-SQL ממיגרציה 0002 זמינות — שמירה אטומית');
+    else html += `<div style="color:#92400e">⚠ פונקציות ה-SQL ממיגרציה 0002 אינן זמינות (${escHtml(r.rpcError || '')}). השליחה עובדת במסלול חלופי (compare-and-swap), אך מומלץ להריץ את <code>migrations/0002_edge_atomic_writes.sql</code> ב-SQL Editor.</div>`;
+    out.innerHTML = html;
+  } catch (e) {
+    out.innerHTML = line(false, 'לא ניתן להגיע לפונקציה (' + escHtml(e && e.message || '') + '). בדוק שהיא פרוסה ושאין חסימת CORS.');
+  } finally { if (btn) btn.disabled = false; }
 }
 
 function searchDonorForSS(q) {
@@ -9333,6 +9366,13 @@ function _ssShowResult(ok, msg) {
   r.textContent = msg;
   r.scrollIntoView({ block: 'nearest' });
 }
+// Short reason for the person filling the form (and for the admin who gets the
+// screenshot): the server's error + detail, never a raw stack.
+function _ssErrText(out) {
+  if (!out || typeof out !== 'object') return 'אין תשובה מהשרת';
+  const parts = [out.error, out.detail].filter(x => typeof x === 'string' && x).map(x => x.slice(0, 120));
+  return parts.join(': ') || 'שגיאה לא ידועה';
+}
 async function _ssPost(body) {
   const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
     method: 'POST',
@@ -9375,10 +9415,10 @@ async function submitSelfEdit(donorId, token) {
   if (!edits.firstName && !edits.lastName) { _ssShowResult(false, 'נא למלא שם'); return; }
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
-    const { ok } = await _ssPost({ action: 'submit', donorId, token, edits });
-    if (!ok) throw new Error('submit failed');
+    const { ok, out } = await _ssPost({ action: 'submit', donorId, token, edits });
+    if (!ok) throw new Error(_ssErrText(out));
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
     if (btn) btn.disabled = false;
     return;
   }
@@ -9400,10 +9440,10 @@ async function submitPublicAdd() {
   if (!edits.phone && !edits.mobile && !edits.email) { _ssShowResult(false, 'נא למלא לפחות טלפון או מייל ליצירת קשר'); return; }
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
-    const { ok } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
-    if (!ok) throw new Error('register failed');
+    const { ok, out } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
+    if (!ok) throw new Error(_ssErrText(out));
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
     if (btn) btn.disabled = false;
     return;
   }
