@@ -554,8 +554,11 @@ tr:hover td { background: var(--primary-bg) }
 .users-table td{padding:9px 12px;border-bottom:1px solid var(--border)}
 
 /* ════ INLINE SETTINGS ════ */
-.setting-item{display:flex;gap:6px;margin-bottom:6px}
+.setting-item{display:flex;gap:6px;margin-bottom:6px;align-items:center;border-top:2px solid transparent;border-radius:6px}
 .setting-item .form-control{flex:1}
+.setting-item .drag-handle{cursor:grab;color:var(--stone-400);padding:0 4px;user-select:none;font-size:15px;line-height:1;letter-spacing:-2px}
+.setting-item.dragging{opacity:.4}
+.setting-item.drag-over{border-top-color:var(--primary)}
 
 /* ══════════════ MOBILE RESPONSIVE ══════════════ */
 @media (max-width: 768px) {
@@ -635,6 +638,101 @@ tr:hover td { background: var(--primary-bg) }
   table td:nth-child(1), table td:nth-child(2), table td:nth-child(3), table td:nth-child(4) { display: table-cell !important; }
 }
 
+/* ════ CHAT — WhatsApp-style internal messaging ════ */
+#pageMessages{padding:0!important;overflow:hidden}
+.wa{--wa-green:#00a884;--wa-green-dk:#008069;--wa-bg:#efeae2;--wa-me:#d9fdd3;--wa-panel:#f0f2f5;--wa-text:#111b21;--wa-muted:#667781;--wa-tick:#53bdeb;--wa-unread:#25d366;
+  display:flex;height:calc(100dvh - 58px);background:#fff;overflow:hidden;font-family:'Heebo',sans-serif;color:var(--wa-text)}
+.wa-side{width:360px;max-width:42%;border-left:1px solid #e9edef;display:flex;flex-direction:column;background:#fff;flex-shrink:0}
+.wa-side-head{background:var(--wa-panel);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;min-height:59px}
+.wa-me{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;min-width:0}
+.wa-side-actions{display:flex;gap:2px;align-items:center}
+.wa-ib{background:none;border:none;cursor:pointer;font-size:18px;color:#54656f;width:38px;height:38px;min-height:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.wa-ib:hover{background:rgba(0,0,0,.06)}
+.wa-search{padding:7px 12px;background:#fff;border-bottom:1px solid #e9edef}
+.wa-search input{width:100%;border:none;background:var(--wa-panel);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:14px;outline:none;color:var(--wa-text)}
+.wa-list{flex:1;overflow-y:auto}
+.wa-item{display:flex;gap:12px;padding:10px 14px;cursor:pointer;align-items:center;border-bottom:1px solid #f0f2f5}
+.wa-item:hover{background:#f5f6f6}.wa-item.active{background:var(--wa-panel)}
+.wa-avatar{width:46px;height:46px;border-radius:50%;background:#dfe5e7;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;letter-spacing:-.5px}
+.wa-online{position:absolute;bottom:0;left:0;width:12px;height:12px;border-radius:50%;background:var(--wa-unread);border:2px solid #fff;box-sizing:border-box}
+.wa-item-body{flex:1;min-width:0}
+.wa-item-top,.wa-item-bot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wa-item-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-item-time{font-size:11px;color:var(--wa-muted);flex-shrink:0}.wa-item-time.green{color:var(--wa-unread);font-weight:700}
+.wa-item-preview{font-size:13px;color:var(--wa-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.wa-item-preview .wa-tick{margin-left:3px}
+.wa-badge{background:var(--wa-unread);color:#fff;font-size:11px;font-weight:700;border-radius:99px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.wa-at{color:var(--wa-unread);font-weight:900;font-size:14px;margin-left:2px}
+.wa-typing-txt{color:var(--wa-green);font-style:italic}
+.wa-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--wa-bg);position:relative}
+.wa-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#41525d;background:var(--wa-panel);gap:8px;text-align:center;padding:20px;font-size:14px;border-bottom:6px solid var(--wa-green)}
+.wa-empty .big{font-size:52px;opacity:.5}
+.wa-chat{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+.wa-chat-head{background:var(--wa-panel);padding:6px 12px;display:flex;align-items:center;gap:10px;min-height:59px;border-bottom:1px solid #e9edef}
+.wa-back{display:none;font-size:22px}
+.wa-chat-title{flex:1;min-width:0;cursor:pointer}
+.wa-chat-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-chat-sub{font-size:12px;color:var(--wa-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-chat-sub.on{color:var(--wa-green-dk)}
+.wa-msgs{flex:1;overflow-y:auto;padding:14px 7% 8px;display:flex;flex-direction:column;gap:2px;
+  background-color:var(--wa-bg);background-image:radial-gradient(rgba(0,0,0,.045) 1px,transparent 1px);background-size:22px 22px}
+.wa-day{align-self:center;background:#fff;color:#54656f;font-size:12px;padding:5px 12px;border-radius:8px;box-shadow:0 1px .5px rgba(11,20,26,.13);margin:8px 0 6px}
+.wa-msg{max-width:min(78%,560px);align-self:flex-start;position:relative;margin-top:1px}
+.wa-msg.first{margin-top:8px}
+.wa-msg.me{align-self:flex-end}
+.wa-bubble{background:#fff;border-radius:8px;padding:6px 9px 4px;box-shadow:0 1px .5px rgba(11,20,26,.13);font-size:14.2px;line-height:1.45;position:relative;word-wrap:break-word;white-space:pre-wrap;min-width:90px}
+.wa-msg.me .wa-bubble{background:var(--wa-me)}
+.wa-msg.first .wa-bubble::before{content:'';position:absolute;top:0;width:0;height:0;border:7px solid transparent}
+.wa-msg.first:not(.me) .wa-bubble{border-top-right-radius:0}
+.wa-msg.first:not(.me) .wa-bubble::before{right:-7px;border-top-color:#fff;border-right-color:transparent;border-left-color:#fff}
+.wa-msg.first.me .wa-bubble{border-top-left-radius:0}
+.wa-msg.first.me .wa-bubble::before{left:-7px;border-top-color:var(--wa-me);border-right-color:var(--wa-me)}
+.wa-msg.mentioned .wa-bubble{box-shadow:0 0 0 1.5px var(--wa-green) inset,0 1px .5px rgba(11,20,26,.13)}
+.wa-sender{font-size:12.5px;font-weight:600;margin-bottom:2px}
+.wa-meta{display:flex;justify-content:flex-start;align-items:center;gap:4px;font-size:11px;color:var(--wa-muted);margin-top:2px;direction:ltr;float:left;margin-right:8px}
+.wa-tick{font-size:12px;letter-spacing:-3px;color:#8696a0;display:inline-block;direction:ltr}.wa-tick.blue{color:var(--wa-tick)}
+.wa-deleted{color:var(--wa-muted);font-style:italic}
+.wa-mention{color:var(--wa-green-dk);font-weight:600;background:rgba(0,168,132,.09);border-radius:4px;padding:0 2px}
+.wa-bubble a{color:#027eb5}
+.wa-msg-more{position:absolute;top:2px;left:3px;background:none;border:none;color:#8696a0;cursor:pointer;font-size:15px;opacity:0;transition:opacity .15s;padding:0 4px;line-height:1;min-height:0}
+.wa-msg.me .wa-msg-more{left:auto;right:3px}
+.wa-msg:hover .wa-msg-more{opacity:1}
+@media(pointer:coarse){.wa-msg-more{opacity:.55}}
+.wa-typing{padding:0 7% 4px;display:flex}
+.wa-typing-bubble{background:#fff;border-radius:8px;border-top-right-radius:0;padding:9px 12px;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.wa-dots{display:inline-flex;gap:4px;direction:ltr}.wa-dots i{width:7px;height:7px;border-radius:50%;background:#8696a0;animation:waDot 1.2s infinite ease-in-out}
+.wa-dots i:nth-child(2){animation-delay:.2s}.wa-dots i:nth-child(3){animation-delay:.4s}
+@keyframes waDot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-4px);opacity:1}}
+.wa-compose{background:var(--wa-panel);padding:8px 12px;display:flex;align-items:flex-end;gap:8px}
+.wa-compose textarea{flex:1;resize:none;border:none;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:15px;line-height:1.4;max-height:140px;outline:none;background:#fff;color:var(--wa-text);min-height:42px;box-sizing:border-box}
+.wa-send{background:var(--wa-green);color:#fff;border:none;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;min-height:0}
+.wa-send:hover{background:var(--wa-green-dk)}
+.wa-send span{display:inline-block;transform:scaleX(-1)}
+.wa-editbar{background:#fff;border-top:1px solid #e9edef;padding:6px 14px;font-size:12.5px;color:var(--wa-green-dk);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wa-editbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wa-mention-pop{position:absolute;bottom:62px;right:12px;left:12px;max-height:200px;overflow:auto;background:#fff;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:5}
+.wa-mention-pop div{padding:8px 12px;cursor:pointer;display:flex;gap:8px;align-items:center;font-size:13.5px}.wa-mention-pop div:hover{background:#f5f6f6}
+.wa-mention-pop .wa-avatar{width:30px;height:30px;font-size:11px}
+.wa-msg-menu{position:fixed;background:#fff;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.2);padding:6px 0;z-index:1400;min-width:160px}
+.wa-msg-menu button{display:block;width:100%;text-align:right;background:none;border:none;padding:9px 16px;font-family:inherit;font-size:14px;cursor:pointer;color:var(--wa-text);min-height:0}
+.wa-msg-menu button:hover{background:#f5f6f6}.wa-msg-menu button.danger{color:#b91c1c}
+.wa-member{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--stone-100);cursor:pointer;font-size:13.5px}
+.wa-member:hover{background:var(--stone-50)}
+.wa-member .wa-avatar{width:36px;height:36px;font-size:13px}
+.wa-member .sub{font-size:11px;color:var(--wa-muted)}
+.wa-member .grow{flex:1;min-width:0}
+.wa-newmsg-pill{position:absolute;bottom:74px;left:50%;transform:translateX(-50%);background:#fff;color:var(--wa-green-dk);border-radius:99px;padding:6px 14px;font-size:12.5px;box-shadow:0 2px 10px rgba(0,0,0,.2);cursor:pointer;z-index:4;border:none;font-family:inherit}
+@media(max-width:768px){
+  .wa{height:calc(100dvh - 52px)}
+  .wa-side{width:100%;max-width:none;border-left:none}
+  .wa-main{display:none}
+  .wa.chat-open .wa-side{display:none}
+  .wa.chat-open .wa-main{display:flex}
+  .wa-back{display:inline-flex}
+  .wa-msgs{padding:12px 10px 6px}.wa-typing{padding:0 10px 4px}
+  .wa-msg{max-width:86%}
+}
+
 /* ════ PRINT (in-app) ════ */
 @media print{.topbar,.toolbar,.row-actions,.nav-btn,.btn,.modal-overlay,#sidebar{display:none!important}#mainContent{margin-right:0!important}.page{padding:0}.table-wrap{box-shadow:none;border:1px solid #ccc}}
 @media print { tr { page-break-inside: avoid; } td { white-space: normal !important; word-wrap: break-word; max-height: calc(3 * 1.4em); overflow: hidden; line-height: 1.4; } table { page-break-inside: auto; } }
@@ -660,7 +758,12 @@ tr:hover td { background: var(--primary-bg) }
 .sub-modal-header{background:var(--primary);color:white;padding:10px 16px;border-radius:var(--r-md) var(--r-md) 0 0;display:flex;align-items:center;justify-content:space-between}
 
 /* ══ SIDEBAR NAV — light, modern ══ */
-#appWrapper { display:flex; flex-direction:row; min-height:100vh; }
+/* overflow-x:clip (not hidden) so the sticky topbar keeps working: a flex child
+   with the default min-width:auto could not shrink below its content, the page grew
+   wider than the screen, and mobile browsers widened the layout viewport — every
+   fixed modal was then laid out on that wider viewport and slid off-screen on
+   tablets / phones in landscape. */
+#appWrapper { display:flex; flex-direction:row; min-height:100vh; overflow-x:clip; }
 #sidebar {
   width:225px; height:100vh; height:100dvh; background:var(--white);
   display:flex; flex-direction:column; transition:width .25s cubic-bezier(.4,0,.2,1);
@@ -708,7 +811,7 @@ tr:hover td { background: var(--primary-bg) }
 }
 #sidebar.collapsed .sb-user-text { opacity:0; }
 #mainContent {
-  flex:1; margin-right:225px; transition:margin-right .25s cubic-bezier(.4,0,.2,1); min-height:100vh;
+  flex:1; min-width:0; margin-right:225px; transition:margin-right .25s cubic-bezier(.4,0,.2,1); min-height:100vh;
   display:flex; flex-direction:column;
 }
 #mainContent.expanded { margin-right:58px; }
@@ -730,8 +833,6 @@ tr:hover td { background: var(--primary-bg) }
   .admin-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:900px){
-  .msg-grid{grid-template-columns:1fr!important}
-  .msg-grid .card:first-child{max-height:260px;overflow:auto}
 }
 
 /* ════ TEAL CARD ════ */
@@ -1090,6 +1191,7 @@ tr:hover td { background: var(--primary-bg) }
   <!-- Bulk action bar -->
   <div id="bulkActionBar" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:8px 14px;margin:0 18px 8px;align-items:center;gap:10px;flex-wrap:wrap">
     <span id="bulkCount" style="font-size:13px;font-weight:700;color:#856404">0 נבחרו</span>
+    <span id="bulkSelectAllLink" style="font-size:12px"></span>
     <button class="btn btn-danger btn-sm" onclick="deleteSelectedDonors()"><i data-lucide="trash-2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> מחק נבחרים</button>
     <button class="btn btn-outline btn-sm" onclick="clearAllSelections()">✕ בטל בחירה</button>
   </div>
@@ -1574,7 +1676,7 @@ tr:hover td { background: var(--primary-bg) }
     </div>
 
     <div class="admin-card" onclick="openUsersModal()"><div class="ac-icon"><i data-lucide="users" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>ניהול משתמשים</h3><p>הוספה, עריכה, הרשאות</p></div>
-    <div class="admin-card" onclick="openSettingsModal()"><div class="ac-icon"><i data-lucide="clipboard-list" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>נתונים קשיחים</h3><p>עריכת רשימות</p></div>
+    <div class="admin-card" onclick="openSettingsModal()"><div class="ac-icon"><i data-lucide="clipboard-list" style="width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></div><h3>רשימות ואפשרויות</h3><p>תארים, שיוכים, אמצעי תשלום · סדר תצוגה</p></div>
     <div class="admin-card" onclick="openIOCenter('excel')" style="border-color:var(--primary-border);background:var(--primary-bg)"><div class="ac-icon">📦</div><h3>מרכז ייבוא וייצוא</h3><p>ייבוא, Excel, דוחות, הדפסות, מדבקות — הכל במקום אחד</p></div>
     
     <div class="admin-card" style="cursor:default">
@@ -1598,22 +1700,48 @@ tr:hover td { background: var(--primary-bg) }
 
 <!-- ════ MESSAGES PAGE ════ -->
 <div class="page" id="pageMessages">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-    <h2 style="font-family:'Noto Serif Hebrew',serif;font-size:24px">✉️ הודעות פנימיות</h2>
-    <button class="btn btn-gold" onclick="openComposeMsg()">✉️ הודעה חדשה</button>
-  </div>
-  <div class="msg-grid" style="display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:500px">
-    <!-- Threads list -->
-    <div class="card" style="margin:0">
-      <div class="card-header"><h3>שיחות</h3></div>
-      <div id="msgThreadList" style="overflow-y:auto;max-height:600px"></div>
-    </div>
-    <!-- Thread view -->
-    <div class="card" style="margin:0">
-      <div id="msgThreadView" style="padding:20px;height:100%;display:flex;flex-direction:column">
-        <div style="flex:1;color:var(--muted);text-align:center;padding-top:60px;font-size:14px">בחר שיחה מהרשימה</div>
+  <div class="wa" id="waApp">
+    <aside class="wa-side" id="waSide">
+      <div class="wa-side-head">
+        <div class="wa-me"><span class="wa-avatar" id="waMeAvatar" style="width:40px;height:40px;font-size:14px"></span><span>הודעות</span></div>
+        <div class="wa-side-actions">
+          <button class="wa-ib" title="שיחה חדשה / קבוצה" onclick="openNewChatModal()">✚</button>
+          <div class="more-menu">
+            <button class="wa-ib" title="אפשרויות" onclick="toggleMoreMenu('waMoreMenu')">⋮</button>
+            <div class="more-menu-list" id="waMoreMenu" style="left:auto;right:0">
+              <button class="more-menu-item" onclick="toggleMoreMenu('waMoreMenu');openChat('all')">📢 הודעה לכל הצוות</button>
+              <button class="more-menu-item" onclick="toggleMoreMenu('waMoreMenu');markAllChatsRead()">✓ סמן הכל כנקרא</button>
+              <button class="more-menu-item" id="waReceiptsBtn" onclick="toggleMoreMenu('waMoreMenu');toggleReadReceipts()">✓✓ אישורי קריאה</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+      <div class="wa-search"><input id="waSearch" placeholder="🔍 חיפוש שיחה או הודעה" oninput="renderChatList()"></div>
+      <div class="wa-list" id="waList"></div>
+    </aside>
+    <section class="wa-main" id="waMain">
+      <div class="wa-empty" id="waEmpty"><div class="big">💬</div><div style="font-size:22px;font-weight:300">הודעות פנימיות</div><div style="color:var(--wa-muted)">בחר שיחה מהרשימה, או פתח שיחה חדשה / קבוצה בלחיצה על ✚</div></div>
+      <div class="wa-chat" id="waChat" style="display:none">
+        <header class="wa-chat-head">
+          <button class="wa-ib wa-back" onclick="closeChat()" title="חזרה">→</button>
+          <div class="wa-avatar" id="waChatAvatar" style="width:40px;height:40px;font-size:14px"></div>
+          <div class="wa-chat-title" onclick="openChatInfo()">
+            <div class="wa-chat-name" id="waChatName"></div>
+            <div class="wa-chat-sub" id="waChatSub"></div>
+          </div>
+          <button class="wa-ib" onclick="openChatInfo()" title="פרטי השיחה">ⓘ</button>
+        </header>
+        <div class="wa-msgs" id="waMsgs" onscroll="_waOnScroll()"></div>
+        <button class="wa-newmsg-pill" id="waNewPill" style="display:none" onclick="_waScrollBottom(true)">⬇ הודעות חדשות</button>
+        <div class="wa-typing" id="waTyping" style="display:none"></div>
+        <div class="wa-editbar" id="waEditBar" style="display:none"><span id="waEditText">✏️ עריכת הודעה</span><button class="wa-ib" style="width:30px;height:30px;font-size:14px" onclick="cancelEditMsg()">✕</button></div>
+        <div class="wa-mention-pop" id="waMentionPop" style="display:none"></div>
+        <footer class="wa-compose">
+          <textarea id="waInput" rows="1" dir="auto" placeholder="הקלד הודעה" oninput="onChatInput(this)" onkeydown="onChatKey(event)"></textarea>
+          <button class="wa-send" onclick="sendChatMessage()" title="שלח"><span>➤</span></button>
+        </footer>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -2384,22 +2512,29 @@ tr:hover td { background: var(--primary-bg) }
 </div>
 
 <!-- COMPOSE MESSAGE MODAL -->
-<div class="modal-overlay" id="composeMsgModal">
+<div class="modal-overlay" id="newChatModal">
   <div class="modal modal-sm">
-    <div class="modal-header"><h3>✉️ הודעה חדשה</h3><button class="modal-close" onclick="closeModal('composeMsgModal')">✕</button></div>
+    <div class="modal-header"><h3>✚ שיחה חדשה</h3><button class="modal-close" onclick="closeModal('newChatModal')">✕</button></div>
     <div class="modal-body">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fg"><label class="form-label">אל <span class="req">*</span></label>
-          <select class="form-control" id="msgTo"><option value="">בחר משתמש...</option><option value="__ALL__" style="font-weight:700;color:#c00">📢 כל המשתמשים (שידור)</option></select>
-        </div>
-        <div class="fg"><label class="form-label">כותרת <span class="req">*</span></label><input class="form-control" id="msgSubject" placeholder="נושא ההודעה"></div>
-        <div class="fg"><label class="form-label">תוכן</label><textarea class="form-control" id="msgBody" rows="5" placeholder="תוכן ההודעה..."></textarea></div>
+      <div class="modal-tabs" style="display:flex;gap:4px;margin-bottom:12px">
+        <button class="btn btn-sm btn-navy" id="ncTabDm" onclick="ncTab('dm')">👤 שיחה עם משתמש</button>
+        <button class="btn btn-sm btn-outline" id="ncTabGroup" onclick="ncTab('group')">👥 קבוצה חדשה</button>
+      </div>
+      <div id="ncDm"><div id="ncUserList"></div></div>
+      <div id="ncGroup" style="display:none">
+        <input class="form-control" id="ncGroupName" placeholder="שם הקבוצה (למשל: מגבית פורים תשפ״ז)" maxlength="60">
+        <div style="font-size:12px;color:var(--muted);margin:10px 0 4px">חברי הקבוצה:</div>
+        <div id="ncMemberList"></div>
+        <button class="btn btn-navy" style="margin-top:12px;width:100%;justify-content:center" onclick="createGroupFromModal()">צור קבוצה</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('composeMsgModal')">ביטול</button>
-      <button class="btn btn-navy" onclick="sendMessage()">שלח ✉️</button>
-    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chatInfoModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h3 id="ciTitle">פרטי השיחה</h3><button class="modal-close" onclick="closeModal('chatInfoModal')">✕</button></div>
+    <div class="modal-body" id="ciBody"></div>
   </div>
 </div>
 
@@ -2733,6 +2868,7 @@ tr:hover td { background: var(--primary-bg) }
         <div class="rp-detail-panel" id="rpDetailPanel">
           <div class="rp-detail-head">
             <span id="rpDetailTitle">מסלול</span>
+            <button class="rp-detail-close" onclick="rpEditNbh(_rpActiveRouteId)" title="שנה שם עיר / שכונה">✏️</button>
             <button class="rp-detail-close" onclick="rpCloseDetail()">✕</button>
           </div>
           <div class="rp-detail-body" id="rpDetailBody"></div>
@@ -3359,7 +3495,7 @@ tr:hover td { background: var(--primary-bg) }
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
-    <div class="modal-header"><h3>📋 עריכת נתונים קשיחים</h3><button class="modal-close" onclick="closeModal('settingsModal')">✕</button></div>
+    <div class="modal-header"><h3>📋 רשימות ואפשרויות</h3><button class="modal-close" onclick="closeModal('settingsModal')">✕</button></div>
     <div class="modal-body" id="settingsBody"></div>
     <div class="modal-footer"><button class="btn btn-navy" onclick="saveSettings()">שמור וסגור</button></div>
   </div>
@@ -3651,6 +3787,7 @@ async function migrateLocalToCloud() {
 // ════════════════════════════════════════════════════════════════
 let _syncTimer = null;
 let _syncRetryTimer = null;
+let _syncFailCount = 0;
 let _syncBusy = false;
 let _dirty = false;
 let _pendingRerender = false;
@@ -3790,6 +3927,28 @@ function _mergeDonorDeep(b, l, r) {
   return out;
 }
 
+// Chat message changed on both sides (A edited while B read it): union the
+// receipts, keep the newest edit, and a deletion always sticks.
+function _mergeMessageDeep(b, l, r) {
+  const out = { ...r, ...l };
+  if (_tsOf(r.editedAt) > _tsOf(l.editedAt)) { out.text = r.text; out.editedAt = r.editedAt; out.mentions = r.mentions; }
+  out.deleted = !!(l.deleted || r.deleted);
+  if (out.deleted) out.text = '';
+  out.readBy = { ...(r.readBy || {}), ...(l.readBy || {}) };
+  if (l.seenBy || r.seenBy) out.seenBy = { ...(r.seenBy || {}), ...(l.seenBy || {}) };
+  return out;
+}
+// Chat (group) changed on both sides: newest rename wins, members are unioned
+// minus anyone one side deliberately removed since the base.
+function _mergeChatDeep(b, l, r) {
+  const out = _tsOf(l.updatedAt) >= _tsOf(r.updatedAt) ? { ...r, ...l } : { ...l, ...r };
+  const bm = new Set((b && b.members) || []);
+  const lm = new Set(l.members || []), rm = new Set(r.members || []);
+  const removed = new Set([...bm].filter(u => !lm.has(u) || !rm.has(u)));
+  out.members = [...new Set([...(l.members || []), ...(r.members || [])])].filter(u => !removed.has(u));
+  return out;
+}
+
 // key-wise three-way merge for plain settings objects
 function _merge3Object(b, l, r) {
   b = b || {}; l = l || {}; r = r || {};
@@ -3821,7 +3980,8 @@ const _MERGE_ID_COLLECTIONS = [
   { key: 'fundraisingDates', id: x => x.id },
   { key: 'routes',           id: x => x.id },
   { key: 'expenses',         id: x => x.id },
-  { key: 'messages',         id: x => x.id },
+  { key: 'messages',         id: x => x.id, deep: true, deepFn: _mergeMessageDeep },
+  { key: 'chats',            id: x => x.id, deep: true, deepFn: _mergeChatDeep },
   { key: 'pendingEdits',     id: x => x.id },
   { key: 'auditLog',         id: x => x.id },
 ];
@@ -3837,7 +3997,7 @@ function _merge3DB(base, local, remote) {
   for (const cfg of _MERGE_ID_COLLECTIONS) {
     handled.add(cfg.key);
     const res = _merge3List(base[cfg.key], local[cfg.key], remote[cfg.key], cfg.id,
-                            cfg.deep ? _mergeDonorDeep : null);
+                            cfg.deep ? (cfg.deepFn || _mergeDonorDeep) : null);
     merged[cfg.key] = res.list;
     totals.remoteApplied += res.stats.remoteApplied;
     totals.conflicts += res.stats.conflicts;
@@ -3949,11 +4109,15 @@ function _syncToSupabase() {
     _showSyncStatus('loading');
     try {
       await _pushWithCAS();
+      _syncFailCount = 0;
       _showSyncStatus('ok');
       _announceDbUpdate();   // realtime: tell other clients to pull+merge now
     } catch(e) {
       console.warn('Supabase sync failed, kept locally:', e.message);
       _showSyncStatus(navigator.onLine === false ? 'offline' : 'error');
+      // The red dot is easy to miss — after repeated failures say it out loud,
+      // otherwise "✓ נשמר" looks like the server has the data when it does not.
+      if (++_syncFailCount === 3) toast('⚠️ השמירה לשרת נכשלה — השינויים שמורים במכשיר זה בלבד וננסה שוב אוטומטית (' + (e && e.message ? String(e.message).slice(0, 60) : '') + ')');
       clearTimeout(_syncRetryTimer);
       _syncRetryTimer = setTimeout(() => { if (_dirty) _syncToSupabase(); }, 7000);
     } finally {
@@ -4038,6 +4202,9 @@ async function startPresence(user) {
   try {
     _rtChannel = _sb.channel('tifrach-live', { config: { broadcast: { self: false } } });
     _rtChannel.on('broadcast', { event: 'db_updated' }, () => { _pollForCloudChanges(); });
+    _rtChannel.on('broadcast', { event: 'chat_msg' },    ({ payload }) => { try { _chatOnRemoteMsg(payload); } catch(e) {} });
+    _rtChannel.on('broadcast', { event: 'chat_read' },   ({ payload }) => { try { _chatOnRead(payload); } catch(e) {} });
+    _rtChannel.on('broadcast', { event: 'chat_typing' }, ({ payload }) => { try { _chatOnTyping(payload); } catch(e) {} });
     _rtChannel.subscribe();
   } catch(e) { _rtChannel = null; /* polling still covers us */ }
 }
@@ -4130,50 +4297,79 @@ async function _pollForCloudChanges() {
   } catch(e) {}
 }
 
+// Presence rows (heartbeat every 20s per signed-in client), cached briefly so the
+// admin card and the chat page can share one fetch.
+let _presenceCache = { at: 0, rows: [] };
+async function _fetchPresenceRows(maxAgeMs = 5000) {
+  if (Date.now() - _presenceCache.at < maxAgeMs) return _presenceCache.rows;
+  const { data: rows } = await _sb.from('app_state').select('id,data,updated_at').like('id','presence_%');
+  _presenceCache = { at: Date.now(), rows: rows || [] };
+  return _presenceCache.rows;
+}
+// Map email → {state:'online'|'idle'|'off', ageMs, page} from the presence rows
+function _presenceStates(rows) {
+  const now = Date.now(), out = {};
+  (rows||[]).forEach(r => {
+    const d = r.data || {}; const k = (d.email || '').toLowerCase(); if (!k) return;
+    const ls = d.lastSeen ? new Date(d.lastSeen).getTime() : 0;
+    if (out[k] && out[k].ls >= ls) return;
+    const age = now - ls;
+    out[k] = { ls, ageMs: age, page: d.page, name: d.displayName, editing: d.editingDonorId,
+               state: age < 45000 ? 'online' : age < 5*60000 ? 'idle' : 'off' };
+  });
+  return out;
+}
+function _fmtDT(iso) { return iso ? new Date(iso).toLocaleString('he-IL', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''; }
+
+let _presenceTimer = null;
 async function renderPresenceList() {
   const container = document.getElementById('presenceList');
   if (!container) return;
+  clearTimeout(_presenceTimer);
+  if (window._currentPage === 'admin' && currentUser) _presenceTimer = setTimeout(renderPresenceList, 15000); // live
   try {
-    const ACTIVE_THRESHOLD = 45 * 1000; // 45 seconds
-    const now = Date.now();
-    const { data: rows } = await _sb.from('app_state').select('id,data,updated_at').like('id','presence_%');
-    if (!rows || !rows.length) {
-      container.innerHTML = '<span style="color:var(--muted);font-size:13px">אין משתמשים מחוברים כעת</span>';
-      return;
-    }
-    const active = rows.filter(r => {
-      const ls = r.data && r.data.lastSeen ? new Date(r.data.lastSeen).getTime() : 0;
-      return (now - ls) < ACTIVE_THRESHOLD;
-    });
-    if (!active.length) {
-      container.innerHTML = '<span style="color:var(--muted);font-size:13px">אין משתמשים פעילים כרגע</span>';
-      return;
-    }
+    const rows = await _fetchPresenceRows(3000);
+    const st = _presenceStates(rows);
     const PAGE_LABELS = {dash:'ראשי',donors:'תורמים',donations:'תרומות',campaign:'מגבית',future:'עתידיות',fundraisers:'מתרימים',groups:'קבוצות',admin:'ניהול',messages:'הודעות',routes:'מסלולים',expenses:'הוצאות'};
-    container.innerHTML = active.map(r => {
-      const d = r.data || {};
-      const name = d.displayName || d.email || '?';
-      const page = PAGE_LABELS[d.page] || d.page || '';
-      const since = d.loginTime ? _timeSince(new Date(d.loginTime)) : '';
-      return `<div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 14px">
-        <span style="width:9px;height:9px;border-radius:50%;background:#16a34a;box-shadow:0 0 6px #16a34a;animation:pulse 2s infinite;flex-shrink:0"></span>
+    const users = (DB.users || []).filter(u => u.email || u.username).map(u => {
+      const k = (u.email || u.username || '').toLowerCase();
+      const p = st[k] || { state: 'off', ageMs: Infinity };
+      return { u, p, k };
+    });
+    // presence rows for accounts not (yet) in the user list still count as online
+    Object.entries(st).forEach(([k, p]) => { if (!users.some(x => x.k === k) && p.state !== 'off') users.push({ u: { email: k, displayName: p.name }, p, k }); });
+    const rank = { online: 0, idle: 1, off: 2 };
+    users.sort((a, b) => rank[a.p.state] - rank[b.p.state] || (a.u.displayName || a.k).localeCompare(b.u.displayName || b.k, 'he'));
+    if (!users.length) { container.innerHTML = '<span style="color:var(--muted);font-size:13px">אין משתמשים</span>'; return; }
+    const onlineCount = users.filter(x => x.p.state === 'online').length;
+    container.innerHTML = `<div style="width:100%;font-size:12px;color:var(--muted);margin-bottom:2px">${onlineCount ? `🟢 ${onlineCount} מחוברים כעת` : 'אף משתמש אינו מחובר כרגע'} · מתעדכן אוטומטית</div>` + users.map(({ u, p }) => {
+      const name = u.displayName || u.username || u.email || '?';
+      const page = PAGE_LABELS[p.page] || p.page || '';
+      let dot, bg, border, color, sub;
+      if (p.state === 'online') { dot = '#16a34a'; bg = '#f0fdf4'; border = '#86efac'; color = '#15803d';
+        sub = 'מחובר כעת' + (page ? ' · 📄 ' + escHtml(page) : '') + (p.editing ? ' · ✏️ עורך כרטיס' : ''); }
+      else if (p.state === 'idle') { dot = '#f59e0b'; bg = '#fffbeb'; border = '#fcd34d'; color = '#92400e';
+        sub = 'לא פעיל · פעיל לאחרונה לפני ' + Math.round(p.ageMs / 60000) + " דק'" + (page ? ' · 📄 ' + escHtml(page) : ''); }
+      else { dot = '#cbd5e1'; bg = 'var(--stone-50)'; border = 'var(--stone-200)'; color = 'var(--stone-600)';
+        sub = 'לא מחובר' + (u.lastLoginAt ? ' · התחבר לאחרונה ' + escHtml(_fmtDT(u.lastLoginAt)) : ' · טרם התחבר'); }
+      return `<div style="display:flex;align-items:center;gap:8px;background:${bg};border:1px solid ${border};border-radius:10px;padding:8px 14px">
+        <span style="width:9px;height:9px;border-radius:50%;background:${dot};${p.state==='online'?'box-shadow:0 0 6px '+dot+';animation:pulse 2s infinite;':''}flex-shrink:0"></span>
         <div>
-          <div style="font-weight:700;font-size:13px;color:#15803d">${escHtml(name)}</div>
-          <div style="font-size:11px;color:#64748b">${page ? '📄 '+escHtml(page)+' · ' : ''}${since ? '⏱ '+since : ''}</div>
+          <div style="font-weight:700;font-size:13px;color:${color}">${escHtml(name)}</div>
+          <div style="font-size:11px;color:#64748b">${sub}</div>
         </div>
       </div>`;
     }).join('');
     if (!document.getElementById('pulseStyle')) {
-      const st = document.createElement('style');
-      st.id = 'pulseStyle';
-      st.textContent = '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}';
-      document.head.appendChild(st);
+      const stl = document.createElement('style');
+      stl.id = 'pulseStyle';
+      stl.textContent = '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}';
+      document.head.appendChild(stl);
     }
   } catch(e) {
     container.innerHTML = '<span style="color:var(--muted);font-size:13px">לא ניתן לטעון נתוני נוכחות</span>';
   }
 }
-
 function _timeSince(date) {
   const sec = Math.floor((Date.now() - date) / 1000);
   if (sec < 60) return 'עכשיו';
@@ -4451,6 +4647,9 @@ function _setupSession(user) {
   _initEmailJS();
   currentUser = user;
   _bootDone(false);
+  // previous / current login on the shared user record (shown on the dashboard + presence card)
+  const _prof = (DB.users || []).find(u => (u.email || u.username || '').toLowerCase() === (user.email || user.username || '').toLowerCase());
+  if (_prof) { _prof.prevLoginAt = _prof.lastLoginAt || null; _prof.lastLoginAt = new Date().toISOString(); currentUser.prevLoginAt = _prof.prevLoginAt; }
   auditLog('login', 'כניסה למערכת');
   document.getElementById('loginScreen').style.display = 'none';
   const aw = document.getElementById('appWrapper');
@@ -4754,7 +4953,13 @@ function showPage(name) {
 function renderDashCore() {
   const now = new Date();
   document.getElementById('dashGreet').textContent = `שלום, ${currentUser.displayName}!`;
-  document.getElementById('dashDate').textContent = now.toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) + ' | ' + toHeb(today());
+  let prevLogin = currentUser.prevLoginAt;
+  if (!prevLogin) { // older records: second-most-recent login entry of this user in the audit log
+    const me = currentUser.displayName || currentUser.username;
+    prevLogin = (DB.auditLog || []).filter(e => e.type === 'login' && e.user === me).map(e => e.ts).sort().reverse()[1] || null;
+  }
+  document.getElementById('dashDate').textContent = now.toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) + ' | ' + toHeb(today())
+    + ' | 🕐 התחברות קודמת: ' + (prevLogin ? _fmtDT(prevLogin) : 'זו הכניסה הראשונה');
   renderGlobalStats();
   renderDashExpWidget(); // v17: income vs expenses
 
@@ -4962,7 +5167,7 @@ function sortAndRender() {
     const lastDon = (d.donations||[]).map(dn=>dn.date||'').filter(Boolean).sort().pop()||'';
     const waBtn = d.mobile ? `<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${escHtml(d.mobile)}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()" title="WhatsApp">💬</button>` : '';
     const emBtn = d.email  ? `<button class="btn-icon em" style="width:26px;height:26px;font-size:12px" onclick="openSendEmailModal('${d.id}');event.stopPropagation()" title="שלח מייל">✉️</button>` : '';
-    const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" onchange="updateBulkBar()" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
+    const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" ${_selDonorIds.has(d.id)?'checked':''} onchange="toggleDonorSel(this)" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
     return `<tr onclick="openDonorModal('${d.id}')">
       ${cbHtml}
       <td data-col="code"><strong>${escHtml(d.code||'')}</strong></td>
@@ -5010,6 +5215,7 @@ function sortAndRender() {
     }).join('') || `<div style="text-align:center;padding:32px;color:var(--muted)">אין תורמים להצגה</div>`;
   }
   applyColVis();
+  updateBulkBar();
 }
 
 
@@ -5102,6 +5308,7 @@ function fillForm(d) {
   window._lastGeoLat = d.lat || null;
   window._lastGeoLng = d.lng || null;
   window._lastGeoPicked = false; // becomes true only when a NEW suggestion is picked
+  initSelectsAddable(); // "➕ הוסף חדש" on title / closing name / preferred time — for NEW and EXISTING donors alike
   // Show map if coordinates exist
   const mapDiv = document.getElementById('addressMapPreview');
   if(mapDiv) {
@@ -5128,10 +5335,23 @@ function _setDonorAffils(arr) { _donorAffils = [...new Set((arr||[]).filter(Bool
 function renderAffilOptions() {
   const host = document.getElementById('f_affilOpts'); if (!host) return;
   const opts = [...new Set([...(getSettings().affiliations||[]), ..._donorAffils])];
-  host.innerHTML = opts.map(a => `<label class="multi-filter-opt"><input type="checkbox" value="${escHtml(a)}" ${_donorAffils.includes(a)?'checked':''} onchange="onAffilToggle(this)"> ${escHtml(a)}</label>`).join('')
-    || '<div style="padding:8px;font-size:12px;color:var(--muted)">אין שיוכים מוגדרים — הוסף בפאנל ניהול → נתונים קשיחים</div>';
+  host.innerHTML = (opts.map(a => `<label class="multi-filter-opt"><input type="checkbox" value="${escHtml(a)}" ${_donorAffils.includes(a)?'checked':''} onchange="onAffilToggle(this)"> ${escHtml(a)}</label>`).join('')
+    || '<div style="padding:8px;font-size:12px;color:var(--muted)">אין שיוכים מוגדרים עדיין</div>')
+    + (can('edit') ? `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px;display:flex;gap:4px">
+        <input class="form-control" id="f_affilNew" placeholder="➕ שיוך חדש…" style="font-size:12px;flex:1;min-height:0;padding:5px 8px" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmAddAffil()}">
+        <button type="button" class="btn btn-navy btn-sm" style="min-height:0" onclick="confirmAddAffil()">✓</button></div>` : '');
   const lbl = document.getElementById('f_affilLabel');
   if (lbl) lbl.textContent = _donorAffils.length ? _donorAffils.join(', ') : '-';
+}
+// "➕ שיוך חדש" inside the affiliation picker: saved to the shared list and selected for this donor
+function confirmAddAffil() {
+  const inp = document.getElementById('f_affilNew'); const v = (inp?.value || '').trim();
+  if (!v) return;
+  const S = getSettings(); S.affiliations = S.affiliations || [];
+  if (!S.affiliations.includes(v)) { S.affiliations.push(v); saveDB(); }
+  if (!_donorAffils.includes(v)) _donorAffils.push(v);
+  renderAffilOptions();
+  toast('✓ נוסף שיוך "' + v + '"');
 }
 function toggleAffilDrop() {
   const d = document.getElementById('f_affilDrop'); if (!d) return;
@@ -6299,46 +6519,68 @@ const DEFAULT_SETTINGS = {
 
 function getSettings() {
   if (!DB.settings) DB.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  // a DB created before a list existed must not render empty dropdowns
+  Object.keys(DEFAULT_SETTINGS).forEach(k => { if (!Array.isArray(DB.settings[k])) DB.settings[k] = JSON.parse(JSON.stringify(DEFAULT_SETTINGS[k])); });
   return DB.settings;
 }
 
+const SETTINGS_LISTS = [
+  {key:'titles',       label:'תארים',                  hint:'לפני השם (הרב, ד"ר…)'},
+  {key:'affiliations', label:'שיוכים לישיבה',          hint:'תלמיד, בוגר, הורה…'},
+  {key:'closingNames', label:'שמות סגירה',             hint:'בברכה, בכבוד רב…'},
+  {key:'prefTimes',    label:'מועדי תרמה',             hint:''},
+  {key:'payMethods',   label:'אמצעי תשלום',            hint:''},
+  {key:'relTypes',     label:'סוגי התאמה (קרבה משפחתית)', hint:'הורה, סבא, אח…'},
+];
+function _settingItemHtml(key, v) {
+  return `<div class="setting-item" data-key="${escHtml(key)}" ondragstart="_stDragStart(event)" ondragover="_stDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="_stDrop(event)" ondragend="_stDragEnd(event)">
+    <span class="drag-handle" title="גרור לשינוי סדר התצוגה" onmousedown="this.parentElement.draggable=true" onmouseup="this.parentElement.draggable=false" ontouchstart="this.parentElement.draggable=true">⋮⋮</span>
+    <input class="form-control" value="${escHtml(v)}" placeholder="ערך חדש...">
+    <button type="button" class="btn btn-outline btn-sm" style="min-height:0;padding:4px 7px" onclick="moveSetting(this.parentElement,-1)" title="הזז למעלה">▲</button>
+    <button type="button" class="btn btn-outline btn-sm" style="min-height:0;padding:4px 7px" onclick="moveSetting(this.parentElement,1)" title="הזז למטה">▼</button>
+    <button type="button" class="btn btn-danger btn-sm" style="min-height:0;padding:4px 7px" onclick="this.parentElement.remove()" title="הסר">✕</button>
+  </div>`;
+}
 function openSettingsModal(){
   const S = getSettings();
-  const lists = [
-    {key:'titles', label:'תארים', vals: S.titles},
-    {key:'affiliations', label:'התאמות', vals: S.affiliations},
-    {key:'closingNames', label:'שמות סגירה', vals: S.closingNames},
-    {key:'prefTimes', label:'מועדי תרמה', vals: S.prefTimes},
-    {key:'payMethods', label:'אופן תרומה', vals: S.payMethods},
-    {key:'relTypes', label:'סיבות שיוך', vals: S.relTypes},
-  ];
-  document.getElementById('settingsBody').innerHTML=lists.map((lst,li)=>`
+  document.getElementById('settingsBody').innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:14px">הסדר כאן הוא סדר התצוגה בכל הרשימות הנפתחות. גרור ב-⋮⋮ או השתמש בחצים ▲▼.</div>` +
+    SETTINGS_LISTS.map((lst,li)=>`
     <div style="margin-bottom:18px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>${lst.label}</strong>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+        <div><strong>${lst.label}</strong>${lst.hint?` <span style="font-size:11px;color:var(--muted)">${lst.hint}</span>`:''}</div>
         <button class="btn btn-outline btn-sm" onclick="addSetting(${li})">+ הוסף</button>
       </div>
-      <div id="slist_${li}">
-        ${lst.vals.map(v=>`<div class="setting-item" data-key="${lst.key}"><input class="form-control" value="${escHtml(v)}" style="flex:1"><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
-      </div>
+      <div id="slist_${li}">${(S[lst.key]||[]).filter(v=>v!=='').map(v=>_settingItemHtml(lst.key, v)).join('')}</div>
     </div>`).join('');
   openModal('settingsModal');
 }
-
 function addSetting(li){
-  const d=document.createElement('div');
-  d.className='setting-item';
-  const keys = ['titles','affiliations','closingNames','prefTimes','payMethods','relTypes'];
-  d.dataset.key = keys[li]||'';
-  d.innerHTML=`<input class="form-control" style="flex:1" placeholder="ערך חדש..."><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>`;
-  document.getElementById('slist_'+li).appendChild(d);
-  d.querySelector('input').focus();
+  const host = document.getElementById('slist_'+li); if (!host) return;
+  host.insertAdjacentHTML('beforeend', _settingItemHtml(SETTINGS_LISTS[li].key, ''));
+  host.lastElementChild.querySelector('input').focus();
 }
+function moveSetting(item, dir) {
+  const sib = dir < 0 ? item.previousElementSibling : item.nextElementSibling;
+  if (!sib) return;
+  if (dir < 0) sib.before(item); else sib.after(item);
+  item.querySelector('input').focus();
+}
+// HTML5 drag & drop between items of the same list (the handle arms `draggable`
+// so text selection inside the input keeps working)
+let _stDragEl = null;
+function _stDragStart(ev) { _stDragEl = ev.currentTarget; ev.currentTarget.classList.add('dragging'); try { ev.dataTransfer.setData('text/plain', ''); ev.dataTransfer.effectAllowed = 'move'; } catch(e) {} }
+function _stDragOver(ev) { if (!_stDragEl || ev.currentTarget === _stDragEl || ev.currentTarget.parentElement !== _stDragEl.parentElement) return; ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); }
+function _stDrop(ev) {
+  ev.preventDefault(); const t = ev.currentTarget; t.classList.remove('drag-over');
+  if (!_stDragEl || t === _stDragEl || t.parentElement !== _stDragEl.parentElement) return;
+  const r = t.getBoundingClientRect();
+  if (ev.clientY < r.top + r.height / 2) t.before(_stDragEl); else t.after(_stDragEl);
+}
+function _stDragEnd(ev) { ev.currentTarget.classList.remove('dragging'); ev.currentTarget.draggable = false; document.querySelectorAll('.setting-item.drag-over').forEach(x => x.classList.remove('drag-over')); _stDragEl = null; }
 
 function saveSettings() {
   const S = getSettings();
-  const keys = ['titles','affiliations','closingNames','prefTimes','payMethods','relTypes'];
-  keys.forEach((key,li) => {
+  SETTINGS_LISTS.forEach(({key},li) => {
     const items = document.querySelectorAll(`#slist_${li} .setting-item input`);
     S[key] = Array.from(items).map(i=>i.value.trim()).filter(Boolean);
   });
@@ -6347,10 +6589,11 @@ function saveSettings() {
   // Refresh dropdowns
   refreshSelectsFromSettings();
   closeModal('settingsModal');
-  alert('הנתונים הקשיחים נשמרו');
+  toast('✓ הרשימות נשמרו');
 }
 
-function refreshSelectsFromSettings() {
+function refreshSelectsFromSettings() { _refreshSelectsFromSettingsCore(); initSelectsAddable(); }
+function _refreshSelectsFromSettingsCore() {
   const S = getSettings();
   // Title
   const updateSelect = (id, vals, emptyLabel) => {
@@ -7181,18 +7424,32 @@ function switchIOTab(tab) {
 }
 
 // ── Overflow "more" menus ──
+function _closeMoreMenus() {
+  document.querySelectorAll('.more-menu-list.open').forEach(m => { m.classList.remove('open'); m.style.position = ''; m.style.top = ''; m.style.left = ''; m.style.right = ''; });
+}
 function toggleMoreMenu(id) {
   const el = document.getElementById(id);
   if (!el) return;
   const wasOpen = el.classList.contains('open');
-  document.querySelectorAll('.more-menu-list.open').forEach(m => m.classList.remove('open'));
-  if (!wasOpen) el.classList.add('open');
-}
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.more-menu')) {
-    document.querySelectorAll('.more-menu-list.open').forEach(m => m.classList.remove('open'));
+  _closeMoreMenus();
+  if (wasOpen) return;
+  el.classList.add('open');
+  // The routes page (and other height-locked pages) clip overflow, so an absolutely
+  // positioned list gets cut by the map. Pin it to the viewport next to its button
+  // instead — unless we are inside a modal (transformed ancestor → fixed misbehaves).
+  const btn = el.parentElement && el.parentElement.querySelector('button');
+  if (btn && !el.closest('.modal, .modal-box')) {
+    const r = btn.getBoundingClientRect();
+    el.style.position = 'fixed'; el.style.right = 'auto';
+    const w = el.offsetWidth || 200, h = el.offsetHeight || 200;
+    let left = r.left; if (left + w > innerWidth - 8) left = Math.max(8, innerWidth - w - 8);
+    let top = r.bottom + 4; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 4);
+    el.style.left = left + 'px'; el.style.top = top + 'px';
   }
-});
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('.more-menu')) _closeMoreMenus(); });
+window.addEventListener('resize', _closeMoreMenus);
+window.addEventListener('scroll', _closeMoreMenus, true);
 
 // ══════════════════════════════════════════════════════
 // LABELS WIZARD
@@ -8379,10 +8636,13 @@ function makeSelectAddable(selId, settingsKey, addBlank) {
   const vals = S[sk] || [];
   const el = document.getElementById(selId);
   if (!el) return;
-  const curVal = el.value;
+  const curVal = el.value === '__add__' ? (el._lastVal || '') : el.value;
+  // a value that is not (or no longer) in the list must not silently disappear
+  const allVals = curVal && !vals.includes(curVal) ? [curVal, ...vals] : vals;
   el.innerHTML = (addBlank ? '<option value="">-</option>' : '') +
-    vals.map(v => `<option value="${escHtml(v)}"${v===curVal?' selected':''}>${escHtml(v)}</option>`).join('') +
+    allVals.map(v => `<option value="${escHtml(v)}"${v===curVal?' selected':''}>${escHtml(v)}</option>`).join('') +
     '<option value="__add__">➕ הוסף חדש...</option>';
+  el._lastVal = curVal || '';
   
   // Create or reuse the add-row beneath the select
   let addRow = document.getElementById('addrow_'+selId);
@@ -8402,10 +8662,10 @@ function makeSelectAddable(selId, settingsKey, addBlank) {
   
   el.onchange = function() {
     if (this.value === '__add__') {
-      this.value = curVal || '';
+      this.value = this._lastVal || '';
       addRow.classList.add('visible');
       document.getElementById('addinput_'+selId)?.focus();
-    }
+    } else this._lastVal = this.value;
   };
 }
 
@@ -8487,39 +8747,109 @@ function pickGroupInForm(prefix, grpId) {
 // ══════════════════════════════════════
 
 
+// Selection lives in a Set (not in the DOM) so it survives paging/sorting and can
+// cover the whole filtered table, not just the rows on screen.
+const _selDonorIds = new Set();
+function toggleDonorSel(cb) { if (cb.checked) _selDonorIds.add(cb.dataset.id); else _selDonorIds.delete(cb.dataset.id); updateBulkBar(); }
 function toggleSelectAllDonors(cb) {
-  document.querySelectorAll('.donor-row-cb').forEach(c => c.checked = cb.checked);
+  document.querySelectorAll('.donor-row-cb').forEach(c => { c.checked = cb.checked; if (cb.checked) _selDonorIds.add(c.dataset.id); else _selDonorIds.delete(c.dataset.id); });
+  updateBulkBar();
+}
+function selectAllFilteredDonors() {
+  (filteredRows || []).forEach(d => _selDonorIds.add(d.id));
+  document.querySelectorAll('.donor-row-cb').forEach(c => c.checked = true);
   updateBulkBar();
 }
 function updateBulkBar() {
-  const selected = document.querySelectorAll('.donor-row-cb:checked');
+  // forget donors that no longer exist
+  const live = new Set((DB.donors||[]).map(d => d.id));
+  [..._selDonorIds].forEach(id => { if (!live.has(id)) _selDonorIds.delete(id); });
   const bar = document.getElementById('bulkActionBar');
   const cnt = document.getElementById('bulkCount');
+  const link = document.getElementById('bulkSelectAllLink');
+  const hdr = document.getElementById('selectAllDonors');
+  const pageCbs = [...document.querySelectorAll('.donor-row-cb')];
+  if (hdr) hdr.checked = pageCbs.length > 0 && pageCbs.every(c => c.checked);
   if (!bar) return;
-  if (selected.length > 0) {
+  const n = _selDonorIds.size;
+  if (n > 0) {
     bar.style.display = 'flex';
-    cnt.textContent = selected.length + ' נבחרו';
+    const onPage = pageCbs.filter(c => c.checked).length;
+    cnt.textContent = n + ' נבחרו' + (n > onPage ? ` (${onPage} בעמוד זה)` : '');
+    const total = (filteredRows || []).length;
+    if (link) link.innerHTML = total > n
+      ? `<a href="#" onclick="selectAllFilteredDonors();return false" style="color:var(--primary);font-weight:600">בחר את כל ${total} התורמים ברשימה המסוננת</a>`
+      : (n > 100 ? '<span style="color:#b91c1c">מחיקה מרובה מוגבלת ל-100 תורמים בפעולה</span>' : '');
   } else {
     bar.style.display = 'none';
   }
 }
 function clearAllSelections() {
+  _selDonorIds.clear();
   document.querySelectorAll('.donor-row-cb').forEach(el => el.checked = false);
   const cb = document.getElementById('selectAllDonors');
   if (cb) cb.checked = false;
   updateBulkBar();
 }
-function deleteSelectedDonors() {
-  if (!can('admin')) { alert('אין הרשאה'); return; }
-  const ids = Array.from(document.querySelectorAll('.donor-row-cb:checked')).map(el => el.dataset.id);
+
+// ── Password re-check for dangerous actions (server-side verification) ──
+async function _verifyPassword(pw) {
+  try {
+    const { error } = await _sb.auth.signInWithPassword({ email: currentUser.email, password: pw });
+    return !error;
+  } catch(e) { return false; }
+}
+let _pwcResolve = null;
+function _ensurePwModal() {
+  if (document.getElementById('pwConfirmModal')) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div class="modal-overlay" id="pwConfirmModal"><div class="modal modal-sm">
+    <div class="modal-header"><h3 id="pwcTitle">אישור</h3><button class="modal-close" onclick="_pwcDone(false)">✕</button></div>
+    <div class="modal-body">
+      <p id="pwcText" style="font-size:13px;margin-bottom:10px"></p>
+      <input type="password" class="form-control" id="pwcInput" autocomplete="current-password" placeholder="סיסמת הכניסה שלך" onkeydown="if(event.key==='Enter'){event.preventDefault();_pwcSubmit()}">
+      <div id="pwcErr" style="color:var(--danger);font-size:12px;margin-top:6px;display:none"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="_pwcDone(false)">ביטול</button><button class="btn btn-danger" id="pwcOk" onclick="_pwcSubmit()">אשר</button></div>
+  </div></div>`;
+  document.body.appendChild(div.firstElementChild);
+}
+function confirmWithPassword(title, text) {
+  _ensurePwModal();
+  document.getElementById('pwcTitle').textContent = title;
+  document.getElementById('pwcText').textContent = text;
+  document.getElementById('pwcInput').value = '';
+  document.getElementById('pwcErr').style.display = 'none';
+  openModal('pwConfirmModal');
+  setTimeout(() => document.getElementById('pwcInput')?.focus(), 80);
+  return new Promise(res => { _pwcResolve = res; });
+}
+function _pwcDone(ok) { closeModal('pwConfirmModal'); const r = _pwcResolve; _pwcResolve = null; if (r) r(ok); }
+async function _pwcSubmit() {
+  const pw = document.getElementById('pwcInput').value;
+  const err = document.getElementById('pwcErr'), btn = document.getElementById('pwcOk');
+  if (!pw) { err.textContent = 'נא להקיש סיסמה'; err.style.display = ''; return; }
+  btn.disabled = true; btn.textContent = 'מאמת…';
+  const ok = await _verifyPassword(pw);
+  btn.disabled = false; btn.textContent = 'אשר';
+  if (!ok) { err.textContent = 'סיסמה שגויה או שאין חיבור לשרת — הפעולה לא בוצעה'; err.style.display = ''; return; }
+  _pwcDone(true);
+}
+
+async function deleteSelectedDonors() {
+  const ids = [..._selDonorIds].filter(id => (DB.donors||[]).some(d => d.id === id));
   if (!ids.length) return;
+  if (!currentUser || currentUser.role !== 'superadmin') { alert('מחיקה מרובה של תורמים מותרת למנהל ראשי בלבד'); return; }
+  if (ids.length > 100) { alert(`ניתן למחוק עד 100 תורמים בפעולה אחת (נבחרו ${ids.length}). צמצם את הבחירה ונסה שוב.`); return; }
   if (!confirm(`האם למחוק ${ids.length} תורמים? פעולה זו בלתי הפיכה!`)) return;
+  const ok = await confirmWithPassword(`מחיקת ${ids.length} תורמים`, 'פעולה רגישה: לאישור הקש את סיסמת הכניסה שלך.');
+  if (!ok) return;
   const snapshot = JSON.parse(JSON.stringify(DB.donors));
   DB.donors = DB.donors.filter(d => !ids.includes(d.id));
-  auditLog('delete', `מחיקת ${ids.length} תורמים`, {type:'donors',action:'delete',snapshot});
+  auditLog('delete', `מחיקת ${ids.length} תורמים (מחיקה מרובה מאושרת בסיסמה)`, {type:'donors',action:'delete',snapshot});
   saveDB();
-  renderAll();
   clearAllSelections();
+  renderAll();
   renderGlobalStats();
   toast(ids.length + ' תורמים נמחקו');
 }
@@ -8984,148 +9314,473 @@ window.addEventListener('message', function(e) {
 });
 
 // ════════════════════════════════════════════════════
-// INTERNAL MESSAGING
+// INTERNAL MESSAGING — WhatsApp-style chat (direct + named groups)
+// Data:  DB.chats    [{id, type:'dm'|'group', name, members[], createdBy, createdAt, updatedAt}]
+//        DB.messages [{id, chatId, from, text, ts, editedAt, deleted, readBy{user:ts}, seenBy{}, mentions[]}]
+// Realtime: a sent/edited message, a read receipt and "typing" are broadcast on
+// the existing realtime channel so the other side sees them instantly; the DB
+// sync (push → 3-way merge) stays the source of truth and de-duplicates by id.
 // ════════════════════════════════════════════════════
+const CHAT_ALL_ID = 'all';
+let _chatOpenId = null, _editingMsgId = null, _typingMap = {}, _typingTimer = null, _lastTypingSent = 0;
+let _chatPresence = {}, _chatTick = null, _waStickBottom = true;
+
+function _me() { return currentUser ? currentUser.username : ''; }
+function _userByName(u) { return (DB.users||[]).find(x => x.username === u || x.email === u); }
+function _displayOf(u) { const x = _userByName(u); return x ? (x.displayName || x.username || x.email) : (u || '?'); }
+function _dmId(a, b) { return 'dm:' + [a, b].sort().join('|'); }
+function _initials(name) { return String(name||'?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?'; }
+const _AV_COLORS = ['#e57373','#f06292','#ba68c8','#7986cb','#4fc3f7','#4db6ac','#81c784','#ffb74d','#a1887f','#90a4ae','#2360d8','#c07d10'];
+function _colorFor(str) { let h = 0; for (const c of String(str||'')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return _AV_COLORS[h % _AV_COLORS.length]; }
+function _hhmm(iso) { return iso ? new Date(iso).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : ''; }
+function _dayKey(iso) { const d = new Date(iso); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+function _dayLabel(iso) {
+  const d = new Date(iso), now = new Date();
+  if (_dayKey(iso) === _dayKey(now.toISOString())) return 'היום';
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (_dayKey(iso) === _dayKey(y.toISOString())) return 'אתמול';
+  return d.toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+function _listTime(iso) { const l = _dayLabel(iso); return l === 'היום' ? _hhmm(iso) : l === 'אתמול' ? 'אתמול' : new Date(iso).toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit', year:'2-digit'}); }
+
 function initMessaging() {
   if (!DB.messages) DB.messages = [];
+  if (!DB.chats) DB.chats = [];
+  const allUsers = (DB.users||[]).map(u => u.username || u.email).filter(Boolean);
+  // built-in "everyone" group — the old broadcast feature lives here
+  let all = DB.chats.find(c => c.id === CHAT_ALL_ID);
+  if (!all) { all = { id: CHAT_ALL_ID, type: 'group', name: 'כל הצוות', builtin: true, members: allUsers, createdBy: 'system', createdAt: new Date(0).toISOString() }; DB.chats.push(all); }
+  else { const missing = allUsers.filter(u => !(all.members||[]).includes(u)); if (missing.length) all.members = (all.members||[]).concat(missing); }
+  // legacy subject/body/to messages → chat model (idempotent)
+  if (DB.messages.some(m => !m.chatId)) {
+    const seenBroadcast = new Set(); const migrated = [];
+    DB.messages.forEach(m => {
+      if (m.chatId) { migrated.push(m); return; }
+      const text = [m.subject, m.body].filter(Boolean).join('\n');
+      if (m.broadcast) {
+        const key = m.from + '|' + text + '|' + String(m.ts||'').slice(0,16);
+        if (seenBroadcast.has(key)) return;            // one copy per recipient → one message
+        seenBroadcast.add(key);
+        migrated.push({ id: m.id, chatId: CHAT_ALL_ID, from: m.from, text, ts: m.ts, readBy: {} });
+        return;
+      }
+      const cid = _dmId(m.from, m.to);
+      if (!DB.chats.some(c => c.id === cid)) DB.chats.push({ id: cid, type: 'dm', members: [m.from, m.to], createdBy: m.from, createdAt: m.ts });
+      migrated.push({ id: m.id, chatId: cid, from: m.from, text, ts: m.ts, readBy: m.read ? { [m.to]: m.ts } : {} });
+    });
+    DB.messages = migrated;
+  }
+}
+function _myChats() { const me = _me(); return (DB.chats||[]).filter(c => (c.members||[]).includes(me)); }
+function _chatMsgs(cid) { return (DB.messages||[]).filter(m => m.chatId === cid).sort((a,b) => String(a.ts).localeCompare(String(b.ts))); }
+function _isReadByMe(m) { const me = _me(); return m.from === me || !!((m.readBy||{})[me] || (m.seenBy||{})[me]); }
+function _unreadIn(cid) { return _chatMsgs(cid).filter(m => !m.deleted && !_isReadByMe(m)); }
+function _receiptsOn(u) { const x = _userByName(u); return !x || x.readReceipts !== false; }
+function _chatOther(c) { return c.type === 'dm' ? (c.members||[]).find(u => u !== _me()) : null; }
+function _chatName(c) { return c.type === 'group' ? (c.name || 'קבוצה') : _displayOf(_chatOther(c) || _me()); }
+function _chatById(id) { return (DB.chats||[]).find(c => c.id === id); }
+function _canManage(c) { return c && c.type === 'group' && !c.builtin && (c.createdBy === _me() || can('admin')); }
+function _avatarHtml(c, size) {
+  const st = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*.36)}px;` : '';
+  if (c.type === 'group') return `<div class="wa-avatar" style="${st}background:${c.builtin ? '#2360d8' : _colorFor(c.id)}">${c.builtin ? '📢' : '👥'}</div>`;
+  const o = _chatOther(c); const on = (_chatPresence[String(o||'').toLowerCase()] || {}).state === 'online';
+  return `<div class="wa-avatar" style="${st}background:${_colorFor(o)}">${escHtml(_initials(_displayOf(o)))}${on ? '<i class="wa-online"></i>' : ''}</div>`;
 }
 
 function updateUnreadBadge() {
   initMessaging();
   if (!currentUser) return;
-  const unread = DB.messages.filter(m => m.to === currentUser.username && !m.read).length;
+  const unread = _myChats().reduce((s, c) => s + _unreadIn(c.id).length, 0);
   const badge = document.getElementById('topMsgBadge');
   const sbBadge = document.getElementById('sbUnreadBadge');
-  if (badge) { badge.textContent = unread ? `✉️ ${unread}` : ''; badge.style.display = unread ? '' : 'none'; }
+  if (badge) { badge.textContent = unread ? `💬 ${unread}` : ''; badge.style.display = unread ? '' : 'none'; }
   if (sbBadge) { sbBadge.textContent = unread || ''; sbBadge.style.display = unread ? '' : 'none'; }
 }
 
-function openComposeMsg() {
-  initMessaging();
-  const sel = document.getElementById('msgTo');
-  sel.innerHTML = '<option value="">בחר משתמש...</option>';
-  if(can('superadmin')){
-    const oa=document.createElement('option'); oa.value='__ALL__';
-    oa.textContent='📢 כל המשתמשים (שידור)'; oa.style.fontWeight='700'; oa.style.color='#c00';
-    sel.appendChild(oa);
-  }
-  DB.users.filter(u => u.username !== currentUser?.username).forEach(u => {
-    const o = document.createElement('option');
-    o.value = u.username; o.textContent = u.displayName || u.username;
-    sel.appendChild(o);
-  });
-  document.getElementById('msgSubject').value = '';
-  document.getElementById('msgBody').value = '';
-  openModal('composeMsgModal');
+// ── page ──
+function _initMessagesPage() { renderChatPage(); }
+function renderMsgThreads() { renderChatPage(); }          // legacy name
+function openComposeMsg() { openNewChatModal(); }           // legacy name
+function _waFitHeight() {
+  const app = document.getElementById('waApp'); if (!app || window._currentPage !== 'messages') return;
+  const vh = (window.visualViewport && window.visualViewport.height) || innerHeight;
+  const top = app.getBoundingClientRect().top;
+  app.style.height = Math.max(320, Math.floor(vh - top)) + 'px';
 }
-
-function sendMessage() {
-  if(_tooSoon('msg')) return;
-  const to = document.getElementById('msgTo').value;
-  const subject = document.getElementById('msgSubject').value.trim();
-  const body = document.getElementById('msgBody').value.trim();
-  if (!to || !subject) { toast('נא למלא נמען וכותרת'); return; }
-  initMessaging();
-  if(to==='__ALL__'){
-    const recipients=DB.users.filter(u=>u.username!==currentUser.username);
-    const now=Date.now();
-    recipients.forEach((u,i)=>{
-      DB.messages.push({
-        id:'MSG'+(now+i),from:currentUser.username,
-        fromDisplay:currentUser.displayName||currentUser.username,
-        to:u.username,subject,body,
-        ts:new Date().toISOString(),read:false,broadcast:true
-      });
-    });
-    saveDB();
-    closeModal('composeMsgModal');
-    toast('📢 הודעת שידור נשלחה ל-'+recipients.length+' משתמשים');
-    updateUnreadBadge();
-    return;
-  }
-  DB.messages.push({
-    id: 'MSG' + Date.now(),
-    from: currentUser.username,
-    fromDisplay: currentUser.displayName || currentUser.username,
-    to, subject, body,
-    ts: new Date().toISOString(),
-    read: false,
-  });
-  saveDB();
-  closeModal('composeMsgModal');
-  toast(`✓ הודעה נשלחה אל ${to}`);
-  updateUnreadBadge();
-}
-
-function renderMsgThreads() {
+window.addEventListener('resize', _waFitHeight);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', _waFitHeight);
+function renderChatPage() {
   initMessaging();
   if (!currentUser) return;
-  const me = currentUser.username;
-  // Group by conversation partner
-  const threads = {};
-  DB.messages.forEach(m => {
-    const partner = m.from === me ? m.to : m.from;
-    if (!threads[partner]) threads[partner] = [];
-    threads[partner].push(m);
-  });
-  const list = document.getElementById('msgThreadList');
-  if (!list) return;
-  if (!Object.keys(threads).length) {
-    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">אין הודעות</div>';
-    return;
-  }
-  list.innerHTML = Object.entries(threads).map(([partner, msgs]) => {
-    const last = msgs[msgs.length - 1];
-    const unread = msgs.filter(m => m.to === me && !m.read).length;
-    const partnerDisplay = DB.users.find(u => u.username === partner)?.displayName || partner;
-    return `<div onclick="openMsgThread('${partner}')" style="padding:14px 16px;border-bottom:1px solid var(--slate-200);cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='var(--bg-app)'" onmouseout="this.style.background='white'">
-      <div style="font-size:24px">👤</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong style="font-size:13px">${escHtml(partnerDisplay)}</strong>
-          ${unread ? `<span style="background:var(--danger);color:white;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700">${unread}</span>` : ''}
-        </div>
-        <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(last.subject)}</div>
+  _waFitHeight(); setTimeout(_waFitHeight, 60);
+  const av = document.getElementById('waMeAvatar');
+  if (av) { av.style.background = _colorFor(_me()); av.textContent = _initials(currentUser.displayName || _me()); }
+  const rb = document.getElementById('waReceiptsBtn');
+  if (rb) { rb.style.display = can('admin') ? '' : 'none'; rb.textContent = _receiptsOn(_me()) ? '✓✓ אישורי קריאה: פועלים (לחץ לכיבוי)' : '✓✓ אישורי קריאה: כבויים (לחץ להפעלה)'; }
+  renderChatList();
+  if (_chatOpenId && _chatById(_chatOpenId) && (_chatById(_chatOpenId).members||[]).includes(_me())) {
+    document.getElementById('waApp').classList.add('chat-open');
+    document.getElementById('waEmpty').style.display = 'none';
+    document.getElementById('waChat').style.display = 'flex';
+    renderChatHeader(); renderChatMessages(true); _chatMarkRead(_chatOpenId);
+  } else closeChat();
+  _chatRefreshPresence();
+  clearInterval(_chatTick);
+  _chatTick = setInterval(() => { if (window._currentPage !== 'messages') { clearInterval(_chatTick); return; } _chatRefreshPresence(); }, 20000);
+}
+async function _chatRefreshPresence() {
+  try {
+    const rows = await _fetchPresenceRows(10000);
+    _chatPresence = _presenceStates(rows);
+    if (window._currentPage === 'messages') { renderChatList(); if (_chatOpenId) renderChatHeader(); }
+  } catch(e) {}
+}
+function renderChatList() {
+  const list = document.getElementById('waList'); if (!list) return;
+  const q = (document.getElementById('waSearch')?.value || '').trim().toLowerCase();
+  const me = _me();
+  const chats = _myChats().map(c => {
+    const msgs = _chatMsgs(c.id);
+    const last = msgs.length ? msgs[msgs.length - 1] : null;
+    return { c, last, sortTs: last ? last.ts : (c.createdAt || ''), unread: _unreadIn(c.id) };
+  }).filter(({ c, last }) => !q || _chatName(c).toLowerCase().includes(q) || _chatMsgs(c.id).some(m => String(m.text||'').toLowerCase().includes(q)))
+    .sort((a, b) => String(b.sortTs).localeCompare(String(a.sortTs)));
+  if (!chats.length) { list.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--wa-muted);font-size:13px">${q ? 'לא נמצאו שיחות' : 'אין שיחות עדיין — לחץ ✚ כדי להתחיל'}</div>`; return; }
+  list.innerHTML = chats.map(({ c, last, unread }) => {
+    const typing = _typingNames(c.id);
+    let preview = '';
+    if (typing.length) preview = `<span class="wa-typing-txt">${escHtml(typing.join(', '))} מקליד/ה…</span>`;
+    else if (last) {
+      const who = c.type === 'group' && last.from !== me ? escHtml(_displayOf(last.from).split(' ')[0]) + ': ' : (last.from === me ? 'אתה: ' : '');
+      preview = (last.from === me ? _ticks(last, c) : '') + who + (last.deleted ? '<span class="wa-deleted">🚫 הודעה נמחקה</span>' : escHtml(String(last.text||'').replace(/\s+/g, ' ').slice(0, 70)));
+    } else preview = '<span style="color:#aaa">שיחה חדשה</span>';
+    const mentioned = unread.some(m => (m.mentions||[]).includes(me));
+    return `<div class="wa-item${c.id === _chatOpenId ? ' active' : ''}" onclick="openChat('${escHtml(c.id)}')">
+      ${_avatarHtml(c)}
+      <div class="wa-item-body">
+        <div class="wa-item-top"><span class="wa-item-name">${escHtml(_chatName(c))}</span><span class="wa-item-time${unread.length ? ' green' : ''}">${last ? _listTime(last.ts) : ''}</span></div>
+        <div class="wa-item-bot"><span class="wa-item-preview">${preview}</span>${mentioned ? '<span class="wa-at">@</span>' : ''}${unread.length ? `<span class="wa-badge">${unread.length}</span>` : ''}</div>
       </div>
     </div>`;
   }).join('');
 }
-
-function openMsgThread(partner) {
+function openChat(id) {
   initMessaging();
-  const me = currentUser.username;
-  const msgs = DB.messages.filter(m => (m.from === me && m.to === partner) || (m.from === partner && m.to === me));
-  // Mark as read
-  msgs.forEach(m => { if (m.to === me && !m.read) m.read = true; });
-  saveDB(); updateUnreadBadge();
-  const partnerDisplay = DB.users.find(u => u.username === partner)?.displayName || partner;
-  const view = document.getElementById('msgThreadView');
-  view.innerHTML = `
-    <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-      <strong>שיחה עם ${escHtml(partnerDisplay)}</strong>
-      <button class="btn btn-gold btn-sm" onclick="replyToUser('${partner}')">↩ השב</button>
-    </div>
-    <div style="flex:1;overflow-y:auto">
-      ${msgs.sort((a,b) => a.ts.localeCompare(b.ts)).map(m => {
-        const isMine = m.from === me;
-        const dt = new Date(m.ts).toLocaleString('he-IL');
-        return `<div style="margin-bottom:14px;display:flex;flex-direction:column;align-items:${isMine?'flex-end':'flex-start'}">
-          <div style="background:${isMine?'var(--slate-900)':'var(--bg-app)'};color:${isMine?'white':'var(--text)'};border-radius:12px;padding:10px 14px;max-width:80%">
-            <div style="font-weight:700;font-size:12px;margin-bottom:4px">${escHtml(m.subject)}</div>
-            <div style="font-size:13px;white-space:pre-wrap">${escHtml(m.body||'')}</div>
-          </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">${escHtml(m.fromDisplay||m.from)} · ${dt}</div>
-        </div>`;
-      }).join('')}
+  const c = _chatById(id);
+  if (!c || !(c.members||[]).includes(_me())) { toast('השיחה לא נמצאה'); return; }
+  _chatOpenId = id; cancelEditMsg(); hideMentionPop();
+  document.getElementById('waApp').classList.add('chat-open');
+  document.getElementById('waEmpty').style.display = 'none';
+  document.getElementById('waChat').style.display = 'flex';
+  _waStickBottom = true; _waFitHeight();
+  renderChatHeader(); renderChatMessages(true); _chatMarkRead(id); renderChatList(); _renderTyping();
+  if (!matchMedia('(pointer:coarse)').matches) setTimeout(() => document.getElementById('waInput')?.focus(), 50);
+}
+function closeChat() {
+  _chatOpenId = null; cancelEditMsg(); hideMentionPop();
+  const app = document.getElementById('waApp'); if (!app) return;
+  app.classList.remove('chat-open');
+  document.getElementById('waEmpty').style.display = '';
+  document.getElementById('waChat').style.display = 'none';
+  renderChatList();
+}
+function _chatSubText() {
+  const c = _chatById(_chatOpenId); if (!c) return '';
+  if (c.type === 'group') return (c.members||[]).map(u => u === _me() ? 'אתה' : _displayOf(u).split(' ')[0]).join(', ');
+  const p = _chatPresence[String(_chatOther(c)||'').toLowerCase()];
+  if (p && p.state === 'online') return 'מחובר/ת';
+  if (p && p.state === 'idle') return 'לא פעיל/ה כרגע';
+  const u = _userByName(_chatOther(c));
+  return u && u.lastLoginAt ? 'נראה/תה לאחרונה ' + _fmtDT(u.lastLoginAt) : 'לא מחובר/ת';
+}
+function renderChatHeader() {
+  const c = _chatById(_chatOpenId); if (!c) return;
+  document.getElementById('waChatAvatar').outerHTML = _avatarHtml(c, 40).replace('class="wa-avatar"', 'class="wa-avatar" id="waChatAvatar"');
+  document.getElementById('waChatName').textContent = _chatName(c);
+  const sub = document.getElementById('waChatSub');
+  const typing = _typingNames(c.id);
+  sub.textContent = typing.length ? typing.join(', ') + (typing.length > 1 ? ' מקלידים…' : ' מקליד/ה…') : _chatSubText();
+  sub.classList.toggle('on', !!typing.length || sub.textContent === 'מחובר/ת');
+}
+function _serverMsgIds() { return new Set(((_baseDB && _baseDB.messages) || []).map(m => m.id)); }
+function _ticks(m, c, srvIds) {
+  if (m.from !== _me() || m.deleted) return '';
+  const others = (c.members||[]).filter(u => u !== _me());
+  if (others.length && others.every(u => (m.readBy||{})[u]) && _receiptsOn(_me())) return '<span class="wa-tick blue" title="נקרא">✓✓</span>';
+  const onServer = (srvIds || _serverMsgIds()).has(m.id);
+  return onServer ? '<span class="wa-tick" title="נמסר">✓✓</span>' : '<span class="wa-tick" title="נשלח">✓</span>';
+}
+function _renderText(text, c) {
+  let h = escHtml(text || '');
+  h = h.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  if (c && c.type === 'group') (c.members||[]).forEach(u => {
+    const d = _displayOf(u); if (!d) return;
+    h = h.replace(new RegExp('@' + escHtml(d).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), `<span class="wa-mention">@${escHtml(d)}</span>`);
+  });
+  return h;
+}
+function renderChatMessages(scrollBottom) {
+  const c = _chatById(_chatOpenId); const host = document.getElementById('waMsgs'); if (!c || !host) return;
+  const me = _me(); const srv = _serverMsgIds(); const msgs = _chatMsgs(c.id);
+  let html = '', lastDay = '', lastFrom = '';
+  if (!msgs.length) html = `<div class="wa-day">${c.type === 'group' ? 'קבוצה חדשה — כתוב את ההודעה הראשונה' : 'תחילת השיחה'}</div>`;
+  msgs.forEach(m => {
+    const dk = _dayKey(m.ts);
+    if (dk !== lastDay) { html += `<div class="wa-day">${_dayLabel(m.ts)}</div>`; lastDay = dk; lastFrom = ''; }
+    const mine = m.from === me, first = m.from !== lastFrom; lastFrom = m.from;
+    const mentioned = !mine && (m.mentions||[]).includes(me);
+    const body = m.deleted ? '<span class="wa-deleted">🚫 הודעה זו נמחקה</span>' : _renderText(m.text, c);
+    html += `<div class="wa-msg${mine ? ' me' : ''}${first ? ' first' : ''}${mentioned ? ' mentioned' : ''}" id="wamsg_${escHtml(m.id)}">
+      <div class="wa-bubble">
+        ${!mine && c.type === 'group' && first ? `<div class="wa-sender" style="color:${_colorFor(m.from)}">${escHtml(_displayOf(m.from))}</div>` : ''}
+        ${body}<span class="wa-meta">${m.editedAt && !m.deleted ? '<span>נערכה</span>' : ''}<span>${_hhmm(m.ts)}</span>${_ticks(m, c, srv)}</span>
+      </div>
+      ${m.deleted ? '' : `<button class="wa-msg-more" onclick="openMsgMenu(event,'${escHtml(m.id)}')" title="אפשרויות">⌄</button>`}
     </div>`;
+  });
+  host.innerHTML = html;
+  if (scrollBottom || _waStickBottom) _waScrollBottom(false); else document.getElementById('waNewPill').style.display = '';
+}
+function _waScrollBottom(smooth) { const h = document.getElementById('waMsgs'); if (!h) return; h.scrollTo({ top: h.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); _waStickBottom = true; const p = document.getElementById('waNewPill'); if (p) p.style.display = 'none'; }
+function _waOnScroll() { const h = document.getElementById('waMsgs'); if (!h) return; _waStickBottom = h.scrollHeight - h.scrollTop - h.clientHeight < 120; if (_waStickBottom) { const p = document.getElementById('waNewPill'); if (p) p.style.display = 'none'; } }
+
+// ── compose ──
+function _autosize(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; }
+function onChatKey(ev) {
+  if (ev.key === 'Escape') { if (_editingMsgId) cancelEditMsg(); hideMentionPop(); return; }
+  if (ev.key === 'Enter' && !ev.shiftKey && !matchMedia('(pointer:coarse)').matches) { ev.preventDefault(); sendChatMessage(); }
+}
+function onChatInput(ta) {
+  _autosize(ta); _mentionCheck(ta);
+  const now = Date.now();
+  if (ta.value && now - _lastTypingSent > 2000) { _lastTypingSent = now; _chatBroadcast('chat_typing', { chatId: _chatOpenId, user: _me(), name: currentUser.displayName || _me() }); }
+}
+function _extractMentions(text, c) {
+  if (!c || c.type !== 'group') return [];
+  return (c.members||[]).filter(u => u !== _me() && text.includes('@' + _displayOf(u)));
+}
+function sendChatMessage() {
+  const ta = document.getElementById('waInput'); if (!ta || !_chatOpenId) return;
+  const text = ta.value.trim(); if (!text) return;
+  const c = _chatById(_chatOpenId); if (!c) return;
+  const me = _me();
+  if (_editingMsgId) {
+    const m = DB.messages.find(x => x.id === _editingMsgId);
+    if (m && m.from === me && !m.deleted && m.text !== text) {
+      m.text = text; m.editedAt = new Date().toISOString(); m.mentions = _extractMentions(text, c);
+      saveDB(); _chatBroadcast('chat_msg', { m, chat: _chatPublic(c) });
+    }
+    cancelEditMsg(); ta.value = ''; _autosize(ta); renderChatMessages(false); renderChatList(); return;
+  }
+  const m = { id: 'MSG' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), chatId: c.id, from: me, text, ts: new Date().toISOString(), readBy: {}, mentions: _extractMentions(text, c) };
+  DB.messages.push(m); c.updatedAt = m.ts;
+  saveDB();
+  _chatBroadcast('chat_msg', { m, chat: _chatPublic(c) });
+  ta.value = ''; _autosize(ta); hideMentionPop();
+  _waStickBottom = true; renderChatMessages(true); renderChatList(); updateUnreadBadge();
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch(e) {}
+}
+function _chatPublic(c) { return { id: c.id, type: c.type, name: c.name, members: c.members, createdBy: c.createdBy, createdAt: c.createdAt, builtin: !!c.builtin }; }
+function cancelEditMsg() { _editingMsgId = null; const b = document.getElementById('waEditBar'); if (b) b.style.display = 'none'; }
+function startEditMsg(id) {
+  const m = (DB.messages||[]).find(x => x.id === id); if (!m || m.from !== _me() || m.deleted) return;
+  _editingMsgId = id;
+  const ta = document.getElementById('waInput'); ta.value = m.text; _autosize(ta); ta.focus();
+  document.getElementById('waEditText').textContent = '✏️ עריכת הודעה: ' + String(m.text).slice(0, 60);
+  document.getElementById('waEditBar').style.display = 'flex';
+}
+function deleteChatMessage(id) {
+  const m = (DB.messages||[]).find(x => x.id === id); if (!m || m.from !== _me()) return;
+  if (!confirm('למחוק את ההודעה אצל כולם?')) return;
+  m.deleted = true; m.text = ''; m.editedAt = new Date().toISOString(); m.mentions = [];
+  saveDB(); _chatBroadcast('chat_msg', { m, chat: _chatPublic(_chatById(m.chatId) || {}) });
+  renderChatMessages(false); renderChatList(); updateUnreadBadge();
+}
+function openMsgMenu(ev, id) {
+  ev.stopPropagation(); closeMsgMenu();
+  const m = (DB.messages||[]).find(x => x.id === id); if (!m) return;
+  const mine = m.from === _me();
+  const menu = document.createElement('div'); menu.className = 'wa-msg-menu'; menu.id = 'waMsgMenu';
+  menu.innerHTML = `<button onclick="navigator.clipboard.writeText(${JSON.stringify(m.text||'')}).then(()=>toast('✓ הועתק'));closeMsgMenu()">📋 העתק</button>
+    ${mine ? `<button onclick="startEditMsg('${escHtml(id)}');closeMsgMenu()">✏️ ערוך</button><button class="danger" onclick="deleteChatMessage('${escHtml(id)}');closeMsgMenu()">🗑️ מחק אצל כולם</button>` : ''}`;
+  document.body.appendChild(menu);
+  const r = ev.currentTarget.getBoundingClientRect();
+  let left = r.left, top = r.bottom + 4;
+  if (left + 170 > innerWidth) left = innerWidth - 178;
+  if (top + 140 > innerHeight) top = r.top - 140;
+  menu.style.left = Math.max(8, left) + 'px'; menu.style.top = Math.max(8, top) + 'px';
+  setTimeout(() => document.addEventListener('click', closeMsgMenu, { once: true }), 0);
+}
+function closeMsgMenu() { document.getElementById('waMsgMenu')?.remove(); }
+
+// ── @mentions (groups) ──
+function _mentionCheck(ta) {
+  const c = _chatById(_chatOpenId);
+  if (!c || c.type !== 'group') { hideMentionPop(); return; }
+  const upTo = ta.value.slice(0, ta.selectionStart || 0);
+  const mm = /(^|\s)@([^\s@]*)$/.exec(upTo);
+  if (!mm) { hideMentionPop(); return; }
+  const q = mm[2].toLowerCase();
+  const cands = (c.members||[]).filter(u => u !== _me()).map(u => ({ u, d: _displayOf(u) })).filter(x => !q || x.d.toLowerCase().includes(q));
+  const pop = document.getElementById('waMentionPop');
+  if (!cands.length) { hideMentionPop(); return; }
+  pop.innerHTML = cands.map(x => `<div onmousedown="event.preventDefault();insertMention('${escHtml(x.u)}')"><span class="wa-avatar" style="background:${_colorFor(x.u)}">${escHtml(_initials(x.d))}</span>${escHtml(x.d)}</div>`).join('');
+  pop.style.display = '';
+}
+function insertMention(u) {
+  const ta = document.getElementById('waInput'); const pos = ta.selectionStart || ta.value.length;
+  const upTo = ta.value.slice(0, pos), rest = ta.value.slice(pos);
+  const mm = /(^|\s)@([^\s@]*)$/.exec(upTo);
+  const start = mm ? upTo.length - mm[0].length + mm[1].length : upTo.length;
+  ta.value = upTo.slice(0, start) + '@' + _displayOf(u) + ' ' + rest;
+  const np = start + _displayOf(u).length + 2; ta.setSelectionRange(np, np); ta.focus(); _autosize(ta);
+  hideMentionPop();
+}
+function hideMentionPop() { const p = document.getElementById('waMentionPop'); if (p) p.style.display = 'none'; }
+
+// ── read receipts ──
+function _chatMarkRead(cid) {
+  if (!currentUser || document.visibilityState === 'hidden') return;
+  const me = _me(); const key = _receiptsOn(me) ? 'readBy' : 'seenBy'; let changed = 0;
+  _chatMsgs(cid).forEach(m => { if (m.from !== me && !_isReadByMe(m)) { m[key] = m[key] || {}; m[key][me] = new Date().toISOString(); changed++; } });
+  if (changed) { saveDB(); updateUnreadBadge(); renderChatList(); if (key === 'readBy') _chatBroadcast('chat_read', { chatId: cid, user: me }); }
+}
+function markAllChatsRead() { _myChats().forEach(c => _chatMarkRead(c.id)); toast('✓ כל ההודעות סומנו כנקראו'); }
+function toggleReadReceipts() {
+  if (!can('admin')) { toast('אין הרשאה'); return; }
+  const u = _userByName(_me()); if (!u) return;
+  u.readReceipts = u.readReceipts === false ? true : false;
+  saveDB(); renderChatPage();
+  toast(u.readReceipts === false ? 'אישורי קריאה כבויים — גם אתה לא תראה מתי אחרים קראו את הודעותיך' : 'אישורי קריאה פועלים');
 }
 
-function replyToUser(partner) {
-  const sel = document.getElementById('msgTo');
-  if (sel) sel.value = partner;
-  openComposeMsg();
-  document.getElementById('msgTo').value = partner;
+// ── realtime ──
+function _chatBroadcast(event, payload) { try { if (_rtChannel) _rtChannel.send({ type: 'broadcast', event, payload }); } catch(e) {} }
+function _chatOnRemoteMsg(p) {
+  if (!p || !p.m || !p.m.id || !currentUser) return;
+  initMessaging();
+  const m = p.m; let c = _chatById(m.chatId);
+  if (!c && p.chat && (p.chat.members||[]).includes(_me())) { c = JSON.parse(JSON.stringify(p.chat)); DB.chats.push(c); }
+  if (!c || !(c.members||[]).includes(_me())) return;          // not mine; the DB sync will sort it out
+  const ex = DB.messages.find(x => x.id === m.id);
+  if (ex) Object.assign(ex, { text: m.text, editedAt: m.editedAt, deleted: m.deleted, mentions: m.mentions });
+  else DB.messages.push(JSON.parse(JSON.stringify(m)));
+  if (_typingMap[m.chatId]) delete _typingMap[m.chatId][m.from];
+  const viewing = window._currentPage === 'messages' && _chatOpenId === m.chatId;
+  if (viewing) { renderChatMessages(false); _chatMarkRead(m.chatId); _renderTyping(); }
+  if (window._currentPage === 'messages') renderChatList();
+  updateUnreadBadge();
+  if (!ex && m.from !== _me() && !(viewing && document.visibilityState === 'visible')) {
+    const who = _displayOf(m.from) + (c.type === 'group' ? ' · ' + _chatName(c) : '');
+    toast('💬 ' + who + ': ' + String(m.text||'').slice(0, 60));
+    try { if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification(who, { body: String(m.text||'').slice(0, 120) }); } catch(e) {}
+  }
 }
+function _chatOnRead(p) {
+  if (!p || !p.chatId || !p.user || p.user === _me()) return;
+  let changed = false;
+  (DB.messages||[]).forEach(m => { if (m.chatId === p.chatId && m.from === _me() && !(m.readBy||{})[p.user]) { m.readBy = m.readBy || {}; m.readBy[p.user] = new Date().toISOString(); changed = true; } });
+  if (changed && window._currentPage === 'messages') { if (_chatOpenId === p.chatId) renderChatMessages(false); renderChatList(); }
+}
+function _chatOnTyping(p) {
+  if (!p || !p.chatId || p.user === _me()) return;
+  _typingMap[p.chatId] = _typingMap[p.chatId] || {};
+  _typingMap[p.chatId][p.user] = { at: Date.now(), name: p.name || _displayOf(p.user) };
+  _renderTyping(); clearTimeout(_typingTimer); _typingTimer = setTimeout(_renderTyping, 3600);
+}
+function _typingNames(cid) { const t = _typingMap[cid] || {}; const now = Date.now(); return Object.values(t).filter(x => now - x.at < 3500).map(x => x.name); }
+function _renderTyping() {
+  if (window._currentPage !== 'messages') return;
+  const names = _chatOpenId ? _typingNames(_chatOpenId) : [];
+  const el = document.getElementById('waTyping');
+  if (el) { el.style.display = names.length ? 'flex' : 'none'; el.innerHTML = names.length ? '<span class="wa-typing-bubble"><span class="wa-dots"><i></i><i></i><i></i></span></span>' : ''; if (names.length && _waStickBottom) _waScrollBottom(false); }
+  if (_chatOpenId) renderChatHeader();
+  renderChatList();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && _chatOpenId && window._currentPage === 'messages') _chatMarkRead(_chatOpenId); });
+
+// ── new chat / groups ──
+function ncTab(t) {
+  document.getElementById('ncDm').style.display = t === 'dm' ? '' : 'none';
+  document.getElementById('ncGroup').style.display = t === 'group' ? '' : 'none';
+  document.getElementById('ncTabDm').className = 'btn btn-sm ' + (t === 'dm' ? 'btn-navy' : 'btn-outline');
+  document.getElementById('ncTabGroup').className = 'btn btn-sm ' + (t === 'group' ? 'btn-navy' : 'btn-outline');
+}
+function _memberRow(u, extra) {
+  const p = _chatPresence[String(u.username||u.email||'').toLowerCase()] || {};
+  const name = u.displayName || u.username || u.email;
+  return `<div class="wa-member" ${extra||''}><span class="wa-avatar" style="background:${_colorFor(u.username||u.email)}">${escHtml(_initials(name))}${p.state==='online' ? '<i class="wa-online"></i>' : ''}</span><div class="grow"><div>${escHtml(name)}</div><div class="sub">${p.state==='online' ? 'מחובר/ת' : escHtml(ROLES[u.role] || u.role || '')}</div></div>`;
+}
+function openNewChatModal() {
+  initMessaging();
+  const others = (DB.users||[]).filter(u => (u.username||u.email) && (u.username||u.email) !== _me());
+  document.getElementById('ncUserList').innerHTML = others.map(u => _memberRow(u, `onclick="openDmWith('${escHtml(u.username||u.email)}')"`) + '</div>').join('') || '<div style="color:var(--muted);font-size:13px;padding:10px">אין משתמשים נוספים</div>';
+  document.getElementById('ncMemberList').innerHTML = others.map(u => _memberRow(u, `onclick="const c=this.querySelector('input');if(event.target!==c)c.checked=!c.checked"`) + `<input type="checkbox" value="${escHtml(u.username||u.email)}" style="transform:scale(1.2)"></div>`).join('');
+  document.getElementById('ncGroupName').value = '';
+  ncTab('dm');
+  openModal('newChatModal');
+}
+function openDmWith(u) {
+  const id = _dmId(_me(), u);
+  let c = _chatById(id);
+  if (!c) { c = { id, type: 'dm', members: [_me(), u], createdBy: _me(), createdAt: new Date().toISOString() }; DB.chats.push(c); saveDB(); }
+  closeModal('newChatModal');
+  if (window._currentPage !== 'messages') showPage('messages');
+  openChat(id);
+}
+function createGroupFromModal() {
+  const name = document.getElementById('ncGroupName').value.trim();
+  const members = [...document.querySelectorAll('#ncMemberList input:checked')].map(c => c.value);
+  if (!name) { toast('נא לתת שם לקבוצה'); return; }
+  if (!members.length) { toast('בחר לפחות חבר אחד'); return; }
+  const c = { id: 'grp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: 'group', name, members: [_me(), ...members], createdBy: _me(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  DB.chats.push(c);
+  auditLog('create', `יצירת קבוצת שיחה "${name}" (${c.members.length} חברים)`);
+  closeModal('newChatModal');
+  if (window._currentPage !== 'messages') showPage('messages');
+  openChat(c.id);
+}
+function openChatInfo() {
+  const c = _chatById(_chatOpenId); if (!c) return;
+  const manage = _canManage(c);
+  document.getElementById('ciTitle').textContent = c.type === 'group' ? '👥 ' + _chatName(c) : '👤 ' + _chatName(c);
+  const rows = (c.members||[]).map(u => {
+    const usr = _userByName(u) || { username: u, displayName: _displayOf(u) };
+    return _memberRow(usr) + (u === _me() ? '<span style="font-size:11px;color:var(--muted)">אתה</span>' : (manage ? `<button class="btn btn-danger btn-sm" style="min-height:0" onclick="removeChatMember('${escHtml(u)}')">✕</button>` : '')) + '</div>';
+  }).join('');
+  const nonMembers = (DB.users||[]).filter(u => (u.username||u.email) && !(c.members||[]).includes(u.username||u.email));
+  document.getElementById('ciBody').innerHTML = `
+    ${c.type === 'group' ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">${c.builtin ? 'קבוצה קבועה — כל משתמשי המערכת' : 'נוצרה ע"י ' + escHtml(_displayOf(c.createdBy)) + ' · ' + escHtml(_fmtDT(c.createdAt))}</div>` : ''}
+    ${manage ? `<div style="display:flex;gap:6px;margin-bottom:10px"><input class="form-control" id="ciName" value="${escHtml(c.name||'')}" placeholder="שם הקבוצה"><button class="btn btn-navy btn-sm" onclick="renameChat()">שמור שם</button></div>` : ''}
+    <div style="font-size:12px;font-weight:700;margin-bottom:4px">${(c.members||[]).length} חברים</div>
+    ${rows}
+    ${manage && nonMembers.length ? `<div style="display:flex;gap:6px;margin-top:12px"><select class="form-control" id="ciAdd">${nonMembers.map(u => `<option value="${escHtml(u.username||u.email)}">${escHtml(u.displayName||u.username||u.email)}</option>`).join('')}</select><button class="btn btn-outline btn-sm" onclick="addChatMember()">+ הוסף</button></div>` : ''}
+    ${c.type === 'group' && !c.builtin ? `<button class="btn btn-danger btn-sm" style="margin-top:14px" onclick="leaveChat()">🚪 צא מהקבוצה</button>` : ''}`;
+  openModal('chatInfoModal');
+}
+function renameChat() {
+  const c = _chatById(_chatOpenId); if (!_canManage(c)) return;
+  const name = document.getElementById('ciName').value.trim(); if (!name) return;
+  c.name = name; c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); renderChatList(); openChatInfo(); toast('✓ השם עודכן');
+}
+function addChatMember() {
+  const c = _chatById(_chatOpenId); if (!_canManage(c)) return;
+  const u = document.getElementById('ciAdd')?.value; if (!u || c.members.includes(u)) return;
+  c.members.push(u); c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); openChatInfo(); toast('✓ ' + _displayOf(u) + ' נוסף/ה לקבוצה');
+}
+function removeChatMember(u) {
+  const c = _chatById(_chatOpenId); if (!_canManage(c) || u === _me()) return;
+  if (!confirm('להסיר את ' + _displayOf(u) + ' מהקבוצה?')) return;
+  c.members = c.members.filter(x => x !== u); c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); openChatInfo();
+}
+function leaveChat() {
+  const c = _chatById(_chatOpenId); if (!c || c.builtin) return;
+  if (!confirm('לצאת מהקבוצה "' + _chatName(c) + '"?')) return;
+  c.members = (c.members||[]).filter(x => x !== _me()); c.updatedAt = new Date().toISOString(); saveDB();
+  closeModal('chatInfoModal'); closeChat(); updateUnreadBadge();
+}
+// legacy entry point used by older code paths
+function replyToUser(partner) { openDmWith(partner); }
 
 // ════════════════════════════════════════════════════
 // DONOR SELF-SERVICE PORTAL
@@ -9193,12 +9848,45 @@ function openSelfServicePanel() {
       </div>
       <hr style="border:none;border-top:1px solid var(--border)">
       <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">🩺 בדיקת חיבור לשרת (Edge Function):</div>
+        <button class="btn btn-outline btn-sm" id="ssDiagBtn" onclick="runSelfServiceDiag()">בדוק עכשיו</button>
+        <div id="ssDiagOut" style="font-size:12px;margin-top:6px"></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border)">
+      <div>
         <div style="font-size:13px;font-weight:600;margin-bottom:6px">ייצוא לכל התורמים:</div>
         <button class="btn btn-outline btn-sm" onclick="exportAllSelfServiceLinks()">📥 ייצוא Excel עם כל הקישורים</button>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">ייוצא קובץ עם קישור ייחודי לכל תורם</div>
       </div>
     </div>`;
   openModal('selfServiceModal');
+}
+
+// Calls the edge function's "diag" action: is it deployed, can it read the DB,
+// and are the SQL helpers from migration 0002 callable? Explains what to fix.
+async function runSelfServiceDiag() {
+  const out = document.getElementById('ssDiagOut'), btn = document.getElementById('ssDiagBtn');
+  if (!out) return;
+  if (btn) btn.disabled = true;
+  out.innerHTML = '<span style="color:var(--muted)">בודק…</span>';
+  const line = (ok, txt) => `<div style="color:${ok ? 'var(--success, #16a34a)' : '#b91c1c'}">${ok ? '✓' : '✕'} ${txt}</div>`;
+  try {
+    const { ok, out: r } = await _ssPost({ action: 'diag' });
+    if (!ok || !r || !r.ok) {
+      const known = r && (r.error === 'unknown action' || r.error === 'missing action');
+      out.innerHTML = line(false, known
+        ? 'הפונקציה פרוסה אך בגרסה ישנה — יש לפרוס מחדש את self-service (supabase functions deploy self-service)'
+        : 'הפונקציה לא נגישה: ' + escHtml(_ssErrText(r)) + ' — יש לוודא שהיא פרוסה בפרויקט ' + escHtml(SUPABASE_URL));
+      return;
+    }
+    let html = line(true, 'הפונקציה פרוסה ונגישה (גרסה ' + escHtml(r.version || '?') + ')');
+    html += line(!!r.dbRead, r.dbRead ? 'קריאה מבסיס הנתונים תקינה' : 'קריאה מבסיס הנתונים נכשלה: ' + escHtml(r.dbReadError || ''));
+    if (r.rpc === 'ok') html += line(true, 'פונקציות ה-SQL ממיגרציה 0002 זמינות — שמירה אטומית');
+    else html += `<div style="color:#92400e">⚠ פונקציות ה-SQL ממיגרציה 0002 אינן זמינות (${escHtml(r.rpcError || '')}). השליחה עובדת במסלול חלופי (compare-and-swap), אך מומלץ להריץ את <code>migrations/0002_edge_atomic_writes.sql</code> ב-SQL Editor.</div>`;
+    out.innerHTML = html;
+  } catch (e) {
+    out.innerHTML = line(false, 'לא ניתן להגיע לפונקציה (' + escHtml(e && e.message || '') + '). בדוק שהיא פרוסה ושאין חסימת CORS.');
+  } finally { if (btn) btn.disabled = false; }
 }
 
 function searchDonorForSS(q) {
@@ -9278,27 +9966,38 @@ function _publicFormBody(d, affiliations) {
       ${_ssField('ss_email','מייל',d.email,'email','dir="ltr"')}
       <div><label style="${_ssLabel}">שיוך לישיבה <span style="font-weight:400;text-transform:none">(אפשר לסמן כמה)</span></label>
         <div id="ss_affils" style="display:flex;flex-wrap:wrap;gap:6px">
-          ${affs.map(a=>`<label style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid ${cur.includes(a)?'#2360d8':'#d5cfc4'};background:${cur.includes(a)?'#eef4fe':'#fff'};border-radius:99px;padding:6px 12px;font-size:14px;cursor:pointer"><input type="checkbox" value="${escHtml(a)}" ${cur.includes(a)?'checked':''} onchange="this.parentElement.style.borderColor=this.checked?'#2360d8':'#d5cfc4';this.parentElement.style.background=this.checked?'#eef4fe':'#fff'"> ${escHtml(a)}</label>`).join('')}
+          ${affs.map(a=>`<label style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid ${cur.includes(a)?'#2360d8':'#d5cfc4'};background:${cur.includes(a)?'#eef4fe':'#fff'};border-radius:99px;padding:6px 12px;font-size:14px;cursor:pointer"><input type="checkbox" value="${escHtml(a)}" ${cur.includes(a)?'checked':''} onchange="this.parentElement.style.borderColor=this.checked?'#2360d8':'#d5cfc4';this.parentElement.style.background=this.checked?'#eef4fe':'#fff';_ssToggleAlumni()"> ${escHtml(a)}</label>`).join('')}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        ${_ssField('ss_marriageYear','שנת נישואין (עברי)',d.marriageYear,'text','placeholder="תשס\"ה"')}
-        <div><label style="${_ssLabel}" for="ss_marriageMonth">חודש נישואין</label>
-          <select id="ss_marriageMonth" style="${_ssInput}"><option value="">-</option>${SS_MONTHS.map(m=>`<option ${d.marriageMonth===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div id="ss_alumni" style="display:${cur.includes('בוגר')?'grid':'none'};gap:12px">
+        <div style="font-size:12px;color:#6b7a9a;margin-bottom:-4px">לבוגרי הישיבה:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${_ssField('ss_marriageYear','שנת נישואין (עברי)',d.marriageYear,'text','placeholder="תשס\"ה"')}
+          <div><label style="${_ssLabel}" for="ss_marriageMonth">חודש נישואין</label>
+            <select id="ss_marriageMonth" style="${_ssInput}"><option value="">-</option>${SS_MONTHS.map(m=>`<option ${d.marriageMonth===m?'selected':''}>${m}</option>`).join('')}</select></div>
+        </div>
+        ${_ssField('ss_cohort','מחזור — השנה שבה היית שיעור א׳ בישיבה',d.cohort,'text','placeholder="תשע\"ב"')}
       </div>
-      ${_ssField('ss_cohort','מחזור — השנה שבה היית שיעור א׳ בישיבה',d.cohort,'text','placeholder="תשע\"ב"')}
       <div><label style="${_ssLabel}" for="ss_notes">הערות</label><textarea id="ss_notes" rows="3" style="${_ssInput}">${escHtml(d.notes||'')}</textarea></div>
       <input id="ss_website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
     </div>
     <div id="ss_result" style="margin-top:12px;display:none;text-align:center;padding:10px;border-radius:8px;font-size:14px"></div>`;
 }
+// marriage year/month + cohort are asked only when "בוגר" is ticked
+function _ssToggleAlumni() {
+  const el = document.getElementById('ss_alumni'); if (!el) return;
+  el.style.display = [...document.querySelectorAll('#ss_affils input:checked')].some(c => c.value === 'בוגר') ? 'grid' : 'none';
+}
 function _collectPublicForm() {
   const v = id => (document.getElementById(id)?.value || '').trim();
+  const alumniEl = document.getElementById('ss_alumni');
+  const alumni = !alumniEl || alumniEl.style.display !== 'none';
   return {
     firstName: v('ss_firstName'), lastName: v('ss_lastName'), address: v('ss_address'), entrance: v('ss_entrance'),
     zip: v('ss_zip'), phone: v('ss_phone'), mobile: v('ss_mobile'), email: v('ss_email'),
     affils: [...document.querySelectorAll('#ss_affils input:checked')].map(c => c.value),
-    marriageYear: v('ss_marriageYear'), marriageMonth: v('ss_marriageMonth'), cohort: v('ss_cohort'), notes: v('ss_notes'),
+    ...(alumni ? { marriageYear: v('ss_marriageYear'), marriageMonth: v('ss_marriageMonth'), cohort: v('ss_cohort') } : {}),
+    notes: v('ss_notes'),
   };
 }
 function _publicShell(title, sub, bodyHtml, btnHtml) {
@@ -9322,6 +10021,13 @@ function _ssShowResult(ok, msg) {
   r.style.background = ok ? '#eafaf1' : '#fdf0f1'; r.style.color = ok ? '#1e8449' : '#c22430';
   r.textContent = msg;
   r.scrollIntoView({ block: 'nearest' });
+}
+// Short reason for the person filling the form (and for the admin who gets the
+// screenshot): the server's error + detail, never a raw stack.
+function _ssErrText(out) {
+  if (!out || typeof out !== 'object') return 'אין תשובה מהשרת';
+  const parts = [out.error, out.detail].filter(x => typeof x === 'string' && x).map(x => x.slice(0, 120));
+  return parts.join(': ') || 'שגיאה לא ידועה';
 }
 async function _ssPost(body) {
   const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
@@ -9365,10 +10071,10 @@ async function submitSelfEdit(donorId, token) {
   if (!edits.firstName && !edits.lastName) { _ssShowResult(false, 'נא למלא שם'); return; }
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
-    const { ok } = await _ssPost({ action: 'submit', donorId, token, edits });
-    if (!ok) throw new Error('submit failed');
+    const { ok, out } = await _ssPost({ action: 'submit', donorId, token, edits });
+    if (!ok) throw new Error(_ssErrText(out));
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
     if (btn) btn.disabled = false;
     return;
   }
@@ -9390,10 +10096,10 @@ async function submitPublicAdd() {
   if (!edits.phone && !edits.mobile && !edits.email) { _ssShowResult(false, 'נא למלא לפחות טלפון או מייל ליצירת קשר'); return; }
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
-    const { ok } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
-    if (!ok) throw new Error('register failed');
+    const { ok, out } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
+    if (!ok) throw new Error(_ssErrText(out));
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
     if (btn) btn.disabled = false;
     return;
   }
@@ -9549,10 +10255,6 @@ function rejectPendingEdit(idx) {
 }
 
 // ════════════════════════════════════════════════════
-// _initMessagesPage defined here
-function _initMessagesPage() {
-  renderMsgThreads();
-}
 
 // ════════════════════════════════════════════════════
 // AUDIT LOG HOOKS — wrap key actions
@@ -10077,7 +10779,7 @@ async function _geocodeGoogle(address, key) {
     lat: r.geometry.location.lat,
     lng: r.geometry.location.lng,
     city: comp(['locality','postal_town','administrative_area_level_2']),
-    nbh:  comp(['neighborhood','sublocality','sublocality_level_1']),
+    nbh:  comp(['neighborhood','sublocality_level_1','sublocality','sublocality_level_2']),
   };
 }
 
@@ -10122,7 +10824,7 @@ async function _geocodeGoogleMulti(query, key) {
       lat: r.geometry.location.lat,
       lng: r.geometry.location.lng,
       city: comp(['locality','postal_town','administrative_area_level_2']),
-      nbh:  comp(['neighborhood','sublocality','sublocality_level_1']),
+      nbh:  comp(['neighborhood','sublocality_level_1','sublocality','sublocality_level_2']),
     };
   });
 }
@@ -10288,6 +10990,31 @@ function rpMergeSingletons(groups, maxDist, perRoute) {
 
 // ── Route code generator ──
 let _rpSeq = {};
+// Most common street among the route's donors — the fallback "area" name when the
+// geocoder returned no neighborhood (frequent for Israeli addresses).
+function rpMainStreet(donors) {
+  const cnt = {};
+  (donors||[]).forEach(d => {
+    const st = String(d.address||'').split(',')[0].replace(/\d.*$/,'').replace(/^\s*(רח'|רחוב|שד'|שדרות|סמטת)\s*/,'').trim();
+    if (st.length >= 2) cnt[st] = (cnt[st]||0) + 1;
+  });
+  return Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
+}
+function rpRouteNbh(r) {
+  const n = String(r.neighborhood||'').trim();
+  if (n && n !== 'לא ידוע' && n !== String(r.city||'').trim()) return n;
+  return r.area ? 'אזור ' + r.area : '';
+}
+function rpRouteTitle(r) { return [r.code, r.city, rpRouteNbh(r)].filter(Boolean).join(' · '); }
+function rpEditNbh(id) {
+  const r = (DB.routes||[]).find(x=>x.id===id); if (!r) return;
+  if (!can('edit')) { toast('אין הרשאה'); return; }
+  const city = prompt('שם העיר למסלול ' + r.code + ':', r.city || ''); if (city === null) return;
+  const nbh = prompt('שם השכונה / האזור למסלול ' + r.code + ':', rpRouteNbh(r).replace(/^אזור /,'')); if (nbh === null) return;
+  r.city = city.trim(); r.neighborhood = nbh.trim(); r.updatedAt = new Date().toISOString();
+  auditLog('edit', `עריכת כותרת מסלול ${r.code}: ${rpRouteTitle(r)}`);
+  saveDB(); renderRoutesPage(); rpOpenDetail(id);
+}
 function rpNextCode(city) {
   const k = (city||'כללי').replace(/\s+/g,'-').slice(0,12);
   if (!_rpSeq[k]) _rpSeq[k] = 1;
@@ -10396,6 +11123,7 @@ async function rpGenerate() {
         code: rpNextCode(city),
         neighborhood: nbh,
         city,
+        area: rpMainStreet(grp),
         color: RP_COLORS[colorIdx++ % RP_COLORS.length],
         donors: grp.map(d => d.id),
         createdAt: new Date().toISOString()
@@ -10515,9 +11243,9 @@ function rpRouteItem(r) {
   const grpBadge = grp
     ? `<span title="משויך לקבוצת ${escHtml(grp.name)}" style="font-size:10px;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border);border-radius:99px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${escHtml(grp.name)}</span>`
     : `<span title="ללא קבוצה" style="font-size:10px;color:var(--warn)">ללא קבוצה</span>`;
-  return `<div class="rp-ri${isActive?' active':''}" id="rpri_${r.id}" onclick="rpSelectRoute('${r.id}')" title="${escHtml((r.city||'')+' · '+(r.neighborhood||''))}">
+  return `<div class="rp-ri${isActive?' active':''}" id="rpri_${r.id}" onclick="rpSelectRoute('${r.id}')" title="${escHtml(rpRouteTitle(r))}">
     <span class="rp-ri-dot" style="background:${escHtml(r.color||'#2360d8')}"></span>
-    <span class="rp-ri-code">${escHtml(r.code)}<span style="display:block;font-size:10px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(r.city||'')}${r.city&&r.neighborhood?' · ':''}${escHtml(r.neighborhood||'')}</span></span>
+    <span class="rp-ri-code">${escHtml(r.code)}<span style="display:block;font-size:10px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml([r.city, rpRouteNbh(r)].filter(Boolean).join(' · '))}</span></span>
     <span class="rp-ri-cnt">${cnt}</span>
     ${grpBadge}
     <div class="rp-ri-btns">
@@ -10725,7 +11453,7 @@ function rpOpenDetail(id) {
   panel.style.display='block';
   const r = (DB.routes||[]).find(x=>x.id===id);
   if (!r) return;
-  document.getElementById('rpDetailTitle').textContent = '📍 '+r.code+' — '+[r.city,r.neighborhood].filter(Boolean).join(' · ');
+  document.getElementById('rpDetailTitle').textContent = '📍 ' + rpRouteTitle(r);
   rpRenderDetailBody(r);
 }
 
@@ -10808,7 +11536,7 @@ function rpPrint() {
   ${routes.map((r,ri)=>{
     const donors=(r.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
     return `<div class="${ri<routes.length-1?'pb':''}">
-      <h2>📍 ${escHtml(r.code)} — ${escHtml([r.city,r.neighborhood].filter(Boolean).join(' · '))}</h2>
+      <h2>📍 ${escHtml(rpRouteTitle(r))}</h2>
       <table><thead><tr><th>#</th><th>שם</th><th>כתובת</th><th>טלפון</th></tr></thead>
       <tbody>${donors.map((d,i)=>`<tr><td>${i+1}</td><td>${escHtml(donorName(d))}</td><td>${escHtml(d.address||'')}</td><td>${escHtml(d.mobile||d.phone||'')}</td></tr>`).join('')}</tbody></table>
     </div>`;
