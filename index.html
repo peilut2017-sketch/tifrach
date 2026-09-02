@@ -261,6 +261,18 @@ body {
 .btn-success { background: var(--success); color: #fff; border-color: var(--success); box-shadow: 0 2px 8px rgba(21,115,71,.28) }
 .btn-success:hover { filter: brightness(1.1) }
 .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: var(--r-sm) }
+/* One control height (36px) wherever buttons share a row with each other or with inputs;
+   compact contexts (table rows, chips, cards) keep their small size */
+.btn { min-height: 36px }
+.btn-sm { min-height: 32px }
+.toolbar .btn, .toolbar .btn-sm, .gp-header .btn, .rp-header .btn, .modal-footer .btn, .modal-footer .btn-sm,
+.page-actions .btn, .page-actions .btn-sm, #dashActions .btn, .card-header .btn, .gp-filters .btn { min-height: 36px; padding-top: 0; padding-bottom: 0 }
+.toolbar .search-input, .toolbar .filter-select, .toolbar .form-control, .gp-filters .form-control,
+#filtersRow .filter-select, #filtersRow .col-pick-cb { height: 36px; box-sizing: border-box }
+td .btn, .t10 .btn, .row-actions .btn, .future-item-actions .btn, .dc-m-btns .btn, .more-menu-item, .rp-ri-btn,
+.gp-unassigned-item .btn, .pick-item .btn, .multi-filter-footer button { min-height: 0 }
+.card-header .btn-sm { min-height: 30px }
+.btn-icon { min-height: 0 }
 .btn-icon {
   width: 30px; height: 30px; border-radius: var(--r);
   border: 1px solid var(--border); background: var(--white); cursor: pointer;
@@ -363,6 +375,8 @@ tr:hover td { background: var(--primary-bg) }
 .modal-body { overflow-y: auto; flex: 1; min-height: 0 }
 .modal-footer { flex-shrink: 0 }
 .modal-overlay.open .modal { transform: translateY(0) scale(1) }
+.modal-box { background: var(--white); border-radius: var(--r-xl); box-shadow: var(--sh-lg); border: 1px solid var(--stone-200); width: 700px; max-width: 96vw; max-height: 88vh; overflow: hidden; transform: translateY(22px) scale(.97); transition: transform var(--spring); display: flex; flex-direction: column }
+.modal-overlay.open .modal-box { transform: translateY(0) scale(1) }
 .modal-sm { width: 460px; max-height: 85vh }
 .modal-lg { width: 940px }
 .modal-header { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); color: #fff; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0 }
@@ -563,7 +577,7 @@ tr:hover td { background: var(--primary-bg) }
   .table-scroll, .ts { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { min-width: 500px; }
   .modal-overlay { align-items: flex-end !important; padding: 0; }
-  .modal, .modal.modal-sm, .modal.modal-lg, .modal.modal-xl {
+  .modal, .modal-box, .modal.modal-sm, .modal.modal-lg, .modal.modal-xl {
     width: 100% !important; max-width: 100vw !important;
     max-height: 93vh !important; border-radius: var(--r-xl) var(--r-xl) 0 0 !important;
   }
@@ -648,7 +662,7 @@ tr:hover td { background: var(--primary-bg) }
 /* ══ SIDEBAR NAV — light, modern ══ */
 #appWrapper { display:flex; flex-direction:row; min-height:100vh; }
 #sidebar {
-  width:225px; min-height:100vh; background:var(--white);
+  width:225px; height:100vh; height:100dvh; background:var(--white);
   display:flex; flex-direction:column; transition:width .25s cubic-bezier(.4,0,.2,1);
   position:fixed; right:0; top:0; z-index:200; overflow:hidden;
   border-left:1px solid var(--stone-200);
@@ -698,10 +712,26 @@ tr:hover td { background: var(--primary-bg) }
   display:flex; flex-direction:column;
 }
 #mainContent.expanded { margin-right:58px; }
+/* ── Mobile: off-canvas drawer opened from the ☰ button ── */
+#sbBackdrop{display:none;position:fixed;inset:0;background:rgba(18,33,63,.45);z-index:199;backdrop-filter:blur(2px)}
+#mobileNavBtn{display:none}
 @media(max-width:700px){
-  #sidebar{width:58px!important;}
-  #sidebar .sb-label{opacity:0!important;width:0!important;}
-  #mainContent{margin-right:58px!important;}
+  #sidebar{width:260px!important;max-width:85vw;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 30px rgba(18,33,63,.25)}
+  #sidebar.mobile-open{transform:translateX(0)}
+  #sidebar .sb-label{opacity:1!important;width:auto!important}
+  #sidebar .sb-toggle{display:none}
+  #mainContent{margin-right:0!important}
+  #sbBackdrop.show{display:block}
+  #mobileNavBtn{display:inline-flex}
+}
+/* ── Tablet: two-column layouts collapse ── */
+@media(max-width:1024px){
+  .dash-2col{grid-template-columns:1fr!important}
+  .admin-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:900px){
+  .msg-grid{grid-template-columns:1fr!important}
+  .msg-grid .card:first-child{max-height:260px;overflow:auto}
 }
 
 /* ════ TEAL CARD ════ */
@@ -738,7 +768,7 @@ tr:hover td { background: var(--primary-bg) }
 
 /* ════ Overflow "more" menu ════ */
 .more-menu{position:relative;display:inline-block}
-.more-menu-list{position:absolute;top:calc(100% + 4px);left:0;z-index:450;background:#fff;border:1px solid var(--stone-200);border-radius:var(--r-md);box-shadow:var(--sh-lg);min-width:200px;padding:5px;display:none;animation:slideDown .15s ease}
+.more-menu-list{position:absolute;top:calc(100% + 4px);left:0;z-index:1300;background:#fff;border:1px solid var(--stone-200);border-radius:var(--r-md);box-shadow:var(--sh-lg);min-width:200px;padding:5px;display:none;animation:slideDown .15s ease}
 .more-menu-list.open{display:block}
 .more-menu-item{display:flex;align-items:center;gap:9px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:13px;color:var(--stone-700);border-radius:var(--r-sm);text-align:right;transition:background var(--tr)}
 .more-menu-item:hover{background:var(--primary-bg);color:var(--primary)}
@@ -773,6 +803,20 @@ tr:hover td { background: var(--primary-bg) }
 .re-btn.re-field:hover{background:var(--gold);color:white}
 [contenteditable]:empty:before{content:attr(data-placeholder);color:#aaa;pointer-events:none}
 
+/* ════ Duplicate indicators ════ */
+@keyframes dupPulse { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .35; transform: scale(1.25) } }
+@keyframes dupGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(194,36,48,.6) } 50% { box-shadow: 0 0 0 5px rgba(194,36,48,0) } }
+.has-dup { border-color: var(--danger) !important; background-color: #fff7f7 !important; padding-left: 30px !important; animation: dupGlow 1.1s infinite;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 L23 21 H1 Z' fill='%23c22430'/><rect x='11' y='9' width='2' height='6' fill='white'/><rect x='11' y='16.5' width='2' height='2' fill='white'/></svg>");
+  background-repeat: no-repeat; background-position: left 8px center; background-size: 16px 16px }
+.dup-top-banner { position: sticky; top: 0; z-index: 5; background: #fff3cd; border: 1.5px solid #f59e0b; color: #92400e; border-radius: 10px; padding: 8px 14px; margin: 0 0 12px; font-size: 12.5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: var(--sh) }
+/* ════ Boot loader (no login flash while restoring the session) ════ */
+#bootLoader { position: fixed; inset: 0; background: var(--bg-app); z-index: 99998; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); font-size: 14px }
+#bootLoader .spin { width: 34px; height: 34px; border: 3px solid var(--stone-200); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite }
+@keyframes spin { to { transform: rotate(360deg) } }
+.assign-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--primary-bg); border: 1px solid var(--primary-border); color: var(--primary-dark); border-radius: 99px; padding: 2px 9px; font-size: 11.5px; cursor: pointer }
+.assign-chip:hover { background: var(--primary); color: #fff }
+
 /* ════ Reduced motion ════ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important }
@@ -782,8 +826,10 @@ tr:hover td { background: var(--primary-bg) }
 </head>
 <body>
 
+<div id="bootLoader"><div class="spin"></div><div>טוען את המערכת…</div></div>
+
 <!-- LOGIN -->
-<div class="login-screen" id="loginScreen">
+<div class="login-screen" id="loginScreen" style="display:none">
   <div class="login-box">
     <div class="login-logo"><img class="app-logo" alt="עזר תורה" src="" style="height:90px;margin-bottom:4px"><div style="font-size:20px;font-weight:900;color:var(--slate-900)">עזר תורה</div></div>
     <div class="login-sub">תושיה תפרח — כניסה למערכת <span style="opacity:.5;font-size:11px">v30</span></div>
@@ -813,6 +859,7 @@ tr:hover td { background: var(--primary-bg) }
 <div id="appWrapper" style="display:none">
 
 <!-- SIDEBAR -->
+<div id="sbBackdrop" onclick="closeMobileNav()"></div>
 <aside id="sidebar">
   <div class="sb-brand">
     <button class="sb-toggle" onclick="toggleSidebar()" title="הצג/הסתר תפריט">☰</button>
@@ -878,6 +925,7 @@ tr:hover td { background: var(--primary-bg) }
 <div class="topbar" style="padding:8px 16px;position:sticky;top:0;z-index:100">
   <div style="display:flex;align-items:center;justify-content:space-between">
     <div style="display:flex;align-items:center;gap:10px">
+      <button id="mobileNavBtn" onclick="toggleMobileNav()" title="תפריט" aria-label="תפריט" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--ink);border-radius:8px;width:36px;height:36px;font-size:18px;cursor:pointer;align-items:center;justify-content:center">☰</button>
       <div class="user-pill" id="topUserPill"><span id="topUserName"></span><span class="role-badge" id="topUserRole"></span></div>
       <button id="refreshBtn" onclick="manualRefresh()" title="רענן נתונים מהשרת" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s"><i data-lucide="refresh-cw" style="width:14px;height:14px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> <span>רענן</span></button>
       <button onclick="openGlobalSearch()" title="חיפוש גלובלי (Ctrl+K)" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s">🔍 <span>חיפוש</span> <kbd style="font-size:10px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:4px;padding:0 4px">Ctrl+K</kbd></button>
@@ -943,7 +991,7 @@ tr:hover td { background: var(--primary-bg) }
   </div>
 
   <!-- Charts Row -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="dash-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
     <div class="card">
       <div class="card-header"><h3>📊 תרומות חודשיות (12 חודשים אחרונים)</h3></div>
       <div class="card-body"><canvas id="chartMonthly" height="200"></canvas></div>
@@ -1554,7 +1602,7 @@ tr:hover td { background: var(--primary-bg) }
     <h2 style="font-family:'Noto Serif Hebrew',serif;font-size:24px">✉️ הודעות פנימיות</h2>
     <button class="btn btn-gold" onclick="openComposeMsg()">✉️ הודעה חדשה</button>
   </div>
-  <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:500px">
+  <div class="msg-grid" style="display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:500px">
     <!-- Threads list -->
     <div class="card" style="margin:0">
       <div class="card-header"><h3>שיחות</h3></div>
@@ -2160,7 +2208,7 @@ tr:hover td { background: var(--primary-bg) }
     <div class="modal-header"><h3><i data-lucide="scan-search" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> בדיקת כפילויות</h3><button class="modal-close" onclick="closeModal('duplicateModal')">✕</button></div>
     <div class="modal-body" style="padding:0">
       <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">
-        סורק כפילויות לפי: טלפון, סלולרי, מייל (שמות וכתובות כפולות אינן נחשבות לבעיה)
+        סורק כפילויות לפי: ת"ז, טלפון/סלולרי (הצלבה בין השדות), מייל, שם מלא זהה, ות"ז שמופיעה בהערות של תורם אחר
       </div>
       <div style="max-height:520px;overflow-y:auto;padding:16px" id="dupBody"></div>
     </div>
@@ -2755,6 +2803,7 @@ tr:hover td { background: var(--primary-bg) }
     </div>
     <!-- Scrollable tab content -->
     <div class="donor-tab-content">
+      <div id="dupTopBanner" class="dup-top-banner" style="display:none"></div>
 
       <!-- DETAILS TAB -->
       <div id="dc-details">
@@ -2768,13 +2817,18 @@ tr:hover td { background: var(--primary-bg) }
           <div class="fg"><label class="form-label">תואר</label>
             <select class="form-control" id="f_title" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_firstName').focus()}"><option value="">ללא</option><option>הרב</option><option>ד"ר</option><option>פרופ'</option><option>מר</option><option>גב'</option><option>הרבנית</option><option>האדמו"ר</option></select>
           </div>
-          <div class="fg"><label class="form-label">שם פרטי <span class="req">*</span></label><input class="form-control" id="f_firstName" placeholder="שם פרטי" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_lastName').focus()}"></div>
-          <div class="fg"><label class="form-label">שם משפחה <span class="req">*</span></label><input class="form-control" id="f_lastName" placeholder="שם משפחה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_closingName').focus()}"></div>
+          <div class="fg"><label class="form-label">שם פרטי <span class="req">*</span></label><input class="form-control" id="f_firstName" placeholder="שם פרטי" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_lastName').focus()}"></div>
+          <div class="fg"><label class="form-label">שם משפחה <span class="req">*</span></label><input class="form-control" id="f_lastName" placeholder="שם משפחה" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_closingName').focus()}"></div>
           <div class="fg"><label class="form-label">שם סגירה</label>
             <select class="form-control" id="f_closingName" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_affil').focus()}"><option value="">-</option><option>בברכה</option><option>בכבוד רב</option><option>בהוקרה</option><option>בידידות</option><option>בתודה</option><option>יישר כח</option></select>
           </div>
-          <div class="fg"><label class="form-label">שיוך</label>
-            <select class="form-control" id="f_affil" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_address').focus()}"><option value="">-</option><option>תלמיד</option><option>בוגר</option><option>הורה תלמיד</option><option>הורה בוגר</option><option>מכר</option><option>עסקי</option><option>אחר</option></select>
+          <div class="fg"><label class="form-label">שיוך <span style="font-size:10px;color:var(--muted);text-transform:none">(ניתן לבחור כמה)</span></label>
+            <div style="position:relative">
+              <button type="button" class="form-control" id="f_affilBtn" onclick="toggleAffilDrop()" style="text-align:right;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:6px"><span id="f_affilLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">-</span><span>▾</span></button>
+              <div id="f_affilDrop" class="multi-filter-drop" style="display:none;right:0;left:0;max-width:none">
+                <div id="f_affilOpts" class="multi-filter-opts"></div>
+              </div>
+            </div>
           </div>
           <div class="fg half"><label class="form-label">כתובת מלאה</label>
             <div style="position:relative">
@@ -2783,7 +2837,8 @@ tr:hover td { background: var(--primary-bg) }
             </div>
             <div id="addressMapPreview" style="margin-top:6px;display:none;border-radius:8px;overflow:hidden;height:120px"></div>
           </div>
-          <div class="fg"><label class="form-label">כניסה / קומה</label><input class="form-control" id="f_entrance" placeholder="כניסה א', קומה 3" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_phone').focus()}"></div>
+          <div class="fg"><label class="form-label">כניסה / קומה</label><input class="form-control" id="f_entrance" placeholder="כניסה א', קומה 3" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_zip').focus()}"></div>
+          <div class="fg"><label class="form-label">מיקוד</label><input class="form-control" id="f_zip" placeholder="מיקוד" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_phone').focus()}"></div>
           <div class="fg"><label class="form-label">טלפון</label><input class="form-control" id="f_phone" placeholder="02-..." oninput="checkFieldDuplicate('phone',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_mobile').focus()}"></div>
           <div class="fg"><label class="form-label">סלולרי</label>
             <div class="ig"><input class="form-control" id="f_mobile" placeholder="05X-..." oninput="checkFieldDuplicate('mobile',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_email').focus()}"><button class="btn-icon wa" onclick="openWA()" title="WhatsApp">💬</button></div>
@@ -2795,12 +2850,23 @@ tr:hover td { background: var(--primary-bg) }
           <div class="fg"><label class="form-label">מועד תרמה רצוי</label>
             <select class="form-control" id="f_prefTime" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_marriageYear').focus()}"><option value="">לא נקבע</option><option>טלפוני לפני פורים</option><option>פורים בבית</option><option>טלפוני בפורים</option></select>
           </div>
-          <div class="fg"><label class="form-label">מתרים משוייך</label>
-            <select class="form-control" id="f_fundraiserId">
-              <option value="">-- ללא --</option>
-            </select>
+          <div class="fg" style="grid-column:1/-1">
+            <label class="form-label">שיוך גיוס — מתרים / קבוצה / מסלול</label>
+            <div id="f_assignDerived" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted);min-height:22px;margin-bottom:4px"></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <select class="form-control" id="f_assignKind" onchange="onAssignKindChange()" style="max-width:230px">
+                <option value="">אוטומטי — לפי הקבוצות והמסלולים</option>
+                <option value="fr">שיוך ידני למתרים ספציפי</option>
+                <option value="group">שיוך ידני לקבוצה ספציפית</option>
+                <option value="route">שיוך ידני למסלול ספציפי</option>
+              </select>
+              <select class="form-control" id="f_assignId" style="display:none;flex:1;min-width:200px"></select>
+            </div>
           </div>
           <div class="fg"><label class="form-label">שנת נישואין (עברי)</label><input class="form-control" id="f_marriageYear" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_cohort').focus()}"></div>
+          <div class="fg"><label class="form-label">חודש נישואין</label>
+            <select class="form-control" id="f_marriageMonth"><option value="">-</option><option>תשרי</option><option>חשוון</option><option>כסלו</option><option>טבת</option><option>שבט</option><option>אדר</option><option>אדר א</option><option>אדר ב</option><option>ניסן</option><option>אייר</option><option>סיוון</option><option>תמוז</option><option>אב</option><option>אלול</option></select>
+          </div>
           <div class="fg"><label class="form-label">מחזור (שנה עברית)</label><input class="form-control" id="f_cohort" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_createdAt').focus()}"></div>
           <div class="fg"><label class="form-label">תאריך יצירה</label><input class="form-control" id="f_createdAt" type="date" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_notes').focus()}"></div>
           <div class="fg"><label class="form-label">עדכון אחרון</label><input class="form-control" id="f_updatedAt" type="text" readonly style="background:var(--bg-app);font-size:12px;color:var(--muted)" placeholder="טרם עודכן"></div>
@@ -2822,7 +2888,8 @@ tr:hover td { background: var(--primary-bg) }
               <option value="1">⭐ חלש</option>
             </select>
           </div>
-          <div class="fg full"><label class="form-label">הערות</label><textarea class="form-control" id="f_notes" rows="2" placeholder="הערות..."></textarea></div>
+          <div class="fg full"><label class="form-label">הערות <span style="font-size:10px;color:var(--muted);text-transform:none">(מופיעות בדוחות ובגיליונות התרמה)</span></label><textarea class="form-control" id="f_notes" rows="2" placeholder="הערות..." oninput="checkFieldDuplicate('notes',this.value)"></textarea></div>
+          <div class="fg full"><label class="form-label">הערות כרטיס — פנימי <span style="font-size:10px;color:var(--muted);text-transform:none">(תפעולי, לא נכנס לדוחות מודפסים)</span></label><textarea class="form-control" id="f_cardNotes" rows="2" placeholder="הערות תפעוליות פנימיות..."></textarea></div>
         </div>
         <!-- Real-time duplicate warning -->
         <div id="fieldDupWarning" style="display:none;margin-top:10px;padding:10px 14px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;font-size:13px;color:#92400e">
@@ -3269,8 +3336,21 @@ tr:hover td { background: var(--primary-bg) }
       </div>
       <div style="overflow-x:auto">
         <table class="users-table"><thead><tr><th>מייל</th><th>שם לתצוגה</th><th>הרשאה</th><th>כניסה ראשונה</th><th></th></tr></thead><tbody id="usersBody"></tbody></table>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px">🔐 הסיסמאות מנוהלות ב-Supabase Auth בלבד. משתמש חדש: צור אותו קודם ב-Supabase Dashboard (Authentication → Users) ואז הוסף כאן שורה עם אותו מייל.</div>
       </div>
+      <div id="createUserBox" style="display:none;margin-top:14px;background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:10px;padding:12px 14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px">➕ יצירת משתמש חדש (כולל חשבון כניסה)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+          <input class="form-control" id="cu_email" type="email" placeholder="מייל" dir="ltr">
+          <input class="form-control" id="cu_name" placeholder="שם לתצוגה">
+          <input class="form-control" id="cu_pass" type="text" placeholder="סיסמה ראשונית (8+ תווים)" dir="ltr">
+          <select class="form-control" id="cu_role"><option value="viewer">מבקר</option><option value="editor">עורך</option><option value="admin">מנהל</option><option value="superadmin">מנהל ראשי</option></select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+          <button class="btn btn-navy btn-sm" id="cu_btn" onclick="createAuthUser()">צור משתמש</button>
+          <span id="cu_msg" style="font-size:12px;color:var(--muted)">המשתמש ייווצר ב-Supabase Auth ויתווסף לרשימה למעלה; בכניסה הראשונה יתבקש להחליף סיסמה.</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">🔐 הסיסמאות מנוהלות ב-Supabase Auth בלבד. אפשר ליצור משתמשים כאן (מנהל ראשי), או ידנית ב-Supabase Dashboard ואז להוסיף שורה עם אותו מייל.</div>
     </div>
     <div class="modal-footer"><button class="btn btn-navy" onclick="saveUsers()">שמור</button></div>
   </div>
@@ -3294,7 +3374,7 @@ tr:hover td { background: var(--primary-bg) }
       <div id="impStep1">
         <div style="background:var(--bg-app);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px">
           <strong style="display:block;margin-bottom:6px">📋 ייבוא חכם — מיפוי עמודות אוטומטי</strong>
-          <span style="color:var(--muted)">לאחר טעינת הקובץ תוכל לשייך כל עמודה לשדה הנכון. שדות חובה: שם פרטי ו/או שם משפחה.</span>
+          <span style="color:var(--muted)">לאחר טעינת הקובץ תוכל לשייך כל עמודה לשדה הנכון. שדות חובה: שם פרטי ו/או שם משפחה. <strong>אפשר למפות כמה עמודות לאותו שדה</strong> — הערכים יאוחדו (למשל רחוב + מספר + עיר → כתובת).</span>
         </div>
         <label class="btn btn-navy" style="cursor:pointer;display:block;text-align:center;padding:22px;font-size:14px">
           📂 בחר קובץ Excel (.xlsx / .xls)
@@ -3526,6 +3606,15 @@ async function loadDB() {
   (DB.routes||[]).forEach(r => {
     if (!r.groupIds) r.groupIds = [];
   });
+  // ── v30: multiple affiliations per donor + generalized fundraising assignment ──
+  (DB.donors||[]).forEach(d => {
+    if (!Array.isArray(d.affils)) d.affils = _parseAffils(d.affil||'');
+    if (!d.assignKind && d.fundraiserId) { d.assignKind = 'fr'; d.assignId = d.fundraiserId; }
+  });
+  if (DB.settings && Array.isArray(DB.settings.affiliations) && !DB.settings._affilsV2) {
+    ['הורה תלמיד','הורה בוגר','סבא תלמיד','סבא בוגר'].forEach(a => { if (!DB.settings.affiliations.includes(a)) DB.settings.affiliations.push(a); });
+    DB.settings._affilsV2 = true;
+  }
   // ── Load audit log from dedicated localStorage key (persists across upgrades) ──
   _loadAuditLog();
   // Stable ids for nested records — required by the merge engine
@@ -4185,10 +4274,36 @@ function hideInactivityWarning() {
 });
 
 // ── Auto-login from saved session ──
+// Boot: the login screen is revealed only once we know there is no session
+// (F5 used to flash the login form and then "log in" again).
+function _bootDone(showLogin) {
+  const b = document.getElementById('bootLoader'); if (b) b.remove();
+  if (showLogin) { const ls = document.getElementById('loginScreen'); if (ls) ls.style.display = 'flex'; }
+}
+setTimeout(() => { if (document.getElementById('bootLoader') && !currentUser) _bootDone(true); }, 8000);
+
+function toggleMobileNav() {
+  const sb = document.getElementById('sidebar'); if (!sb) return;
+  const open = !sb.classList.contains('mobile-open');
+  sb.classList.toggle('mobile-open', open);
+  document.getElementById('sbBackdrop')?.classList.toggle('show', open);
+}
+function closeMobileNav() {
+  document.getElementById('sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sbBackdrop')?.classList.remove('show');
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
-  // Self-service donor portal — unauthenticated, served via edge function.
   const params = new URLSearchParams(window.location.search);
+  // Public "add donor" form — unauthenticated, fixed link
+  if (params.get('addDonor')) {
+    _bootDone(false);
+    showPublicAddForm();
+    return;
+  }
+  // Self-service donor portal — unauthenticated, served via edge function.
   if (params.get('selfService')) {
+    _bootDone(false);
     checkSelfServiceMode();
     return;
   }
@@ -4205,6 +4320,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       await _afterAuth(data.session.user);
     }
   } catch(e) { console.warn('session restore failed', e && e.message); }
+  if (!currentUser) _bootDone(true);
 });
 
 // Authentication is handled by Supabase Auth (see doLogin / _afterAuth).
@@ -4310,6 +4426,7 @@ async function _afterAuth(sbUser) {
     } else {
       // authenticated but not authorized in this system
       try { await _sb.auth.signOut(); } catch(e){}
+      _bootDone(true);
       const loginErr = document.getElementById('loginError');
       if(loginErr) { loginErr.style.display='block'; loginErr.textContent='המשתמש אינו מורשה במערכת. פנה למנהל.'; }
       return;
@@ -4333,6 +4450,7 @@ async function _afterAuth(sbUser) {
 function _setupSession(user) {
   _initEmailJS();
   currentUser = user;
+  _bootDone(false);
   auditLog('login', 'כניסה למערכת');
   document.getElementById('loginScreen').style.display = 'none';
   const aw = document.getElementById('appWrapper');
@@ -4591,6 +4709,7 @@ function toggleSbDropdown(id) {
 }
 
 function showPage(name) {
+  closeMobileNav();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const pg = document.getElementById('page'+name.charAt(0).toUpperCase()+name.slice(1));
@@ -4955,21 +5074,19 @@ function openDonorModal(id) {
   switchDTab('details');
   updateDetailsTabSummary();
   openModal('donorModal');
+  checkAllFieldDuplicates();
   // soft edit-lock: announce we're editing + warn if someone else already is
   _setEditingDonor(id);
   _checkDonorLock(id);
 }
 
 function fillForm(d) {
-  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes','status','rating'].forEach(k=>{
+  ['code','title','firstName','lastName','closingName','address','entrance','zip','phone','mobile','email','idNumber','prefTime','marriageYear','marriageMonth','cohort','notes','cardNotes','status','rating'].forEach(k=>{
     const e=document.getElementById('f_'+k); if(e) e.value=d[k]||'';
   });
-  // Populate fundraiserId dropdown
-  const frSel = document.getElementById('f_fundraiserId');
-  if (frSel) {
-    frSel.innerHTML = '<option value="">-- ללא --</option>' +
-      (DB.fundraisers||[]).map(f => `<option value="${f.id}"${d.fundraiserId===f.id?' selected':''}>${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')} (${escHtml(f.code||'')})</option>`).join('');
-  }
+  _setDonorAffils(Array.isArray(d.affils) ? d.affils : _parseAffils(d.affil||''));
+  renderAssignBlock(d);
+  _clearDupFlags();
   // Default status to 'active' if not set
   const statusEl=document.getElementById('f_status');
   if(statusEl&&!d.status) statusEl.value='active';
@@ -4999,6 +5116,103 @@ function fillForm(d) {
   if(sugg) sugg.style.display='none';
 }
 
+// ════════════════════════════════════════════════════
+// AFFILIATIONS (multi) + FUNDRAISING ASSIGNMENT
+// ════════════════════════════════════════════════════
+let _donorAffils = [];
+const PARENT_AFFILS = ['הורה תלמיד','הורה בוגר','סבא תלמיד','סבא בוגר'];
+function _parseAffils(str) { return String(str||'').split(/[,،;|]/).map(x=>x.trim()).filter(Boolean); }
+function _donorAffilList(d) { return Array.isArray(d.affils) && d.affils.length ? d.affils : _parseAffils(d.affil||''); }
+
+function _setDonorAffils(arr) { _donorAffils = [...new Set((arr||[]).filter(Boolean))]; renderAffilOptions(); }
+function renderAffilOptions() {
+  const host = document.getElementById('f_affilOpts'); if (!host) return;
+  const opts = [...new Set([...(getSettings().affiliations||[]), ..._donorAffils])];
+  host.innerHTML = opts.map(a => `<label class="multi-filter-opt"><input type="checkbox" value="${escHtml(a)}" ${_donorAffils.includes(a)?'checked':''} onchange="onAffilToggle(this)"> ${escHtml(a)}</label>`).join('')
+    || '<div style="padding:8px;font-size:12px;color:var(--muted)">אין שיוכים מוגדרים — הוסף בפאנל ניהול → נתונים קשיחים</div>';
+  const lbl = document.getElementById('f_affilLabel');
+  if (lbl) lbl.textContent = _donorAffils.length ? _donorAffils.join(', ') : '-';
+}
+function toggleAffilDrop() {
+  const d = document.getElementById('f_affilDrop'); if (!d) return;
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+function onAffilToggle(cb) {
+  const v = cb.value;
+  if (cb.checked) { if (!_donorAffils.includes(v)) _donorAffils.push(v); }
+  else _donorAffils = _donorAffils.filter(x => x !== v);
+  const lbl = document.getElementById('f_affilLabel');
+  if (lbl) lbl.textContent = _donorAffils.length ? _donorAffils.join(', ') : '-';
+  // A parent/grandparent affiliation implies a family link → guide to the relations tab
+  if (cb.checked && PARENT_AFFILS.includes(v)) {
+    document.getElementById('f_affilDrop').style.display = 'none';
+    switchDTab('relations');
+    _showRelPrompt(v);
+  }
+}
+function _showRelPrompt(affil) {
+  const host = document.getElementById('dc-relations'); if (!host) return;
+  let b = document.getElementById('relPromptBanner');
+  if (!b) { b = document.createElement('div'); b.id = 'relPromptBanner'; host.prepend(b); }
+  const who = affil.includes('סבא') ? 'הנכד' : 'הבן';
+  const what = affil.includes('תלמיד') ? 'התלמיד' : 'הבוגר';
+  b.style.cssText = 'background:var(--primary-bg);border:1px solid var(--primary-border);color:var(--primary-dark);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+  b.innerHTML = `<span style="font-size:18px">👨‍👦</span><span style="flex:1">נבחר השיוך <strong>${escHtml(affil)}</strong> — יש לבחור בהתאמה המתאימה: מי ${what} (${who}) שאליו מתייחס השיוך. לחץ "הוסף התאמה" ובחר תורם או מתרים.</span><button class="btn btn-gold btn-sm" onclick="openAddRelPanel();document.getElementById('relPromptBanner')?.remove()">🔗 הוסף התאמה</button><button class="btn btn-outline btn-sm" onclick="document.getElementById('relPromptBanner').remove()">✕</button>`;
+  toast('שיוך "' + affil + '" — נא לבחור את ההתאמה המתאימה');
+}
+
+// ── Fundraising assignment: derived from groups/routes, with a manual override ──
+function donorDerivedAssignment(d) {
+  const groups = (DB.groups||[]).filter(g => (g.donorIds||[]).includes(d.id));
+  const routes = (DB.routes||[]).filter(r => (r.donors||[]).includes(d.id));
+  return { groups, routes };
+}
+function assignTargetLabel(kind, id) {
+  if (kind === 'fr') return frNameById(id) || '(מתרים לא קיים)';
+  if (kind === 'group') { const g = (DB.groups||[]).find(x => x.id === id); return g ? `${g.name} (${g.code||''})` : '(קבוצה לא קיימת)'; }
+  if (kind === 'route') { const r = (DB.routes||[]).find(x => x.id === id); return r ? `${r.code} — ${[r.city,r.neighborhood].filter(Boolean).join(' · ')}` : '(מסלול לא קיים)'; }
+  return '';
+}
+function renderAssignBlock(d) {
+  const der = document.getElementById('f_assignDerived');
+  const kindSel = document.getElementById('f_assignKind');
+  if (!der || !kindSel) return;
+  const { groups, routes } = donorDerivedAssignment(d||{});
+  let html = '';
+  if (d && d.id) {
+    groups.forEach(g => { html += `<span class="assign-chip" title="פתח את הקבוצה" onclick="closeModal('donorModal');setTimeout(()=>openGroupModal('${g.id}'),120)">👥 ${escHtml(g.name)} <span style="opacity:.7">${escHtml((g.memberIds||[]).map(id=>frNameById(id)).filter(Boolean).join(', '))}</span></span>`; });
+    routes.forEach(r => { html += `<span class="assign-chip" title="הצג במפת המסלולים" onclick="closeModal('donorModal');showPage('routes');setTimeout(()=>rpOpenDetail('${r.id}'),350)"><span style="width:8px;height:8px;border-radius:2px;background:${escHtml(r.color||'#999')};display:inline-block"></span> ${escHtml(r.code)} · ${escHtml([r.city,r.neighborhood].filter(Boolean).join(' · '))}</span>`; });
+  }
+  if (!html) html = '<span>לא משובץ בקבוצה או במסלול</span>';
+  der.innerHTML = html;
+  kindSel.value = (d && d.assignKind) || '';
+  _populateAssignIds(kindSel.value, d ? d.assignId : '');
+}
+function _populateAssignIds(kind, selected) {
+  const sel = document.getElementById('f_assignId'); if (!sel) return;
+  if (!kind) { sel.style.display = 'none'; sel.innerHTML = ''; return; }
+  let opts = [];
+  if (kind === 'fr') opts = (DB.fundraisers||[]).map(f => [f.id, `${f.firstName||''} ${f.lastName||''} (${f.code||''})`]);
+  if (kind === 'group') opts = (DB.groups||[]).map(g => [g.id, `${g.name} (${g.code||''})`]);
+  if (kind === 'route') opts = (DB.routes||[]).map(r => [r.id, `${r.code} — ${[r.city,r.neighborhood].filter(Boolean).join(' · ')}`]);
+  sel.innerHTML = '<option value="">-- בחר --</option>' + opts.map(([id,l]) => `<option value="${id}"${id===selected?' selected':''}>${escHtml(l)}</option>`).join('');
+  sel.style.display = '';
+}
+function onAssignKindChange() { _populateAssignIds(document.getElementById('f_assignKind').value, ''); }
+
+// Donors inside a group/route whose manual assignment points elsewhere
+function _overriddenDonors(donorIds, kind, id) {
+  return donorIds.map(did => DB.donors.find(d => d.id === did)).filter(Boolean)
+    .filter(d => d.assignKind && !(d.assignKind === kind && d.assignId === id))
+    .map(d => ({ d, target: assignTargetLabel(d.assignKind, d.assignId), kind: d.assignKind }));
+}
+function _overrideNotice(list, ctx) {
+  if (!list.length) return;
+  const kindLbl = { fr:'מתרים', group:'קבוצה', route:'מסלול' };
+  const lines = list.slice(0, 12).map(x => `• ${donorName(x.d)} → ${kindLbl[x.kind]||''}: ${x.target}`).join('\n');
+  alert(`⚠️ ב${ctx} יש ${list.length} תורמים שהוחרגו ידנית ושויכו למקום אחר:\n\n${lines}${list.length>12?'\n…':''}\n\n(השיוך הידני בכרטיס התורם גובר על השיבוץ האוטומטי)`);
+}
+
 function switchDTab(tab) {
   currentDTab=tab;
   ['details','donations','future','relations','bond','history'].forEach(t=>{
@@ -5010,6 +5224,7 @@ function switchDTab(tab) {
     const fb=document.getElementById('donationFormBox');
     if(fb) fb.style.display='none';
   }
+  const ad=document.getElementById('f_affilDrop'); if(ad) ad.style.display='none';
   if(tab==='details') updateDetailsTabSummary();
   if(tab==='donations') renderDonationsTab();
   if(tab==='future') renderFutureTab();
@@ -5021,11 +5236,15 @@ function switchDTab(tab) {
 // Read the donor form into a data object (shared by save / save-and-new)
 function _collectDonorForm() {
   const data={};
-  ['code','title','firstName','lastName','closingName','affil','address','entrance','phone','mobile','email','idNumber','prefTime','marriageYear','cohort','notes','status','rating'].forEach(k=>{
+  ['code','title','firstName','lastName','closingName','address','entrance','zip','phone','mobile','email','idNumber','prefTime','marriageYear','marriageMonth','cohort','notes','cardNotes','status','rating'].forEach(k=>{
     const e=document.getElementById('f_'+k);if(e)data[k]=e.value.trim();
   });
-  const frSelEl = document.getElementById('f_fundraiserId');
-  if (frSelEl) data.fundraiserId = frSelEl.value || '';
+  data.affils=[..._donorAffils];
+  data.affil=_donorAffils.join(', ');   // legacy string kept in sync (exports, prints, old filters)
+  const ak=document.getElementById('f_assignKind')?.value||'';
+  data.assignKind=ak;
+  data.assignId=ak ? (document.getElementById('f_assignId')?.value||'') : '';
+  data.fundraiserId = ak==='fr' ? data.assignId : '';
   // Save geo data only if a fresh suggestion was picked in this edit session
   if(window._lastGeoPicked && window._lastGeoLat) data.lat = window._lastGeoLat;
   if(window._lastGeoPicked && window._lastGeoLng) data.lng = window._lastGeoLng;
@@ -5057,7 +5276,7 @@ function saveDonor() {
   if(!fn&&!ln){alert('חובה להזין שם');return;}
   const data=_collectDonorForm();
 
-  const fieldLabels={firstName:'שם פרטי',lastName:'שם משפחה',phone:'טלפון',mobile:'סלולרי',email:'מייל',address:'כתובת',idNumber:'תעודת זהות',status:'סטטוס',rating:'דירוג',notes:'הערות',affil:'שיוך',code:'קוד',title:'תואר',prefTime:'מועד תרמה',cohort:'מחזור'};
+  const fieldLabels={firstName:'שם פרטי',lastName:'שם משפחה',phone:'טלפון',mobile:'סלולרי',email:'מייל',address:'כתובת',entrance:'כניסה',zip:'מיקוד',idNumber:'תעודת זהות',status:'סטטוס',rating:'דירוג',notes:'הערות',cardNotes:'הערות כרטיס',affil:'שיוך',code:'קוד',title:'תואר',prefTime:'מועד תרמה',cohort:'מחזור',marriageYear:'שנת נישואין',marriageMonth:'חודש נישואין',closingName:'שם סגירה',assignKind:'סוג שיוך גיוס',assignId:'שיוך גיוס'};
 
   if(currentDonorId){
     const idx=DB.donors.findIndex(x=>x.id===currentDonorId);
@@ -5072,15 +5291,19 @@ function saveDonor() {
       });
       _invalidateGeoIfAddressChanged(old, data);
       DB.donors[idx]={...DB.donors[idx],...data};
-      if(changes.length>0) auditLog('edit',`עריכת נתון — ${fn} ${ln}: ${changes.slice(0,3).join(', ')}${changes.length>3?` (+${changes.length-3} נוספים)`:''}`);
-      else auditLog('edit',`שמירת תורם: ${fn} ${ln}`);
+      if(changes.length>0) auditLog('edit',`עריכת פרטים — ${fn} ${ln}: ${changes.slice(0,4).join(', ')}${changes.length>4?` (+${changes.length-4} נוספים)`:''}`, null, {donorId:currentDonorId, kind:'donor'});
+      else auditLog('edit',`שמירת תורם: ${fn} ${ln}`, null, {donorId:currentDonorId, kind:'donor'});
     }
   } else {
     const nd={id:'D'+Date.now(),...data,donations:[],futureDonations:[],relations:[]};
     DB.donors.push(nd); currentDonorId=nd.id;
     document.getElementById('donorModalTitle').textContent=donorName(nd);
     document.getElementById('deleteDonorBtn').style.display='';
-    auditLog('create',`הוספת תורם: ${fn} ${ln}`);
+    auditLog('create',`יצירת תורם: ${fn} ${ln}${window._approvingPendingId?' (מטופס הוספה פתוח)':''}`, null, {donorId:nd.id, kind:'donor'});
+    if (window._approvingPendingId) {  // created from a public add-donor request → request fulfilled
+      DB.pendingEdits=(DB.pendingEdits||[]).filter(pe=>pe.id!==window._approvingPendingId);
+      window._approvingPendingId=null; updatePendingEditsCount();
+    }
   }
   flushPendingToNewDonor(currentDonorId); saveDB(); renderAll(); renderGlobalStats();
   // immediate geocode for manually-typed addresses (no-op if coords exist)
@@ -5110,7 +5333,7 @@ function saveDonorAndNew() {
     const _gcId2 = nd.id;
     setTimeout(() => _bgGeocodeDonor(_gcId2), 400); // immediate geocode for typed addresses
   }
-  auditLog(currentDonorId ? 'edit' : 'create', `${currentDonorId?'עדכון':'הוספת'} תורם: ${fn} ${ln}`);
+  auditLog(currentDonorId ? 'edit' : 'create', `${currentDonorId?'עדכון':'יצירת'} תורם: ${fn} ${ln}`, null, {donorId: currentDonorId || DB.donors[DB.donors.length-1].id, kind:'donor'});
   saveDB(); renderAll(); renderGlobalStats();
   // Reset for new donor
   currentDonorId = null;
@@ -5211,7 +5434,7 @@ function renderDonationsTab() {
   const ce=can('edit');
   body.innerHTML=(d.donations||[]).length===0
     ?`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">אין תרומות</td></tr>`
-    :(d.donations||[]).map((dn,i)=>`<tr>
+    :(d.donations||[]).map((dn,i)=>`<tr data-dnid="${escHtml(dn.id||'')}">
         <td>${fmt(dn.date)}</td>
         <td style="font-size:11px;color:var(--muted)">${toHeb(dn.date)}</td>
         <td><strong>₪${parseFloat(dn.amount||0).toLocaleString()}</strong>${dn.originalCurrency?`<span style="font-size:10px;color:var(--muted);display:block">${dn.originalAmount} ${escHtml(dn.originalCurrency)}</span>`:''}</td>
@@ -5304,23 +5527,24 @@ function saveDonation() {
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   if(!d.donations) d.donations=[];
   const editIdx=document.getElementById('nd_editIdx').value;
-  if(editIdx!==''){
+  const isEdit = editIdx!=='';
+  if(isEdit){
     const prev=d.donations[parseInt(editIdx)];
-    if(prev&&prev.id) obj.id=prev.id; // keep the stable id so multi-user merge sees one record
+    obj.id = (prev&&prev.id) || _newRecId('dn'); // keep the stable id so multi-user merge sees one record
     d.donations[parseInt(editIdx)]=obj;
   }
-  else d.donations.push(obj);
+  else { obj.id=_newRecId('dn'); d.donations.push(obj); }
   cancelDonForm(); saveDB(); renderDonationsTab(); renderGlobalStats();
-  // Briefly highlight the new row
-  setTimeout(()=>{const rows=document.querySelectorAll('#donationsBody tr');if(rows.length)rows[0].style.background='#fef9c3';setTimeout(()=>{if(rows.length)rows[0].style.background='';},1200);},100);
-  const d2=DB.donors.find(x=>x.id===currentDonorId);
-  auditLog('create', `תרומת ${obj.method||''} ₪${amount} נוספה${d2?' ל'+donorName(d2):''}`);
+  _flashDonationRow(obj.id);
+  const who = obj.groupId ? ' · קבוצה: '+grpNameById(obj.groupId) : obj.fundraiserId ? ' · מתרים: '+frNameById(obj.fundraiserId) : '';
+  auditLog(isEdit?'edit':'create', `${isEdit?'עריכת':'הוספת'} תרומה ₪${Math.round(amount).toLocaleString()} (${obj.method||''}${obj.date?', '+fmt(obj.date):''}${campName(obj.campaignId)?', '+campName(obj.campaignId):''}${who}) — ${donorName(d)}`, null, {donorId:currentDonorId, kind:'donation', refId:obj.id});
   toast('✓ תרומה נשמרה');
   // Remove future-donation if confirming
   if(window._confirmFutureDonorId && window._confirmFutureIdx !== undefined) {
     const fd=DB.donors.find(x=>x.id===window._confirmFutureDonorId);
     if(fd && fd.futureDonations) {
-      fd.futureDonations.splice(window._confirmFutureIdx,1);
+      const removed = fd.futureDonations.splice(window._confirmFutureIdx,1)[0];
+      auditLog('edit', `אישור תרומה עתידית${removed&&removed.expectedAmount?' ₪'+parseFloat(removed.expectedAmount).toLocaleString():''} — הפכה לתרומה בפועל`, null, {donorId:window._confirmFutureDonorId, kind:'donation', refId:obj.id});
       saveDB();
       renderFutureTab && renderFutureTab();
     }
@@ -5335,7 +5559,7 @@ function deleteDonation(idx) {
   const snapshot = JSON.parse(JSON.stringify(d.donations[idx]));
   const amount = d.donations[idx]?.amount || '';
   d.donations.splice(idx,1);
-  auditLog('delete', `מחיקת תרומה ₪${amount} מ${donorName(d)}`, {type:'donation',action:'delete',donorId:currentDonorId,idx,snapshot});
+  auditLog('delete', `מחיקת תרומה ₪${amount} — ${donorName(d)}`, {type:'donation',action:'delete',donorId:currentDonorId,idx,snapshot}, {donorId:currentDonorId, kind:'donation'});
   saveDB(); renderDonationsTab(); renderGlobalStats();
 }
 
@@ -5412,19 +5636,22 @@ function saveFutureDonation() {
 
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d) return;
   if(!d.futureDonations) d.futureDonations=[];
-  if(ei!==''){
+  const isEditF = ei!=='';
+  if(isEditF){
     const prev=d.futureDonations[parseInt(ei)];
-    if(prev&&prev.id) obj.id=prev.id; // keep the stable id for the merge engine
+    obj.id=(prev&&prev.id)||_newRecId('fd'); // keep the stable id for the merge engine
     d.futureDonations[parseInt(ei)]=obj;
   }
-  else d.futureDonations.push(obj);
+  else { obj.id=_newRecId('fd'); d.futureDonations.push(obj); }
+  auditLog(isEditF?'edit':'create', `${isEditF?'עריכת':'הוספת'} התחייבות עתידית${obj.expectedAmount?' ₪'+parseFloat(obj.expectedAmount).toLocaleString():''}${obj.date?' ל-'+fmt(obj.date):''}${obj.notes?' ('+obj.notes.slice(0,40)+')':''} — ${donorName(d)}`, null, {donorId:currentDonorId, kind:'future', refId:obj.id});
   cancelFutureForm(); saveDB(); renderFutureTab(); renderGlobalStats();
   toast('✓ תרומה עתידית נשמרה');
 }
 
 function deleteFuture(idx) {
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d||!confirm('למחוק?'))return;
-  d.futureDonations.splice(idx,1);
+  const f=d.futureDonations.splice(idx,1)[0];
+  auditLog('delete', `מחיקת התחייבות עתידית${f&&f.expectedAmount?' ₪'+parseFloat(f.expectedAmount).toLocaleString():''} — ${donorName(d)}`, null, {donorId:currentDonorId, kind:'future'});
   saveDB(); renderFutureTab(); renderGlobalStats();
 }
 
@@ -5494,7 +5721,8 @@ function openDonorAndFuture(id, fi) {
 
 function deleteFutureFromPage(id, fi) {
   const d=DB.donors.find(x=>x.id===id); if(!d||!confirm('למחוק תרומה עתידית?'))return;
-  d.futureDonations.splice(fi,1);
+  const f=d.futureDonations.splice(fi,1)[0];
+  auditLog('delete', `מחיקת התחייבות עתידית${f&&f.expectedAmount?' ₪'+parseFloat(f.expectedAmount).toLocaleString():''} — ${donorName(d)}`, null, {donorId:id, kind:'future'});
   saveDB(); renderFuturePage(); renderGlobalStats();
 }
 
@@ -5711,9 +5939,12 @@ function saveQuickDonation() {
   const qdAttrib = getDonAttribution('qd');
   const don = {amount,date:document.getElementById('qd_date').value,method:document.getElementById('qd_method').value,campaignId:document.getElementById('qd_campaign').value||'',fundraiserId:qdAttrib.fundraiserId,groupId:qdAttrib.groupId,notes:document.getElementById('qd_notes').value.trim()};
   if(currency !== 'ILS') { don.originalAmount = rawAmount; don.originalCurrency = currency; }
+  don.id=_newRecId('dn');
   d.donations.push(don);
   const dispAmt = currency !== 'ILS' ? `${currency} ${rawAmount.toLocaleString()} (≈₪${Math.round(amount).toLocaleString()})` : `₪${amount.toLocaleString()}`;
-  auditLog('create', `תרומה מהירה ${dispAmt} ל${donorName(d)}`);
+  const who = don.groupId ? ' · קבוצה: '+grpNameById(don.groupId) : don.fundraiserId ? ' · מתרים: '+frNameById(don.fundraiserId) : '';
+  auditLog('create', `הוספת תרומה ${dispAmt} (${don.method||''}${don.date?', '+fmt(don.date):''}${who}) — ${donorName(d)}`, null, {donorId:d.id, kind:'donation', refId:don.id});
+  if (window._approvingPendingId) { DB.pendingEdits=(DB.pendingEdits||[]).filter(pe=>pe.id!==window._approvingPendingId); window._approvingPendingId=null; updatePendingEditsCount(); }
   saveDB(); renderGlobalStats(); closeModal('quickDonModal');
   // Re-render donor donations tab if that donor's modal is open
   if(currentDonorId === qd_selectedId && currentDTab === 'donations') renderDonationsTab();
@@ -5761,8 +5992,9 @@ function saveQuickDonationAndNew() {
   const qdAttrib = getDonAttribution('qd');
   const don = {amount,date:document.getElementById('qd_date').value,method:document.getElementById('qd_method').value,campaignId:document.getElementById('qd_campaign').value||'',fundraiserId:qdAttrib.fundraiserId,groupId:qdAttrib.groupId,notes:document.getElementById('qd_notes').value.trim()};
   if(currency !== 'ILS') { don.originalAmount = rawAmount; don.originalCurrency = currency; }
+  don.id=_newRecId('dn');
   d.donations.push(don);
-  auditLog('create', `תרומה מהירה ₪${Math.round(amount).toLocaleString()} ל${donorName(d)}`);
+  auditLog('create', `הוספת תרומה ₪${Math.round(amount).toLocaleString()} (${don.method||''}${don.date?', '+fmt(don.date):''}) — ${donorName(d)}`, null, {donorId:d.id, kind:'donation', refId:don.id});
   saveDB(); renderGlobalStats();
   toast('✓ תרומה נשמרה');
   if(document.getElementById('pageDash').classList.contains('active')) renderDash();
@@ -5979,6 +6211,37 @@ function openUsersModal(){
   if(!can('admin')){toast('אין הרשאה');return;}
   _usersDraft = JSON.parse(JSON.stringify(DB.users||[]));
   renderUsersTable();openModal('usersModal');
+  const cub=document.getElementById('createUserBox'); if(cub) cub.style.display=can('superadmin')?'':'none';
+}
+
+// Creates the Supabase Auth account through the admin-users Edge Function
+// (service role, server-side superadmin check) and adds the profile row.
+async function createAuthUser() {
+  if(!can('superadmin')){toast('רק מנהל ראשי יכול ליצור משתמשים');return;}
+  const email=(document.getElementById('cu_email').value||'').trim().toLowerCase();
+  const displayName=(document.getElementById('cu_name').value||'').trim();
+  const password=document.getElementById('cu_pass').value||'';
+  const role=document.getElementById('cu_role').value||'viewer';
+  const msg=document.getElementById('cu_msg'), btn=document.getElementById('cu_btn');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--danger)';msg.textContent='כתובת מייל לא תקינה';return;}
+  if(password.length<8){msg.style.color='var(--danger)';msg.textContent='סיסמה ראשונית — לפחות 8 תווים';return;}
+  if(_usersDraft.some(u=>(u.email||'').toLowerCase()===email)){msg.style.color='var(--danger)';msg.textContent='המייל כבר ברשימה';return;}
+  btn.disabled=true; msg.style.color='var(--muted)'; msg.textContent='יוצר משתמש...';
+  try {
+    const { data, error } = await _sb.functions.invoke('admin-users', { body: { action:'create', email, password, displayName } });
+    if (error) throw new Error(error.message || 'function error');
+    if (data && data.error) throw new Error(data.error);
+    _usersDraft.push({ email, username: email, displayName: displayName || email.split('@')[0], role, firstLogin: true });
+    renderUsersTable();
+    ['cu_email','cu_name','cu_pass'].forEach(id=>document.getElementById(id).value='');
+    msg.style.color='var(--success)'; msg.textContent='✓ המשתמש נוצר — לחץ "שמור" כדי לשמור את ההרשאה';
+    auditLog('create', `יצירת חשבון משתמש: ${email} (${ROLES[role]||role})`);
+  } catch(e) {
+    msg.style.color='var(--danger)';
+    const t=(e&&e.message)||'';
+    msg.textContent = /404|not found|Failed to send/i.test(t) ? 'הפונקציה admin-users אינה פרוסה — הרץ: supabase functions deploy admin-users' : 'שגיאה: '+t;
+  }
+  btn.disabled=false;
 }
 function renderUsersTable(){
   const roles=[{v:'superadmin',l:'מנהל ראשי'},{v:'admin',l:'מנהל'},{v:'editor',l:'עורך'},{v:'viewer',l:'מבקר'}];
@@ -6025,7 +6288,7 @@ function saveUsers(){
 // ════════════════════════════════════════════════════
 const DEFAULT_SETTINGS = {
   titles: ['','הרב','ד"ר',"פרופ'",'מר',"גב'",'הרבנית','האדמו"ר'],
-  affiliations: ['תלמיד','בוגר','הורה תלמיד','הורה בוגר','מכר','עסקי','אחר'],
+  affiliations: ['תלמיד','בוגר','הורה תלמיד','הורה בוגר','סבא תלמיד','סבא בוגר','מכר','עסקי','אחר'],
   closingNames: ['בברכה','בכבוד רב','בהוקרה','בידידות','בתודה','יישר כח'],
   prefTimes: ['טלפוני לפני פורים','פורים בבית','טלפוני בפורים'],
   payMethods: ['מזומן','אשראי',"צ'ק",'העברה בנקאית','אחר'],
@@ -6097,7 +6360,7 @@ function refreshSelectsFromSettings() {
     if(vals.includes(cur)) el.value = cur;
   };
   updateSelect('f_title', S.titles, 'ללא');
-  updateSelect('f_affil', S.affiliations, '-');
+  renderAffilOptions();
   updateSelect('f_closingName', S.closingNames, '-');
   updateSelect('f_prefTime', S.prefTimes, 'לא נקבע');
   updateSelect('nd_method', S.payMethods, '');
@@ -6134,9 +6397,12 @@ const IMP_FIELDS = [
   {k:'mobile',       lbl:'פלאפון / סלולרי'},
   {k:'marriageYear', lbl:'שנת נישואין'},
   {k:'notes',        lbl:'הערות'},
-  {k:'affil',        lbl:'שיוך'},
+  {k:'affil',        lbl:'שיוך (אפשר כמה, מופרדים בפסיק)'},
   {k:'email',        lbl:'מייל'},
   {k:'prefTime',     lbl:'מועד תרמה'},
+  {k:'zip',          lbl:'מיקוד'},
+  {k:'marriageMonth',lbl:'חודש נישואין'},
+  {k:'cardNotes',    lbl:'הערות כרטיס (פנימי)'},
   {k:'ignore',       lbl:'— התעלם —'},
 ];
 
@@ -6166,6 +6432,7 @@ const IMP_AUTO_MAP = {
   'שיוך':'affil','שייך':'affil',
   'מייל':'email','אימייל':'email','email':'email',
   'מועד תרמה':'prefTime','מועד':'prefTime',
+  'מיקוד':'zip','חודש נישואין':'marriageMonth','הערות כרטיס':'cardNotes',
 };
 
 let _impRawRows = [], _impHeaders = [], _impColMap = {};
@@ -6270,7 +6537,11 @@ function impDoImport(){
     const data={};
     _impHeaders.forEach((_,i)=>{
       const field=_impColMap[i];
-      if(field&&field!=='ignore') data[field]=String(row[i]||'').trim();
+      if(!field||field==='ignore') return;
+      const v=String(row[i]||'').trim();
+      if(!v) return;
+      // several columns mapped to the same field are concatenated
+      data[field]=data[field] ? data[field]+(field==='notes'||field==='cardNotes' ? ' | ' : ' ')+v : v;
     });
     
     // Skip rows with no name at all
@@ -6310,10 +6581,14 @@ function impDoImport(){
       mobile:data.mobile||'',
       email:data.email||'',
       marriageYear:data.marriageYear||'',
+      marriageMonth:data.marriageMonth||'',
+      zip:data.zip||'',
       cohort:data.cohort||'',
       idNumber:data.idNumber||'',
       prefTime:data.prefTime||'',
       notes:data.notes||'',
+      cardNotes:data.cardNotes||'',
+      affils:_parseAffils(data.affil||''),
       createdAt:new Date().toISOString(),
       donations:[],futureDonations:[],relations:[]
     });
@@ -6367,10 +6642,12 @@ async function runGeocodeBatch(){
     document.getElementById('geoBatchText').textContent=done+' / '+pool.length+' | '+success+' הצליחו';
     await new Promise(r=>setTimeout(r,_geoDelayMs()));
   }
+  const failed=pool.length-success;
+  if (pool.length <= 30) pool.forEach(d => auditLog('edit', d.lat&&d.lng ? `גיאוקוד כתובת "${d.address}" → ${[d.geocodedCity,d.geocodedNbh].filter(Boolean).join(' · ')||'מיקום נמצא'} — ${donorName(d)}` : `גיאוקוד נכשל לכתובת "${d.address}" — ${donorName(d)}`, null, {donorId:d.id, kind:'geocode'}));
+  else auditLog('edit', `גיאוקוד מרוכז: ${success} מתוך ${pool.length} כתובות אותרו`);
   saveDB();
   document.getElementById('geoBatchBtn').disabled=false;
   document.getElementById('geoBatchBtn').textContent='🚀 התחל גיאוקוד';
-  const failed=pool.length-success;
   document.getElementById('geoSummary').innerHTML=`<div style="color:var(--success);font-weight:600">✅ גיאוקוד הושלם! ${success}/${pool.length} נמצאו</div>`+
     (failed?`<div style="color:var(--danger);font-size:12px;margin-top:4px">⚠️ ${failed} כתובות לא זוהו — סומנו וניתן לסנן אותן בעמוד התורמים ("כשלי מיקום")</div>`:'');
   toast('✅ גיאוקוד הושלם: '+success+' תורמים');
@@ -6382,7 +6659,7 @@ async function runGeocodeBatch(){
 function exportExcel(){
   if(!can('export')){alert('אין הרשאת ייצוא');return;}
   const wb=XLSX.utils.book_new();
-  const donorRows=DB.donors.map(d=>({'קוד':d.code,'תואר':d.title,'שם פרטי':d.firstName,'שם משפחה':d.lastName,'שיוך':d.affil,'כתובת':d.address,'טלפון':d.phone,'סלולרי':d.mobile,'מייל':d.email,'מועד תרמה':d.prefTime,'הערות':d.notes,'סך תרומות':getTotal(d),'תרומה גבוהה':getMax(d),'תאריך יצירה':fmt(d.createdAt?.split('T')[0]||'')}));
+  const donorRows=DB.donors.map(d=>({'קוד':d.code,'תואר':d.title,'שם פרטי':d.firstName,'שם משפחה':d.lastName,'שיוך':d.affil,'כתובת':d.address,'כניסה':d.entrance||'','מיקוד':d.zip||'','טלפון':d.phone,'סלולרי':d.mobile,'מייל':d.email,'ת"ז':d.idNumber||'','מועד תרמה':d.prefTime,'שנת נישואין':d.marriageYear||'','חודש נישואין':d.marriageMonth||'','מחזור':d.cohort||'','הערות':d.notes,'הערות כרטיס':d.cardNotes||'','סך תרומות':getTotal(d),'תרומה גבוהה':getMax(d),'תאריך יצירה':fmt(d.createdAt?.split('T')[0]||'')}));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(donorRows),'תורמים');
   const donRows=[];
   DB.donors.forEach(d=>(d.donations||[]).forEach(dn=>donRows.push({'קוד':d.code,'שם':donorName(d),'סכום':dn.amount,'תאריך':fmt(dn.date),'אופן':dn.method,'מגבית':campName(dn.campaignId),'הערות':dn.notes})));
@@ -6404,7 +6681,7 @@ function populateReportCampaigns(){
 // ════════════════════════════════════════════════════
 // MODALS
 // ════════════════════════════════════════════════════
-function openModal(id){document.getElementById(id)?.classList.add('open');}
+function openModal(id){closeMobileNav();document.getElementById(id)?.classList.add('open');}
 function closeModal(id){
   const _m=document.getElementById(id);
   if(!_m) return;
@@ -6696,7 +6973,7 @@ function deleteDonFromPanel(donorId, idx) {
   const snapshot = JSON.parse(JSON.stringify(d.donations[idx]));
   const amount = d.donations[idx].amount || '';
   d.donations.splice(idx, 1);
-  auditLog('delete', `מחיקת תרומה ₪${amount} מ${donorName(d)}`, {type:'donation',action:'delete',donorId,idx,snapshot});
+  auditLog('delete', `מחיקת תרומה ₪${amount} — ${donorName(d)}`, {type:'donation',action:'delete',donorId,idx,snapshot}, {donorId, kind:'donation'});
   saveDB(); renderDonationsPanel(); renderGlobalStats();
   toast('✓ התרומה נמחקה');
 }
@@ -7568,7 +7845,11 @@ function frImpDoImport() {
   let added=0, skipped=0, dupWarnings=[];
   frImpRows.forEach(row => {
     const obj = {};
-    frImpHeaders.forEach(h => { if (mapping[h]) obj[mapping[h]] = String(row[h]||'').trim(); });
+    frImpHeaders.forEach(h => {
+      if (!mapping[h]) return;
+      const v = String(row[h]||'').trim(); if (!v) return;
+      obj[mapping[h]] = obj[mapping[h]] ? obj[mapping[h]] + ' ' + v : v; // multiple columns → one field
+    });
     if (!obj.firstName && !obj.lastName) { skipped++; return; }
     // Code: use mapped code or generate
     let code = obj.code || '';
@@ -7667,6 +7948,16 @@ function grpNameById(id) {
   if (!id) return '';
   const g = DB.groups.find(x => x.id === id);
   return g ? g.name : '';
+}
+
+function _flashDonationRow(dnId) {
+  setTimeout(()=>{
+    const row = dnId ? document.querySelector(`#donationsBody tr[data-dnid="${dnId}"]`) : document.querySelector('#donationsBody tr');
+    if(!row) return;
+    row.scrollIntoView({block:'nearest'});
+    row.style.transition='background .4s'; row.style.background='#fef3c7';
+    setTimeout(()=>{ row.style.background=''; }, 1600);
+  }, 120);
 }
 
 function toggleDonAssignType() {
@@ -8055,6 +8346,8 @@ function saveGroup() {
   if (editId) { const idx = DB.groups.findIndex(x => x.id === editId); if (idx >= 0) DB.groups[idx] = obj; }
   else DB.groups.push(obj);
   saveDB(); closeModal('groupModal'); renderGroupsPage();
+  const viaRoutes = routeIds.flatMap(rid => ((DB.routes||[]).find(r => r.id === rid)||{}).donors || []);
+  _overrideNotice(_overriddenDonors([...new Set([...obj.donorIds, ...viaRoutes])], 'group', obj.id), `קבוצה "${name}"`);
 }
 
 function deleteGroup() {
@@ -8144,7 +8437,7 @@ function cancelAddOpt(selId) {
 // Call this when opening donor modal / donation form to wire up all selects
 function initSelectsAddable() {
   const pairs = [
-    ['f_title','titles'], ['f_affil','affiliations'], ['f_closingName','closings'],
+    ['f_title','titles'], ['f_closingName','closings'],
     ['f_prefTime','prefTimes'], ['f_relType','relTypes'],
     ['nd_method','methods'], ['qd_method','methods'],
   ];
@@ -8430,15 +8723,19 @@ function getDonAttribution(prefix) {
 // ════════════════════════════════════════════════════
 // AUDIT LOG
 // ════════════════════════════════════════════════════
-function auditLog(type, description, undoData) {
+function _newRecId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+// meta: { donorId, kind: donor|donation|future|relation|geocode|pending, refId } — lets the
+// donor card history and the admin log jump straight to the affected record.
+function auditLog(type, description, undoData, meta) {
   if (!DB.auditLog) DB.auditLog = [];
   DB.auditLog.unshift({
-    id: 'AL' + Date.now(),
+    id: 'AL' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
     type, // create | edit | delete | import | export | print | login | logout
     description,
     user: currentUser ? (currentUser.displayName || currentUser.username) : 'מערכת',
     ts: new Date().toISOString(),
-    undoData: undoData || null
+    undoData: undoData || null,
+    meta: meta || null
   });
   // Keep max 500 entries
   if (DB.auditLog.length > 500) DB.auditLog = DB.auditLog.slice(0, 500);
@@ -8525,8 +8822,8 @@ function renderAuditLog() {
           <td style="font-size:12px;white-space:nowrap">${dateStr}</td>
           <td style="font-size:12px;font-weight:600">${escHtml(e.user)}</td>
           <td><span style="background:${bg};padding:2px 7px;border-radius:12px;font-size:11px;white-space:nowrap">${typeLabels[e.type]||escHtml(e.type)}</span></td>
-          <td style="font-size:12px">${escHtml(e.description)}</td>
-          <td>${e.undoData ? `<button class="btn btn-outline btn-sm" onclick="undoAuditEntry('${e.id}')">↩ שחזר</button>` : ''}</td>
+          <td style="font-size:12px;white-space:normal">${escHtml(e.description)}</td>
+          <td style="white-space:nowrap">${e.undoData ? `<button class="btn btn-outline btn-sm" onclick="undoAuditEntry('${e.id}')">↩ שחזר</button> ` : ''}${e.meta&&e.meta.donorId&&DB.donors.some(x=>x.id===e.meta.donorId) ? `<button class="btn btn-outline btn-sm" title="פתח את הרשומה" onclick="closeModal('auditModal');openDonorById('${e.meta.donorId}','${({donation:'donations',future:'future',relation:'relations',geocode:'details',donor:'details'})[e.meta.kind]||'history'}')${e.meta.kind==='donation'&&e.meta.refId?`;_flashDonationRow('${(e.meta.refId||'').replace(/'/g,'')}')`:''}">↗ פתח</button>` : ''}</td>
         </tr>`;
       }).join('');
 }
@@ -8667,6 +8964,7 @@ window.addEventListener('message', function(e) {
         const donorId = _nedarimDonorId;
         const d = donorId ? DB.donors.find(x => x.id === donorId) : null;
         const donation = {
+          id: _newRecId('dn'),
           amount, date: today(), method: 'אשראי',
           campaignId: activeCampaign()?.id || '',
           notes: `נדרים פלוס | אסמכתא: ${data.ConfirmationNumber || data.TransactionId || ''}`,
@@ -8674,7 +8972,7 @@ window.addEventListener('message', function(e) {
         if (d) {
           if (!d.donations) d.donations = [];
           d.donations.push(donation);
-          auditLog('create', `תרומת אשראי ₪${amount} נוספה ל${donorName(d)} (נדרים פלוס)`);
+          auditLog('create', `הוספת תרומת אשראי ₪${amount} (נדרים פלוס) — ${donorName(d)}`, null, {donorId:d.id, kind:'donation', refId:donation.id});
           toast(`✓ תרומה של ₪${amount.toLocaleString()} נוספה ל${donorName(d)}`);
         } else {
           toast(`✓ תרומת אשראי ₪${amount.toLocaleString()} התקבלה`);
@@ -8888,6 +9186,13 @@ function openSelfServicePanel() {
       </div>
       <hr style="border:none;border-top:1px solid var(--border)">
       <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">🆕 טופס הוספת תורם — קישור קבוע לשיתוף:</div>
+        <div style="background:var(--bg-app);border-radius:8px;padding:8px 10px;font-size:11px;word-break:break-all;font-family:monospace;direction:ltr;text-align:left;margin-bottom:6px">${escHtml(getPublicAddUrl())}</div>
+        <button class="btn btn-navy btn-sm" onclick="copyToClipboard(getPublicAddUrl())">📋 העתק קישור</button>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">כל מי שממלא את הטופס מופיע ב"בקשות עדכון" בפאנל הניהול; אישור פותח כרטיס תורם חדש עם הפרטים.</div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border)">
+      <div>
         <div style="font-size:13px;font-weight:600;margin-bottom:6px">ייצוא לכל התורמים:</div>
         <button class="btn btn-outline btn-sm" onclick="exportAllSelfServiceLinks()">📥 ייצוא Excel עם כל הקישורים</button>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">ייוצא קובץ עם קישור ייחודי לכל תורם</div>
@@ -8941,6 +9246,93 @@ function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => toast('✓ הקישור הועתק'));
 }
 
+// ════════════════════════════════════════════════════
+// PUBLIC FORMS — donor self-edit (token link) + open "add donor" form.
+// Both render the same field set; both go through the self-service Edge
+// Function and land in "בקשות עדכון" for staff approval.
+// ════════════════════════════════════════════════════
+const SS_MONTHS = ['תשרי','חשוון','כסלו','טבת','שבט','אדר','אדר א','אדר ב','ניסן','אייר','סיוון','תמוז','אב','אלול'];
+const _ssInput = 'width:100%;padding:10px 12px;border:1.5px solid #d5cfc4;border-radius:9px;font-family:Heebo,sans-serif;font-size:15px;box-sizing:border-box;background:#fff';
+const _ssLabel = 'font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px';
+function _ssField(id, label, value, type, extra) {
+  return `<div><label style="${_ssLabel}" for="${id}">${label}</label><input id="${id}" type="${type||'text'}" value="${escHtml(value||'')}" style="${_ssInput}" ${extra||''}></div>`;
+}
+function _publicFormBody(d, affiliations) {
+  const cur = Array.isArray(d.affils) ? d.affils : _parseAffils(d.affil||'');
+  const affs = [...new Set([...(affiliations||[]), ...cur])];
+  return `
+    <div style="display:grid;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${_ssField('ss_firstName','שם פרטי *',d.firstName)}
+        ${_ssField('ss_lastName','שם משפחה *',d.lastName)}
+      </div>
+      ${_ssField('ss_address','כתובת (רחוב, מספר, עיר)',d.address)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${_ssField('ss_entrance','כניסה / קומה',d.entrance)}
+        ${_ssField('ss_zip','מיקוד',d.zip,'text','inputmode="numeric"')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${_ssField('ss_phone','טלפון',d.phone,'tel')}
+        ${_ssField('ss_mobile','סלולרי',d.mobile,'tel')}
+      </div>
+      ${_ssField('ss_email','מייל',d.email,'email','dir="ltr"')}
+      <div><label style="${_ssLabel}">שיוך לישיבה <span style="font-weight:400;text-transform:none">(אפשר לסמן כמה)</span></label>
+        <div id="ss_affils" style="display:flex;flex-wrap:wrap;gap:6px">
+          ${affs.map(a=>`<label style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid ${cur.includes(a)?'#2360d8':'#d5cfc4'};background:${cur.includes(a)?'#eef4fe':'#fff'};border-radius:99px;padding:6px 12px;font-size:14px;cursor:pointer"><input type="checkbox" value="${escHtml(a)}" ${cur.includes(a)?'checked':''} onchange="this.parentElement.style.borderColor=this.checked?'#2360d8':'#d5cfc4';this.parentElement.style.background=this.checked?'#eef4fe':'#fff'"> ${escHtml(a)}</label>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${_ssField('ss_marriageYear','שנת נישואין (עברי)',d.marriageYear,'text','placeholder="תשס\"ה"')}
+        <div><label style="${_ssLabel}" for="ss_marriageMonth">חודש נישואין</label>
+          <select id="ss_marriageMonth" style="${_ssInput}"><option value="">-</option>${SS_MONTHS.map(m=>`<option ${d.marriageMonth===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      </div>
+      ${_ssField('ss_cohort','מחזור — השנה שבה היית שיעור א׳ בישיבה',d.cohort,'text','placeholder="תשע\"ב"')}
+      <div><label style="${_ssLabel}" for="ss_notes">הערות</label><textarea id="ss_notes" rows="3" style="${_ssInput}">${escHtml(d.notes||'')}</textarea></div>
+      <input id="ss_website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+    </div>
+    <div id="ss_result" style="margin-top:12px;display:none;text-align:center;padding:10px;border-radius:8px;font-size:14px"></div>`;
+}
+function _collectPublicForm() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  return {
+    firstName: v('ss_firstName'), lastName: v('ss_lastName'), address: v('ss_address'), entrance: v('ss_entrance'),
+    zip: v('ss_zip'), phone: v('ss_phone'), mobile: v('ss_mobile'), email: v('ss_email'),
+    affils: [...document.querySelectorAll('#ss_affils input:checked')].map(c => c.value),
+    marriageYear: v('ss_marriageYear'), marriageMonth: v('ss_marriageMonth'), cohort: v('ss_cohort'), notes: v('ss_notes'),
+  };
+}
+function _publicShell(title, sub, bodyHtml, btnHtml) {
+  document.body.innerHTML = `
+    <div style="max-width:560px;margin:24px auto;padding:16px;font-family:'Heebo',sans-serif;direction:rtl">
+      <div style="text-align:center;margin-bottom:20px">
+        <img src="${APP_LOGO}" alt="" style="height:64px;border-radius:8px">
+        <h2 style="font-size:22px;color:#17408f;margin:10px 0 4px">${title}</h2>
+        <p style="color:#6b7a9a;font-size:14px;margin:0">${sub}</p>
+      </div>
+      <div style="background:white;border-radius:14px;padding:22px;box-shadow:0 2px 16px rgba(0,0,0,.08)">
+        ${bodyHtml}
+        ${btnHtml}
+      </div>
+      <p style="text-align:center;color:#93a2bb;font-size:11px;margin-top:14px">עזר תורה — תושיה תפרח</p>
+    </div>`;
+}
+function _ssShowResult(ok, msg) {
+  const r = document.getElementById('ss_result'); if (!r) return;
+  r.style.display = 'block';
+  r.style.background = ok ? '#eafaf1' : '#fdf0f1'; r.style.color = ok ? '#1e8449' : '#c22430';
+  r.textContent = msg;
+  r.scrollIntoView({ block: 'nearest' });
+}
+async function _ssPost(body) {
+  const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+    body: JSON.stringify(body),
+  });
+  let out = {}; try { out = await resp.json(); } catch(e) {}
+  return { ok: resp.ok, out };
+}
+
 // Handle self-service page load (if token in URL) — validated server-side
 // via the self-service edge function (app_state is not readable by anon).
 async function checkSelfServiceMode() {
@@ -8950,79 +9342,65 @@ async function checkSelfServiceMode() {
   if (!token || !donorId) return false;
   document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#64748f">טוען…</div>';
   try {
-    const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
-      body: JSON.stringify({ action: 'get', donorId, token }),
-    });
-    const out = await resp.json();
-    if (!resp.ok || !out.donor) {
+    const { ok, out } = await _ssPost({ action: 'get', donorId, token });
+    if (!ok || !out.donor) {
       document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">קישור לא תקין או פג תוקף</div>';
       return true;
     }
-    showSelfEditForm({ ...out.donor, id: donorId }, token);
+    showSelfEditForm({ ...out.donor, id: donorId }, token, out.affiliations || DEFAULT_SETTINGS.affiliations);
   } catch(e) {
     document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#c0392b">שגיאה בטעינת הטופס</div>';
   }
   return true;
 }
 
-function showSelfEditForm(d, token) {
-  document.body.innerHTML = `
-    <div style="max-width:540px;margin:40px auto;padding:20px;font-family:'Heebo',sans-serif;direction:rtl">
-      <div style="text-align:center;margin-bottom:24px">
-        <div style="font-size:28px">✡️</div>
-        <h2 style="font-size:22px;color:#17408f;margin:8px 0">עדכון פרטים — עזר תורה</h2>
-        <p style="color:#6b7a9a;font-size:13px">עדכן את פרטיך האישיים. השינויים יועברו לאישור המנהל.</p>
-      </div>
-      <div style="background:white;border-radius:12px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,.08)">
-        <div style="display:grid;gap:12px">
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">שם פרטי</label>
-            <input id="ss_firstName" value="${escHtml(d.firstName||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">שם משפחה</label>
-            <input id="ss_lastName" value="${escHtml(d.lastName||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">כתובת</label>
-            <input id="ss_address" value="${escHtml(d.address||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">טלפון</label>
-            <input id="ss_phone" value="${escHtml(d.phone||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">סלולרי</label>
-            <input id="ss_mobile" value="${escHtml(d.mobile||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-          <div><label style="font-size:11px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">מייל</label>
-            <input id="ss_email" type="email" value="${escHtml(d.email||'')}" style="width:100%;padding:8px 11px;border:1.5px solid #d5cfc4;border-radius:8px;font-family:Heebo;font-size:13px;box-sizing:border-box"></div>
-        </div>
-        <div id="ss_result" style="margin-top:12px;display:none;text-align:center;padding:10px;border-radius:8px;font-size:13px"></div>
-        <button onclick="submitSelfEdit('${d.id}','${token}')" style="width:100%;margin-top:16px;padding:11px;background:#17408f;color:white;border:none;border-radius:8px;font-family:Heebo;font-size:14px;font-weight:700;cursor:pointer">שלח לאישור</button>
-      </div>
-    </div>`;
+function showSelfEditForm(d, token, affiliations) {
+  _publicShell('עדכון פרטים', 'שלום ' + escHtml(d._name || ((d.firstName||'')+' '+(d.lastName||'')).trim()) + ', ניתן לעדכן כאן את הפרטים שלך.',
+    _publicFormBody(d, affiliations),
+    `<button id="ss_submit" onclick="submitSelfEdit('${escHtml(d.id)}','${escHtml(token)}')" style="width:100%;margin-top:16px;padding:13px;background:#17408f;color:white;border:none;border-radius:9px;font-family:Heebo;font-size:16px;font-weight:700;cursor:pointer">שליחת הפרטים</button>`);
 }
 
 async function submitSelfEdit(donorId, token) {
-  const edits = {
-    firstName: document.getElementById('ss_firstName')?.value.trim(),
-    lastName: document.getElementById('ss_lastName')?.value.trim(),
-    address: document.getElementById('ss_address')?.value.trim(),
-    phone: document.getElementById('ss_phone')?.value.trim(),
-    mobile: document.getElementById('ss_mobile')?.value.trim(),
-    email: document.getElementById('ss_email')?.value.trim(),
-  };
+  const edits = _collectPublicForm();
+  if (!edits.firstName && !edits.lastName) { _ssShowResult(false, 'נא למלא שם'); return; }
+  const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
-    const resp = await fetch(SUPABASE_URL + '/functions/v1/self-service', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
-      body: JSON.stringify({ action: 'submit', donorId, token, edits }),
-    });
-    if (!resp.ok) throw new Error('submit failed');
+    const { ok } = await _ssPost({ action: 'submit', donorId, token, edits });
+    if (!ok) throw new Error('submit failed');
   } catch(e) {
-    const res = document.getElementById('ss_result');
-    if (res) { res.style.display='block'; res.style.background='#fdf0f1'; res.style.color='#c22430'; res.textContent='שגיאה בשליחה, נסו שוב'; }
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    if (btn) btn.disabled = false;
     return;
   }
-  const res = document.getElementById('ss_result');
-  if (res) {
-    res.style.display='block'; res.style.background='#eafaf1'; res.style.color='#1e8449';
-    res.textContent='✓ הפרטים נשלחו לאישור. תודה!';
-  }
+  _ssShowResult(true, '✓ הפרטים נשלחו בהצלחה. תודה רבה!');
 }
+
+// Open "add donor" form — fixed link (?addDonor=1), no login
+async function showPublicAddForm() {
+  document.body.innerHTML = '<div style="text-align:center;padding:60px;font-family:Heebo;font-size:18px;color:#64748f">טוען…</div>';
+  let affiliations = DEFAULT_SETTINGS.affiliations;
+  try { const { ok, out } = await _ssPost({ action: 'info' }); if (ok && Array.isArray(out.affiliations) && out.affiliations.length) affiliations = out.affiliations; } catch(e) {}
+  _publicShell('הצטרפות לרשימת התורמים', 'מלאו את הפרטים ונוסיף אתכם לרשימה. שדות עם * הם חובה.',
+    _publicFormBody({}, affiliations),
+    `<button id="ss_submit" onclick="submitPublicAdd()" style="width:100%;margin-top:16px;padding:13px;background:#17408f;color:white;border:none;border-radius:9px;font-family:Heebo;font-size:16px;font-weight:700;cursor:pointer">שליחת הפרטים</button>`);
+}
+async function submitPublicAdd() {
+  const edits = _collectPublicForm();
+  if (!edits.firstName || !edits.lastName) { _ssShowResult(false, 'נא למלא שם פרטי ושם משפחה'); return; }
+  if (!edits.phone && !edits.mobile && !edits.email) { _ssShowResult(false, 'נא למלא לפחות טלפון או מייל ליצירת קשר'); return; }
+  const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
+  try {
+    const { ok } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
+    if (!ok) throw new Error('register failed');
+  } catch(e) {
+    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב');
+    if (btn) btn.disabled = false;
+    return;
+  }
+  _ssShowResult(true, '✓ הפרטים נשלחו בהצלחה. תודה רבה!');
+  if (btn) btn.style.display = 'none';
+}
+function getPublicAddUrl() { return `${window.location.href.split('?')[0]}?addDonor=1`; }
 
 function openPendingEdits() {
   renderPendingEdits();
@@ -9040,18 +9418,53 @@ function renderPendingEdits() {
   const el = document.getElementById('pendingEditsList');
   if (!el) return;
   if (!edits.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">אין בקשות עדכון ממתינות</div>'; return; }
+  const labels = {firstName:'שם פרטי',lastName:'שם משפחה',address:'כתובת',entrance:'כניסה/קומה',zip:'מיקוד',phone:'טלפון',mobile:'סלולרי',email:'מייל',affils:'שיוך',marriageYear:'שנת נישואין',marriageMonth:'חודש נישואין',cohort:'מחזור',notes:'הערות'};
+  const show = v => Array.isArray(v) ? v.join(', ') : String(v ?? '');
   el.innerHTML = edits.map((pe, idx) => {
-    const d = DB.donors.find(x => x.id === pe.donorId);
     const dt = new Date(pe.ts).toLocaleString('he-IL');
-    const changes = Object.entries(pe.edits).filter(([k,v]) => v && d && d[k] !== v).map(([k,v]) => {
-      const labels = {firstName:'שם פרטי',lastName:'שם משפחה',address:'כתובת',phone:'טלפון',mobile:'סלולרי',email:'מייל'};
-      return `<div style="font-size:12px;padding:4px 0"><span style="color:var(--muted)">${escHtml(labels[k]||k)}:</span> <s style="color:var(--danger)">${escHtml(d?.[k]||'(ריק)')}</s> → <strong style="color:var(--success)">${escHtml(v)}</strong></div>`;
+    // ── new donor from the open form ──
+    if (pe.edits && pe.edits._newDonor) {
+      const n = pe.edits._newDonor;
+      const dups = _publicDupHints(n);
+      return `<div style="background:var(--success-bg);border:1px solid var(--success-border);border-radius:10px;padding:14px 18px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div><strong>🆕 תורם חדש — ${escHtml((n.firstName||'')+' '+(n.lastName||''))}</strong> <span style="font-size:11px;color:var(--muted);margin-right:8px">טופס פתוח · ${dt}</span></div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-success btn-sm" onclick="approveNewDonorRequest(${idx})">✓ פתח בכרטיס תורם חדש</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectPendingEdit(${idx})">✕ דחה</button>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 14px;font-size:12px">
+          ${Object.entries(n).filter(([k,v])=>show(v)&&labels[k]).map(([k,v])=>`<div><span style="color:var(--muted)">${labels[k]}:</span> ${escHtml(show(v))}</div>`).join('')}
+        </div>
+        ${dups.length?`<div style="margin-top:8px;font-size:12px;color:#92400e;background:#fff3cd;border-radius:7px;padding:6px 10px">⚠️ ייתכן שכבר קיים: ${dups.map(x=>`<a href="#" onclick="closeModal('pendingEditsModal');openDonorModal('${x.d.id}');return false" style="color:var(--primary)">${escHtml(donorName(x.d))}</a> (${escHtml(x.why)})`).join(' · ')}</div>`:''}
+      </div>`;
+    }
+    // ── phone donation from the IVR for an unknown caller ──
+    if (pe.edits && pe.edits._phoneDonation) {
+      const ph = pe.edits._phoneDonation;
+      return `<div style="background:var(--teal-bg);border:1px solid #9fe0da;border-radius:10px;padding:14px 18px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div><strong>📞 תרומה טלפונית ממספר לא מזוהה ${escHtml(ph.phone||'')}</strong> <span style="font-size:11px;color:var(--muted);margin-right:8px">${dt}</span>
+            <div style="font-size:12px;margin-top:4px">₪${parseFloat(ph.amount||0).toLocaleString()} · ${escHtml(ph.date||'')} · ${escHtml(ph.method||'')}</div></div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-success btn-sm" onclick="approvePhoneDonation(${idx})">💰 שייך לתורם</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectPendingEdit(${idx})">✕ דחה</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    // ── self-service edit of an existing donor ──
+    const d = DB.donors.find(x => x.id === pe.donorId);
+    const changes = Object.entries(pe.edits||{}).filter(([k,v]) => labels[k] && show(v) !== '' && d && show(k==='affils'?_donorAffilList(d):d[k]) !== show(v)).map(([k,v]) => {
+      return `<div style="font-size:12px;padding:4px 0"><span style="color:var(--muted)">${escHtml(labels[k]||k)}:</span> <s style="color:var(--danger)">${escHtml(show(k==='affils'?_donorAffilList(d):d?.[k])||'(ריק)')}</s> → <strong style="color:var(--success)">${escHtml(show(v))}</strong></div>`;
     }).join('');
     return `<div style="background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
           <strong>${escHtml(d ? donorName(d) : pe.donorId)}</strong>
           <span style="font-size:11px;color:var(--muted);margin-right:8px">${dt}</span>
+          ${d?`<button class="btn btn-outline btn-sm" style="margin-right:6px" onclick="closeModal('pendingEditsModal');openDonorModal('${d.id}')">פתח כרטיס</button>`:''}
         </div>
         <div style="display:flex;gap:6px">
           <button class="btn btn-success btn-sm" onclick="approvePendingEdit(${idx})">✓ אשר</button>
@@ -9063,6 +9476,48 @@ function renderPendingEdits() {
   }).join('');
 }
 
+// duplicate hints for a public add-donor request (same rules as the card)
+function _publicDupHints(n) {
+  const out = [], add = (d, why) => { if (!out.some(x => x.d.id === d.id)) out.push({ d, why }); };
+  const nm = _normName(n.firstName, n.lastName);
+  DB.donors.forEach(d => {
+    if (nm.length >= 4 && _normName(d.firstName, d.lastName) === nm) add(d, 'שם זהה');
+    [n.phone, n.mobile].map(_phoneKey).filter(k => k.length >= 7).forEach(k => { if (_phoneKey(d.phone) === k || _phoneKey(d.mobile) === k) add(d, 'טלפון'); });
+    if (n.email && (d.email||'').toLowerCase() === n.email.toLowerCase()) add(d, 'מייל');
+  });
+  return out;
+}
+
+function approveNewDonorRequest(idx) {
+  const pe = (DB.pendingEdits||[])[idx]; if (!pe || !pe.edits || !pe.edits._newDonor) return;
+  if (!can('edit')) { toast('אין הרשאה'); return; }
+  const n = pe.edits._newDonor;
+  closeModal('pendingEditsModal');
+  openNewDonorModal();
+  ['firstName','lastName','address','entrance','zip','phone','mobile','email','marriageYear','marriageMonth','cohort','notes'].forEach(k => {
+    const el = document.getElementById('f_' + k); if (el && n[k]) el.value = n[k];
+  });
+  _setDonorAffils(Array.isArray(n.affils) ? n.affils : []);
+  window._approvingPendingId = pe.id;   // the request is removed once the donor is saved
+  checkAllFieldDuplicates();
+  toast('הפרטים מהטופס מולאו — השלם ושמור. הבקשה תיסגר אוטומטית עם השמירה');
+}
+
+function approvePhoneDonation(idx) {
+  const pe = (DB.pendingEdits||[])[idx]; if (!pe || !pe.edits || !pe.edits._phoneDonation) return;
+  if (!can('edit')) { toast('אין הרשאה'); return; }
+  const ph = pe.edits._phoneDonation;
+  closeModal('pendingEditsModal');
+  const k = _phoneKey(ph.phone);
+  const d = DB.donors.find(x => _phoneKey(x.phone) === k || _phoneKey(x.mobile) === k);
+  if (d) openQuickDonationModalForDonor(d); else { openQuickDonationModal(); document.getElementById('qd_search').value = ph.phone || ''; searchQDDonor(); }
+  document.getElementById('qd_amount').value = ph.amount || '';
+  if (ph.date) document.getElementById('qd_date').value = ph.date;
+  document.getElementById('qd_notes').value = (ph.notes || 'תרומה טלפונית') + ' | ' + (ph.phone || '');
+  window._approvingPendingId = pe.id;
+  toast(d ? 'התורם זוהה לפי הטלפון — אשר את התרומה' : 'בחר את התורם המתאים ואשר');
+}
+
 function approvePendingEdit(idx) {
   const pe = (DB.pendingEdits||[])[idx];
   if (!pe) return;
@@ -9070,14 +9525,16 @@ function approvePendingEdit(idx) {
   if (d) {
     const addrChanged = pe.edits && typeof pe.edits.address === 'string' &&
       pe.edits.address.trim() !== (d.address||'').trim();
-    Object.assign(d, pe.edits);
+    const clean = {}; Object.entries(pe.edits||{}).forEach(([k,v]) => { if (!k.startsWith('_')) clean[k] = v; });
+    Object.assign(d, clean);
+    if (Array.isArray(clean.affils)) d.affil = clean.affils.join(', ');
     if (addrChanged) { d.lat=null; d.lng=null; d.geocodedCity=''; d.geocodedNbh=''; d.geocodeFailed=null; }
     d.updatedAt = new Date().toISOString();
     d.updatedBy = 'self';
     if (addrChanged) setTimeout(() => _bgGeocodeDonor(d.id), 400);
   }
   DB.pendingEdits.splice(idx, 1);
-  auditLog('edit', `אושר עדכון עצמי לתורם ${d ? donorName(d) : pe.donorId}`);
+  auditLog('edit', `אישור עדכון פרטים מהעמוד העצמי — ${d ? donorName(d) : pe.donorId}${pe.edits?': '+Object.keys(pe.edits).filter(k=>!k.startsWith('_')).length+' שדות':''}`, null, {donorId:pe.donorId, kind:'donor'});
   saveDB(); renderPendingEdits(); updatePendingEditsCount(); renderAll();
   toast('✓ השינויים אושרו');
 }
@@ -9417,34 +9874,81 @@ function validateIdField(input) {
   else { icon.textContent=''; if(err)err.style.display='none'; }
 }
 
-function checkFieldDuplicate(field, value) {
-  const warn = document.getElementById('fieldDupWarning');
-  const list = document.getElementById('fieldDupList');
-  const title = document.getElementById('fieldDupTitle');
-  if (!warn || !list) return;
+// ════════════════════════════════════════════════════
+// LIVE DUPLICATE DETECTION — cross-field (phone↔mobile, ID inside notes),
+// full-name, email. Flags the field (pulsing) + sticky banner at the top of
+// the card; the admin "בדיקת כפילויות" uses the same rules.
+// ════════════════════════════════════════════════════
+const _dupState = {};
+const _DUP_FIELD_INPUT = { idNumber:'f_idNumber', phone:'f_phone', mobile:'f_mobile', email:'f_email', name:'f_lastName', notes:'f_notes' };
+const _DUP_LABELS = { idNumber:'ת"ז', phone:'טלפון', mobile:'סלולרי', email:'מייל', name:'שם מלא', notes:'ת"ז בהערות' };
+function _digits(v) { return String(v||'').replace(/\D/g,''); }
+function _normName(fn, ln) { return ((fn||'')+' '+(ln||'')).trim().replace(/\s+/g,' ').toLowerCase(); }
+function _phoneKey(v) { const d=_digits(v); return d.startsWith('972') ? '0'+d.slice(3) : d; }
+
+function _findDupsFor(field, value, selfId) {
   const v = (value||'').trim();
-  if (!v || v.length < 3) { warn.style.display='none'; return; }
-  const fieldLabels = { idNumber: 'ת"ז', phone: 'טלפון', mobile: 'סלולרי', email: 'מייל' };
-  const matches = DB.donors.filter(d => {
-    if (d.id === currentDonorId) return false; // skip self
-    if (field === 'idNumber') return d.idNumber && d.idNumber === v;
-    if (field === 'phone')    return d.phone    && d.phone === v;
-    if (field === 'mobile')   return d.mobile   && d.mobile === v;
-    if (field === 'email')    return d.email    && d.email.toLowerCase() === v.toLowerCase();
-    return false;
-  });
-  if (!matches.length) { warn.style.display='none'; return; }
-  title.textContent = `⚠️ ${fieldLabels[field]} "${v}" כבר קיים אצל תורם אחר!`;
-  list.innerHTML = matches.map(d =>
-    `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px">
-      <span><strong>${escHtml(donorName(d))}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(d.code||'')}</span></span>
-      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${d.id}'),100)">פתח כרטיס</button>
-    </div>`
-  ).join('');
-  warn.style.display = 'block';
+  const others = DB.donors.filter(d => d.id !== selfId);
+  if (field === 'name') {
+    const fn = document.getElementById('f_firstName')?.value, ln = document.getElementById('f_lastName')?.value;
+    const n = _normName(fn, ln); if (!fn || !ln || n.length < 4) return [];
+    return others.filter(d => _normName(d.firstName, d.lastName) === n);
+  }
+  if (field === 'phone' || field === 'mobile') {
+    const k = _phoneKey(v); if (k.length < 7) return [];
+    return others.filter(d => _phoneKey(d.phone) === k || _phoneKey(d.mobile) === k ||
+      (k.length >= 9 && (_digits(d.notes).includes(k) || _digits(d.cardNotes).includes(k))));
+  }
+  if (field === 'email') { const e = v.toLowerCase(); if (e.length < 5) return []; return others.filter(d => (d.email||'').toLowerCase() === e); }
+  if (field === 'idNumber') {
+    const dg = _digits(v); if (dg.length < 7) return [];
+    return others.filter(d => _digits(d.idNumber) === dg || String(d.notes||'').includes(dg) || String(d.cardNotes||'').includes(dg));
+  }
+  if (field === 'notes') {
+    const ids = String(v).match(/\d{8,9}/g) || [];  // an ID typed into the notes
+    if (!ids.length) return [];
+    return others.filter(d => d.idNumber && ids.includes(_digits(d.idNumber)));
+  }
+  return [];
 }
-
-
+function checkFieldDuplicate(field, value) {
+  if (value === undefined) value = document.getElementById(_DUP_FIELD_INPUT[field])?.value || '';
+  const matches = _findDupsFor(field, value, currentDonorId);
+  _dupState[field] = matches;
+  const inputs = field === 'name' ? ['f_firstName','f_lastName'] : [_DUP_FIELD_INPUT[field]];
+  inputs.forEach(id => document.getElementById(id)?.classList.toggle('has-dup', matches.length > 0));
+  _refreshDupBanner();
+}
+function checkAllFieldDuplicates() { ['idNumber','phone','mobile','email','name','notes'].forEach(f => checkFieldDuplicate(f)); }
+function _clearDupFlags() {
+  Object.keys(_dupState).forEach(k => delete _dupState[k]);
+  ['f_idNumber','f_phone','f_mobile','f_email','f_firstName','f_lastName','f_notes'].forEach(id => document.getElementById(id)?.classList.remove('has-dup'));
+  const w = document.getElementById('fieldDupWarning'); if (w) w.style.display = 'none';
+  const b = document.getElementById('dupTopBanner'); if (b) b.style.display = 'none';
+}
+function _refreshDupBanner() {
+  const banner = document.getElementById('dupTopBanner'), warn = document.getElementById('fieldDupWarning');
+  const list = document.getElementById('fieldDupList'), title = document.getElementById('fieldDupTitle');
+  const seen = new Map();
+  Object.entries(_dupState).forEach(([f, ms]) => (ms||[]).forEach(d => {
+    if (!seen.has(d.id)) seen.set(d.id, { d, fields: [] });
+    if (!seen.get(d.id).fields.includes(_DUP_LABELS[f])) seen.get(d.id).fields.push(_DUP_LABELS[f]);
+  }));
+  const items = [...seen.values()];
+  if (!items.length) { if (banner) banner.style.display = 'none'; if (warn) warn.style.display = 'none'; return; }
+  const openBtn = x => `<button class="btn btn-outline btn-sm" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${x.d.id}'),100)">פתח ${escHtml(donorName(x.d))}</button>`;
+  if (banner) {
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span style="font-size:16px">⚠️</span><span style="flex:1"><strong>כפילות אפשרית:</strong> ${items.slice(0,3).map(x => `${escHtml(donorName(x.d))} <span style="opacity:.75">(${escHtml(x.fields.join(', '))})</span>`).join(' · ')}${items.length>3?' ועוד…':''}</span>${items.slice(0,2).map(openBtn).join('')}`;
+  }
+  if (warn && list && title) {
+    title.textContent = `⚠️ נמצאו ${items.length} כרטיסים עם פרטים זהים`;
+    list.innerHTML = items.map(x => `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px;flex-wrap:wrap">
+      <span><strong>${escHtml(donorName(x.d))}</strong> <span style="color:var(--muted);font-size:11px">${escHtml(x.d.code||'')} · ${escHtml(x.fields.join(', '))}</span></span>
+      <span style="margin-right:auto">${openBtn(x)}</span></div>`).join('');
+    warn.style.display = 'block';
+  }
+}
 
 // ════════════════════════════════════════════════════
 
@@ -9641,6 +10145,8 @@ async function _bgGeocodeDonor(donorId) {
   const d = DB.donors.find(x => x.id === donorId);
   if (!d || !(d.address||'').trim() || (d.lat && d.lng)) return;
   const ok = await rpGeocodeOne(d);
+  if (ok) auditLog('edit', `גיאוקוד כתובת "${d.address}" → ${[d.geocodedCity,d.geocodedNbh].filter(Boolean).join(' · ')||'מיקום נמצא'} — ${donorName(d)}`, null, {donorId:d.id, kind:'geocode'});
+  else auditLog('edit', `גיאוקוד נכשל לכתובת "${d.address}" — ${donorName(d)}`, null, {donorId:d.id, kind:'geocode'});
   saveDB();
   if (!ok) toast('⚠️ הכתובת לא זוהתה במפה — ניתן לתקן בכרטיס התורם');
   else if (window._currentPage === 'donors') { try { renderAll(); } catch(e){} }
@@ -9908,6 +10414,8 @@ async function rpGenerate() {
   const failed = DB.donors.filter(d => d.geocodeFailed && (d.address||'').trim().length >= 3);
   toast('✅ נוצרו ' + routes.length + ' מסלולים ל-' + pool.length + ' תורמים' +
         (failed.length ? ' · ⚠️ ' + failed.length + ' כתובות לא זוהו' : ''));
+  const overridden = routes.flatMap(r => _overriddenDonors(r.donors, 'route', r.id));
+  if (overridden.length) setTimeout(() => _overrideNotice(overridden, 'מסלולים שנוצרו'), 300);
   if (failed.length) setTimeout(rpOpenFailedModal, 600);
 }
 
@@ -9958,7 +10466,7 @@ function renderRoutesPage() {
   // Sidebar
   rpRenderSidebar(routes, '');
   // Map
-  rpInitMap().then(() => rpDrawAllRoutes(routes));
+  rpInitMap().then(() => { rpDrawAllRoutes(routes); setTimeout(() => { rpInvalidateMap(); rpDrawAllRoutes(routes); }, 200); });
 }
 
 function rpRenderSidebar(routes, q) {
@@ -9984,11 +10492,13 @@ function rpRenderSidebar(routes, q) {
     }) : rts;
     if (!filtered.length) return '';
     const totalInNbh = filtered.reduce((s,r)=>s+(r.donors||[]).length,0);
+    const cities = [...new Set(filtered.map(r=>r.city).filter(Boolean))];
+    const cityTxt = cities.length ? ' <span style="font-weight:400;color:var(--muted)">(' + escHtml(cities.join(', ')) + ')</span>' : '';
     const isOpen = !q || filtered.some(r=>r.id===_rpActiveRouteId);
     return `<div class="rp-nbh">
       <div class="rp-nbh-hd${isOpen?' open':''}" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
         <span class="rp-nbh-arrow">▶</span>
-        <span class="rp-nbh-name">${escHtml(nbh)}</span>
+        <span class="rp-nbh-name">${escHtml(nbh)}${cityTxt}</span>
         <span class="rp-nbh-cnt">${filtered.length} מסלולים · ${totalInNbh} תורמים</span>
       </div>
       <div class="rp-routes-list${isOpen?' open':''}">
@@ -10005,9 +10515,9 @@ function rpRouteItem(r) {
   const grpBadge = grp
     ? `<span title="משויך לקבוצת ${escHtml(grp.name)}" style="font-size:10px;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border);border-radius:99px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${escHtml(grp.name)}</span>`
     : `<span title="ללא קבוצה" style="font-size:10px;color:var(--warn)">ללא קבוצה</span>`;
-  return `<div class="rp-ri${isActive?' active':''}" id="rpri_${r.id}" onclick="rpSelectRoute('${r.id}')">
-    <span class="rp-ri-dot" style="background:${r.color||'#2360d8'}"></span>
-    <span class="rp-ri-code">${escHtml(r.code)}</span>
+  return `<div class="rp-ri${isActive?' active':''}" id="rpri_${r.id}" onclick="rpSelectRoute('${r.id}')" title="${escHtml((r.city||'')+' · '+(r.neighborhood||''))}">
+    <span class="rp-ri-dot" style="background:${escHtml(r.color||'#2360d8')}"></span>
+    <span class="rp-ri-code">${escHtml(r.code)}<span style="display:block;font-size:10px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(r.city||'')}${r.city&&r.neighborhood?' · ':''}${escHtml(r.neighborhood||'')}</span></span>
     <span class="rp-ri-cnt">${cnt}</span>
     ${grpBadge}
     <div class="rp-ri-btns">
@@ -10070,10 +10580,32 @@ async function rpInitMap() {
   }
   if (typeof L === 'undefined') return;
   _rpMapImpl = 'leaflet';
-  _rpMap = L.map('rpMainMap', {zoomControl:true, attributionControl:false});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_rpMap);
+  _rpMap = L.map('rpMainMap', {zoomControl:true, attributionControl:true});
+  // OSM tiles; if they fail (network policy / outage) fall back to CARTO so
+  // the page never shows "pins floating on white"
+  let _tileErrors = 0;
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, crossOrigin:true, attribution:'© OpenStreetMap'});
+  osm.on('tileerror', () => {
+    if (++_tileErrors === 4) {
+      try { _rpMap.removeLayer(osm); } catch(e){}
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {maxZoom:19, subdomains:'abcd', attribution:'© CARTO © OpenStreetMap'}).addTo(_rpMap);
+    }
+  });
+  osm.addTo(_rpMap);
   _rpMap.setView([31.7683,35.2137], 12); // default: Jerusalem
+  setTimeout(() => { try { _rpMap.invalidateSize(); } catch(e){} }, 120);
 }
+
+// The map container gets its size from flex layout; whenever the page is
+// (re)shown or the window resizes, tell the map engine to re-measure.
+function rpInvalidateMap() {
+  if (!_rpMap) return;
+  try {
+    if (_rpMapImpl === 'google' && window.google) google.maps.event.trigger(_rpMap, 'resize');
+    else if (_rpMap.invalidateSize) _rpMap.invalidateSize();
+  } catch(e){}
+}
+window.addEventListener('resize', () => { if (window._currentPage === 'routes') rpInvalidateMap(); });
 
 function rpDrawAllRoutes(routes) {
   if (!_rpMap) return;
@@ -10193,7 +10725,7 @@ function rpOpenDetail(id) {
   panel.style.display='block';
   const r = (DB.routes||[]).find(x=>x.id===id);
   if (!r) return;
-  document.getElementById('rpDetailTitle').textContent = '📍 '+r.code;
+  document.getElementById('rpDetailTitle').textContent = '📍 '+r.code+' — '+[r.city,r.neighborhood].filter(Boolean).join(' · ');
   rpRenderDetailBody(r);
 }
 
@@ -10276,7 +10808,7 @@ function rpPrint() {
   ${routes.map((r,ri)=>{
     const donors=(r.donors||[]).map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
     return `<div class="${ri<routes.length-1?'pb':''}">
-      <h2>📍 ${escHtml(r.code)} — ${escHtml(r.neighborhood)}</h2>
+      <h2>📍 ${escHtml(r.code)} — ${escHtml([r.city,r.neighborhood].filter(Boolean).join(' · '))}</h2>
       <table><thead><tr><th>#</th><th>שם</th><th>כתובת</th><th>טלפון</th></tr></thead>
       <tbody>${donors.map((d,i)=>`<tr><td>${i+1}</td><td>${escHtml(donorName(d))}</td><td>${escHtml(d.address||'')}</td><td>${escHtml(d.mobile||d.phone||'')}</td></tr>`).join('')}</tbody></table>
     </div>`;
@@ -10354,18 +10886,26 @@ function openDuplicateDetection() {
 }
 function findDuplicateDonors() {
   const groups=[], seen=new Set(), donors=DB.donors;
-  const phoneMap={}, mobileMap={}, emailMap={}, idMap={};
+  const phoneMap={}, emailMap={}, idMap={}, nameMap={};
+  const push=(m,k,id)=>{ if(!k) return; (m[k]=m[k]||[]).push(id); };
   donors.forEach(d => {
-    if(d.phone)    { if(!phoneMap[d.phone])     phoneMap[d.phone]=[];    phoneMap[d.phone].push(d.id);    }
-    if(d.mobile)   { if(!mobileMap[d.mobile])   mobileMap[d.mobile]=[];  mobileMap[d.mobile].push(d.id);  }
-    if(d.email)    { const k=d.email.toLowerCase(); if(!emailMap[k]) emailMap[k]=[]; emailMap[k].push(d.id); }
-    if(d.idNumber) { if(!idMap[d.idNumber])     idMap[d.idNumber]=[];    idMap[d.idNumber].push(d.id);    }
+    // phone and mobile share one index → a number entered in the "wrong" field still matches
+    const pk=_phoneKey(d.phone), mk=_phoneKey(d.mobile);
+    if(pk.length>=7) push(phoneMap,pk,d.id);
+    if(mk.length>=7 && mk!==pk) push(phoneMap,mk,d.id);
+    if(d.email) push(emailMap,d.email.trim().toLowerCase(),d.id);
+    const idn=_digits(d.idNumber); if(idn.length>=7) push(idMap,idn,d.id);
+    const n=_normName(d.firstName,d.lastName); if(d.firstName&&d.lastName&&n.length>=4) push(nameMap,n,d.id);
   });
-  const addGroup=(ids,reason)=>{ const key=ids.slice().sort().join(','); if(seen.has(key))return; seen.add(key); groups.push({ids,reason}); };
-  Object.entries(idMap).forEach(([v,ids])     =>{ if(ids.length>1) addGroup(ids,'ת"ז: '+v); });
-  Object.entries(phoneMap).forEach(([v,ids])  =>{ if(ids.length>1) addGroup(ids,'טלפון: '+v); });
-  Object.entries(mobileMap).forEach(([v,ids]) =>{ if(ids.length>1) addGroup(ids,'סלולרי: '+v); });
-  Object.entries(emailMap).forEach(([v,ids])  =>{ if(ids.length>1) addGroup(ids,'מייל: '+v); });
+  const addGroup=(ids,reason)=>{ ids=[...new Set(ids)]; if(ids.length<2) return; const key=ids.slice().sort().join(','); if(seen.has(key))return; seen.add(key); groups.push({ids,reason}); };
+  Object.entries(idMap).forEach(([v,ids])    =>addGroup(ids,'ת"ז: '+v));
+  Object.entries(phoneMap).forEach(([v,ids]) =>addGroup(ids,'טלפון/סלולרי: '+v));
+  Object.entries(emailMap).forEach(([v,ids]) =>addGroup(ids,'מייל: '+v));
+  Object.entries(nameMap).forEach(([v,ids])  =>addGroup(ids,'שם זהה: '+v));
+  // an ID number of one donor appearing inside another donor's notes
+  Object.entries(idMap).forEach(([idn,ids])=>{
+    donors.forEach(d=>{ if(!ids.includes(d.id) && (String(d.notes||'').includes(idn)||String(d.cardNotes||'').includes(idn))) addGroup([...ids,d.id],'ת"ז '+idn+' מופיעה בהערות'); });
+  });
   return groups;
 }
 function renderDuplicateModal(groups) {
@@ -10413,7 +10953,7 @@ function confirmMerge() {
     (other.relations||[]).filter(r=>r.donorId!==base).forEach(r=>{ if(!baseDonor.relations.find(x=>x.donorId===r.donorId))baseDonor.relations.push(r); });
     ['phone','mobile','email','address','notes','idNumber'].forEach(k=>{ if(!baseDonor[k]&&other[k])baseDonor[k]=other[k]; });
     DB.donors=DB.donors.filter(d=>d.id!==id);
-    auditLog('delete',`מיזוג תורם: ${donorName(other)} אוחד עם ${donorName(baseDonor)}`);
+    auditLog('delete',`מיזוג כרטיסים: ${donorName(other)} אוחד לתוך ${donorName(baseDonor)}`, null, {donorId:base, kind:'donor'});
   });
   saveDB(); renderAll(); closeModal('mergeModal'); closeModal('duplicateModal');
   toast('✓ הכרטיסים אוחדו בהצלחה');
@@ -10542,7 +11082,13 @@ const RECIP_REL = {
   'אח': 'אח',
 };
 
-function deleteRel(idx){const d=DB.donors.find(x=>x.id===currentDonorId);if(!d||!confirm('להסיר?'))return;d.relations.splice(idx,1);saveDB();renderRelTab();}
+function deleteRel(idx){
+  const d=DB.donors.find(x=>x.id===currentDonorId);if(!d||!confirm('להסיר?'))return;
+  const r=d.relations.splice(idx,1)[0];
+  const tname=r&&r.donorId? (r.donorId.startsWith('fr_')?(frNameById(r.donorId.slice(3))||'?'):donorName(DB.donors.find(x=>x.id===r.donorId)||{})) : '';
+  auditLog('delete', `הסרת התאמה: ${r?r.type:''} — ${tname} — ${donorName(d)}`, null, {donorId:currentDonorId, kind:'relation'});
+  saveDB();renderRelTab();
+}
 
 // ── New Relation Panel functions ──────────────────────────────
 let _relAddMode='donor', _relAddSelId=null;
@@ -10606,6 +11152,8 @@ function confirmNewRel(){
   if(!baseDonor.relations)baseDonor.relations=[];
   if(!baseDonor.relations.find(r=>r.donorId===id)){
     baseDonor.relations.push({donorId:id,type:relType});
+    const tname = id.startsWith('fr_') ? (frNameById(id.slice(3))||'?')+' (מתרים)' : donorName(DB.donors.find(x=>x.id===id)||{});
+    auditLog('create', `הוספת התאמה: ${relType} — ${tname} — ${donorName(baseDonor)}`, null, {donorId:currentDonorId, kind:'relation', refId:id});
     // Add reciprocal relation
     const recipType = RECIP_REL[relType];
     if(recipType && !id.startsWith('fr_')){
@@ -10614,6 +11162,7 @@ function confirmNewRel(){
         if(!targetDonor.relations)targetDonor.relations=[];
         if(!targetDonor.relations.find(r=>r.donorId===currentDonorId)){
           targetDonor.relations.push({donorId:currentDonorId,type:recipType});
+          auditLog('create', `הוספת התאמה הדדית: ${recipType} — ${donorName(baseDonor)} — ${donorName(targetDonor)}`, null, {donorId:id, kind:'relation', refId:currentDonorId});
         }
       }
     }
@@ -10844,7 +11393,7 @@ function extractCity(address) {
 
 // Rebuild donor filter options dynamically
 function rebuildDonorFilters() {
-  const affils = [...new Set(DB.donors.map(d => d.affil).filter(Boolean))].sort();
+  const affils = [...new Set(DB.donors.flatMap(d => _donorAffilList(d)).filter(Boolean))].sort();
   const prefs  = [...new Set(DB.donors.map(d => d.prefTime).filter(Boolean))].sort();
   const cities = [...new Set(DB.donors.map(d => extractCity(d.address)).filter(Boolean))].sort();
 
@@ -10917,10 +11466,10 @@ function applyFilters() {
       if (!failed) return false;
     }
     if (q) {
-      const hay = [d.code,d.firstName,d.lastName,d.address,d.phone,d.mobile,d.email,d.affil,d.prefTime,d.notes,d.idNumber].join(' ').toLowerCase();
+      const hay = [d.code,d.firstName,d.lastName,d.address,d.zip,d.phone,d.mobile,d.email,d.affil,d.prefTime,d.notes,d.cardNotes,d.idNumber].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    if (affilSel && !affilSel.has(d.affil||'')) return false;
+    if (affilSel && !_donorAffilList(d).some(a => affilSel.has(a))) return false;
     if (prefSel  && !prefSel.has(d.prefTime||'')) return false;
     if (citySel) {
       const city = extractCity(d.address||'');
@@ -11356,7 +11905,7 @@ function wizComputeFilter() {
   const dateTo   = document.getElementById('wiz_dateTo')?.value||'';
   const sort     = document.getElementById('wiz_sort')?.value||'name';
   let donors=(window.donors||[]).slice();
-  if(affil) donors=donors.filter(d=>(d.affil||'')===affil);
+  if(affil) donors=donors.filter(d=>_donorAffilList(d).includes(affil));
   if(city)  donors=donors.filter(d=>_dCity(d).toLowerCase().includes(city)||(d.address||'').toLowerCase().includes(city));
   if(pref)  donors=donors.filter(d=>d.prefTime===pref);
   if(campId||dateFrom||dateTo||minAmt>0){
@@ -12263,9 +12812,11 @@ function renderDonorHistory(id) {
   if(!el) return;
   const d = DB.donors.find(x=>x.id===id);
   const name = d ? donorName(d) : id;
-  const log = (DB.auditLog||[]).filter(e=>
-    e.description && (e.description.includes(name) || (e.undoData && JSON.stringify(e.undoData).includes(id)))
-  ).slice(0,80);
+  const log = (DB.auditLog||[]).filter(e =>
+    (e.meta && e.meta.donorId === id) ||
+    (e.description && name.length > 3 && e.description.includes(name)) ||
+    (e.undoData && JSON.stringify(e.undoData).includes(id))
+  ).slice(0,120);
   if(log.length===0){
     el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">📋</div>אין רשומות היסטוריה עבור תורם זה</div>`;
     return;
@@ -12277,18 +12828,32 @@ function renderDonorHistory(id) {
     ${log.map(e=>{
       const dt=new Date(e.ts);
       const dtStr=dt.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      const icon=typeIcon[e.type]||'📋';
+      const kindIcon={donation:'💰',future:'⭐',relation:'🔗',geocode:'📍',donor:'👤'};
+      const icon=(e.meta&&kindIcon[e.meta.kind])||typeIcon[e.type]||'📋';
       const color=typeColor[e.type]||'#64748b';
-      // Extract what changed from description if it contains "→"
       const desc=e.description||'';
-      const hasChanges=desc.includes('→');
+      // jump-to-record action
+      let act='';
+      if(e.meta){
+        const k=e.meta.kind, ref=(e.meta.refId||'').replace(/'/g,'');
+        if(k==='donation') act=`<button class="btn btn-outline btn-sm" onclick="switchDTab('donations');_flashDonationRow('${ref}')">הצג תרומה</button>`;
+        else if(k==='future') act=`<button class="btn btn-outline btn-sm" onclick="switchDTab('future')">הצג עתידיות</button>`;
+        else if(k==='relation') act=`<button class="btn btn-outline btn-sm" onclick="switchDTab('relations')">הצג התאמות</button>`;
+        else if(k==='geocode') act=`<button class="btn btn-outline btn-sm" onclick="switchDTab('details');document.getElementById('addressMapPreview')?.scrollIntoView({block:'center'})">הצג מיקום</button>`;
+        else if(k==='donor') act=`<button class="btn btn-outline btn-sm" onclick="switchDTab('details')">הצג פרטים</button>`;
+      }
+      // "field: "old"→"new"" fragments become a readable diff list
+      const parts=desc.split(': ');
+      const diffHtml = desc.includes('→') ? '<div style="font-size:11px;color:var(--stone-700);margin-top:4px;display:flex;flex-direction:column;gap:2px">' + desc.slice(desc.indexOf('—')+1).split(', ').filter(x=>x.includes('→')).map(x=>`<span>• ${escHtml(x.trim())}</span>`).join('') + '</div>' : '';
       return `<div style="display:flex;gap:10px;background:var(--bg-app);border:1px solid var(--border);border-right:3px solid ${color};border-radius:10px;padding:10px 12px;align-items:flex-start">
         <div style="font-size:18px;flex-shrink:0;margin-top:1px">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;color:var(--slate-900);line-height:1.4">${escHtml(desc)}</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap">
+          <div style="font-size:12px;font-weight:600;color:var(--slate-900);line-height:1.4">${escHtml(desc.includes('→') ? desc.split(' — ')[0] : desc)}</div>
+          ${diffHtml}
+          <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">
             <span style="font-size:10px;color:var(--muted)">⏰ ${dtStr}</span>
             ${e.user?`<span style="font-size:10px;color:var(--muted)">👤 ${escHtml(e.user)}</span>`:''}
+            <span style="margin-right:auto">${act}</span>
           </div>
         </div>
       </div>`;
