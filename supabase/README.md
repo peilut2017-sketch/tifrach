@@ -42,9 +42,11 @@ supabase db push
 
 ### 3. פריסת ה-Edge Functions
 ```bash
-supabase functions deploy self-service
+supabase functions deploy self-service   # עמוד עצמי + טופס הוספת תורם פתוח (?addDonor=1)
+supabase functions deploy admin-users    # יצירת משתמשים מפאנל הניהול (מנהל ראשי בלבד)
 supabase functions deploy yemot-ivr      # אופציונלי — רק אם יש תרומות טלפוניות
 ```
+> `admin-users` דורש שהמשתמש המחובר יהיה **מנהל ראשי** ברשימת המשתמשים של המערכת — הבדיקה נעשית בצד השרת. בלי לפרוס אותה, יצירת משתמשים אפשרית רק דרך ה-Dashboard.
 > `SUPABASE_URL` ו-`SUPABASE_SERVICE_ROLE_KEY` מוזרקים אוטומטית לפונקציות.
 > להגנת ה-webmook של ימות (אופציונלי):
 > `supabase secrets set YEMOT_WEBHOOK_SECRET=<סיסמה-שתבחר>`

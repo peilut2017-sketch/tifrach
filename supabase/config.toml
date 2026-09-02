@@ -14,3 +14,8 @@ verify_jwt = false
 # server, no user JWT. Optional — only needed if you use phone donations.
 [functions.yemot-ivr]
 verify_jwt = false
+
+# admin-users: lets a signed-in SUPERADMIN create Auth accounts from the app.
+# Requires the caller's JWT; the function re-checks the role server-side.
+[functions.admin-users]
+verify_jwt = true
