@@ -660,7 +660,12 @@ tr:hover td { background: var(--primary-bg) }
 .sub-modal-header{background:var(--primary);color:white;padding:10px 16px;border-radius:var(--r-md) var(--r-md) 0 0;display:flex;align-items:center;justify-content:space-between}
 
 /* ══ SIDEBAR NAV — light, modern ══ */
-#appWrapper { display:flex; flex-direction:row; min-height:100vh; }
+/* overflow-x:clip (not hidden) so the sticky topbar keeps working: a flex child
+   with the default min-width:auto could not shrink below its content, the page grew
+   wider than the screen, and mobile browsers widened the layout viewport — every
+   fixed modal was then laid out on that wider viewport and slid off-screen on
+   tablets / phones in landscape. */
+#appWrapper { display:flex; flex-direction:row; min-height:100vh; overflow-x:clip; }
 #sidebar {
   width:225px; height:100vh; height:100dvh; background:var(--white);
   display:flex; flex-direction:column; transition:width .25s cubic-bezier(.4,0,.2,1);
@@ -708,7 +713,7 @@ tr:hover td { background: var(--primary-bg) }
 }
 #sidebar.collapsed .sb-user-text { opacity:0; }
 #mainContent {
-  flex:1; margin-right:225px; transition:margin-right .25s cubic-bezier(.4,0,.2,1); min-height:100vh;
+  flex:1; min-width:0; margin-right:225px; transition:margin-right .25s cubic-bezier(.4,0,.2,1); min-height:100vh;
   display:flex; flex-direction:column;
 }
 #mainContent.expanded { margin-right:58px; }
@@ -3651,6 +3656,7 @@ async function migrateLocalToCloud() {
 // ════════════════════════════════════════════════════════════════
 let _syncTimer = null;
 let _syncRetryTimer = null;
+let _syncFailCount = 0;
 let _syncBusy = false;
 let _dirty = false;
 let _pendingRerender = false;
@@ -3949,11 +3955,15 @@ function _syncToSupabase() {
     _showSyncStatus('loading');
     try {
       await _pushWithCAS();
+      _syncFailCount = 0;
       _showSyncStatus('ok');
       _announceDbUpdate();   // realtime: tell other clients to pull+merge now
     } catch(e) {
       console.warn('Supabase sync failed, kept locally:', e.message);
       _showSyncStatus(navigator.onLine === false ? 'offline' : 'error');
+      // The red dot is easy to miss — after repeated failures say it out loud,
+      // otherwise "✓ נשמר" looks like the server has the data when it does not.
+      if (++_syncFailCount === 3) toast('⚠️ השמירה לשרת נכשלה — השינויים שמורים במכשיר זה בלבד וננסה שוב אוטומטית (' + (e && e.message ? String(e.message).slice(0, 60) : '') + ')');
       clearTimeout(_syncRetryTimer);
       _syncRetryTimer = setTimeout(() => { if (_dirty) _syncToSupabase(); }, 7000);
     } finally {
