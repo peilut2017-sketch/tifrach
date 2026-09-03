@@ -1729,7 +1729,7 @@ tr:hover td { background: var(--primary-bg) }
             <div class="wa-chat-name" id="waChatName"></div>
             <div class="wa-chat-sub" id="waChatSub"></div>
           </div>
-          <button class="wa-ib" onclick="openChatInfo()" title="פרטי השיחה">ⓘ</button>
+          <button class="wa-ib" id="waInfoBtn" onclick="openChatInfo()" title="פרטי השיחה">ⓘ</button>
         </header>
         <div class="wa-msgs" id="waMsgs" onscroll="_waOnScroll()"></div>
         <button class="wa-newmsg-pill" id="waNewPill" style="display:none" onclick="_waScrollBottom(true)">⬇ הודעות חדשות</button>
@@ -3933,7 +3933,7 @@ function _mergeMessageDeep(b, l, r) {
   const out = { ...r, ...l };
   if (_tsOf(r.editedAt) > _tsOf(l.editedAt)) { out.text = r.text; out.editedAt = r.editedAt; out.mentions = r.mentions; }
   out.deleted = !!(l.deleted || r.deleted);
-  if (out.deleted) out.text = '';
+  if (out.deleted) { out.text = ''; out.deletedBy = l.deletedBy || r.deletedBy; }
   out.readBy = { ...(r.readBy || {}), ...(l.readBy || {}) };
   if (l.seenBy || r.seenBy) out.seenBy = { ...(r.seenBy || {}), ...(l.seenBy || {}) };
   return out;
@@ -9380,6 +9380,7 @@ function _chatOther(c) { return c.type === 'dm' ? (c.members||[]).find(u => u !=
 function _chatName(c) { return c.type === 'group' ? (c.name || 'קבוצה') : _displayOf(_chatOther(c) || _me()); }
 function _chatById(id) { return (DB.chats||[]).find(c => c.id === id); }
 function _canManage(c) { return c && c.type === 'group' && !c.builtin && (c.createdBy === _me() || can('admin')); }
+function _canAddMembers(c) { return c && c.type === 'group' && !c.builtin && (c.members||[]).includes(_me()); }
 function _avatarHtml(c, size) {
   const st = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*.36)}px;` : '';
   if (c.type === 'group') return `<div class="wa-avatar" style="${st}background:${c.builtin ? '#2360d8' : _colorFor(c.id)}">${c.builtin ? '📢' : '👥'}</div>`;
@@ -9416,7 +9417,7 @@ function renderChatPage() {
   const av = document.getElementById('waMeAvatar');
   if (av) { av.style.background = _colorFor(_me()); av.textContent = _initials(currentUser.displayName || _me()); }
   const rb = document.getElementById('waReceiptsBtn');
-  if (rb) { rb.style.display = can('admin') ? '' : 'none'; rb.textContent = _receiptsOn(_me()) ? '✓✓ אישורי קריאה: פועלים (לחץ לכיבוי)' : '✓✓ אישורי קריאה: כבויים (לחץ להפעלה)'; }
+  if (rb) { rb.style.display = can('admin') ? '' : 'none'; rb.textContent = _receiptsOn(_me()) ? '👁 הסתר את אישורי הקריאה שלי' : '👁 אישורי הקריאה שלי מוסתרים (לחץ להצגה)'; }
   renderChatList();
   if (_chatOpenId && _chatById(_chatOpenId) && (_chatById(_chatOpenId).members||[]).includes(_me())) {
     document.getElementById('waApp').classList.add('chat-open');
@@ -9501,12 +9502,14 @@ function renderChatHeader() {
   const typing = _typingNames(c.id);
   sub.textContent = typing.length ? typing.join(', ') + (typing.length > 1 ? ' מקלידים…' : ' מקליד/ה…') : _chatSubText();
   sub.classList.toggle('on', !!typing.length || sub.textContent === 'מחובר/ת');
+  const ib = document.getElementById('waInfoBtn');
+  if (ib) { ib.textContent = c.type === 'group' ? '👥' : 'ⓘ'; ib.title = c.type === 'group' ? 'חברי הקבוצה — הוספה / הסרה' : 'פרטי השיחה'; }
 }
 function _serverMsgIds() { return new Set(((_baseDB && _baseDB.messages) || []).map(m => m.id)); }
 function _ticks(m, c, srvIds) {
   if (m.from !== _me() || m.deleted) return '';
   const others = (c.members||[]).filter(u => u !== _me());
-  if (others.length && others.every(u => (m.readBy||{})[u]) && _receiptsOn(_me())) return '<span class="wa-tick blue" title="נקרא">✓✓</span>';
+  if (others.length && others.every(u => (m.readBy||{})[u])) return '<span class="wa-tick blue" title="נקרא">✓✓</span>';
   const onServer = (srvIds || _serverMsgIds()).has(m.id);
   return onServer ? '<span class="wa-tick" title="נמסר">✓✓</span>' : '<span class="wa-tick" title="נשלח">✓</span>';
 }
@@ -9529,7 +9532,7 @@ function renderChatMessages(scrollBottom) {
     if (dk !== lastDay) { html += `<div class="wa-day">${_dayLabel(m.ts)}</div>`; lastDay = dk; lastFrom = ''; }
     const mine = m.from === me, first = m.from !== lastFrom; lastFrom = m.from;
     const mentioned = !mine && (m.mentions||[]).includes(me);
-    const body = m.deleted ? '<span class="wa-deleted">🚫 הודעה זו נמחקה</span>' : _renderText(m.text, c);
+    const body = m.deleted ? `<span class="wa-deleted">🚫 הודעה זו נמחקה${m.deletedBy ? ' ע"י ' + escHtml(_displayOf(m.deletedBy)) + ' (מנהל)' : ''}</span>` : _renderText(m.text, c);
     html += `<div class="wa-msg${mine ? ' me' : ''}${first ? ' first' : ''}${mentioned ? ' mentioned' : ''}" id="wamsg_${escHtml(m.id)}">
       <div class="wa-bubble">
         ${!mine && c.type === 'group' && first ? `<div class="wa-sender" style="color:${_colorFor(m.from)}">${escHtml(_displayOf(m.from))}</div>` : ''}
@@ -9589,10 +9592,18 @@ function startEditMsg(id) {
   document.getElementById('waEditText').textContent = '✏️ עריכת הודעה: ' + String(m.text).slice(0, 60);
   document.getElementById('waEditBar').style.display = 'flex';
 }
+function _canDeleteMsg(m) {
+  if (!m || m.deleted) return false;
+  if (m.from === _me()) return true;
+  const c = _chatById(m.chatId);
+  return !!(c && c.type === 'group' && can('admin'));   // moderators clean up group chats
+}
 function deleteChatMessage(id) {
-  const m = (DB.messages||[]).find(x => x.id === id); if (!m || m.from !== _me()) return;
-  if (!confirm('למחוק את ההודעה אצל כולם?')) return;
+  const m = (DB.messages||[]).find(x => x.id === id); if (!_canDeleteMsg(m)) return;
+  const mine = m.from === _me();
+  if (!confirm(mine ? 'למחוק את ההודעה אצל כולם?' : 'למחוק את ההודעה של ' + _displayOf(m.from) + ' אצל כולם (כמנהל)?')) return;
   m.deleted = true; m.text = ''; m.editedAt = new Date().toISOString(); m.mentions = [];
+  if (!mine) { m.deletedBy = _me(); auditLog('delete', `מחיקת הודעה של ${_displayOf(m.from)} בקבוצה "${_chatName(_chatById(m.chatId)||{})}"`); }
   saveDB(); _chatBroadcast('chat_msg', { m, chat: _chatPublic(_chatById(m.chatId) || {}) });
   renderChatMessages(false); renderChatList(); updateUnreadBadge();
 }
@@ -9602,7 +9613,8 @@ function openMsgMenu(ev, id) {
   const mine = m.from === _me();
   const menu = document.createElement('div'); menu.className = 'wa-msg-menu'; menu.id = 'waMsgMenu';
   menu.innerHTML = `<button onclick="navigator.clipboard.writeText(${JSON.stringify(m.text||'')}).then(()=>toast('✓ הועתק'));closeMsgMenu()">📋 העתק</button>
-    ${mine ? `<button onclick="startEditMsg('${escHtml(id)}');closeMsgMenu()">✏️ ערוך</button><button class="danger" onclick="deleteChatMessage('${escHtml(id)}');closeMsgMenu()">🗑️ מחק אצל כולם</button>` : ''}`;
+    ${mine ? `<button onclick="startEditMsg('${escHtml(id)}');closeMsgMenu()">✏️ ערוך</button>` : ''}
+    ${_canDeleteMsg(m) ? `<button class="danger" onclick="deleteChatMessage('${escHtml(id)}');closeMsgMenu()">🗑️ ${mine ? 'מחק אצל כולם' : 'מחק (מנהל)'}</button>` : ''}`;
   document.body.appendChild(menu);
   const r = ev.currentTarget.getBoundingClientRect();
   let left = r.left, top = r.bottom + 4;
@@ -9651,19 +9663,28 @@ function toggleReadReceipts() {
   const u = _userByName(_me()); if (!u) return;
   u.readReceipts = u.readReceipts === false ? true : false;
   saveDB(); renderChatPage();
-  toast(u.readReceipts === false ? 'אישורי קריאה כבויים — גם אתה לא תראה מתי אחרים קראו את הודעותיך' : 'אישורי קריאה פועלים');
+  toast(u.readReceipts === false ? 'אישורי הקריאה שלך מוסתרים — אחרים לא יראו מתי קראת; אתה ממשיך לראות מי קרא את הודעותיך' : 'אישורי קריאה פועלים');
 }
 
 // ── realtime ──
 function _chatBroadcast(event, payload) { try { if (_rtChannel) _rtChannel.send({ type: 'broadcast', event, payload }); } catch(e) {} }
 function _chatOnRemoteMsg(p) {
-  if (!p || !p.m || !p.m.id || !currentUser) return;
+  if (!p || !currentUser) return;
   initMessaging();
+  if (!p.m) {   // membership / rename update only
+    if (!p.chat || !p.chat.id) return;
+    const ex = _chatById(p.chat.id);
+    if (ex) Object.assign(ex, { name: p.chat.name, members: p.chat.members, updatedAt: new Date().toISOString() });
+    else if ((p.chat.members||[]).includes(_me())) DB.chats.push(JSON.parse(JSON.stringify(p.chat)));
+    if (window._currentPage === 'messages') { renderChatList(); if (_chatOpenId === p.chat.id) { if ((p.chat.members||[]).includes(_me())) renderChatHeader(); else { closeChat(); toast('הוסרת מהקבוצה'); } } }
+    updateUnreadBadge(); return;
+  }
+  if (!p.m.id) return;
   const m = p.m; let c = _chatById(m.chatId);
   if (!c && p.chat && (p.chat.members||[]).includes(_me())) { c = JSON.parse(JSON.stringify(p.chat)); DB.chats.push(c); }
   if (!c || !(c.members||[]).includes(_me())) return;          // not mine; the DB sync will sort it out
   const ex = DB.messages.find(x => x.id === m.id);
-  if (ex) Object.assign(ex, { text: m.text, editedAt: m.editedAt, deleted: m.deleted, mentions: m.mentions });
+  if (ex) Object.assign(ex, { text: m.text, editedAt: m.editedAt, deleted: m.deleted, deletedBy: m.deletedBy, mentions: m.mentions });
   else DB.messages.push(JSON.parse(JSON.stringify(m)));
   if (_typingMap[m.chatId]) delete _typingMap[m.chatId][m.from];
   const viewing = window._currentPage === 'messages' && _chatOpenId === m.chatId;
@@ -9749,12 +9770,15 @@ function openChatInfo() {
     return _memberRow(usr) + (u === _me() ? '<span style="font-size:11px;color:var(--muted)">אתה</span>' : (manage ? `<button class="btn btn-danger btn-sm" style="min-height:0" onclick="removeChatMember('${escHtml(u)}')">✕</button>` : '')) + '</div>';
   }).join('');
   const nonMembers = (DB.users||[]).filter(u => (u.username||u.email) && !(c.members||[]).includes(u.username||u.email));
+  const canAdd = _canAddMembers(c);
   document.getElementById('ciBody').innerHTML = `
     ${c.type === 'group' ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">${c.builtin ? 'קבוצה קבועה — כל משתמשי המערכת' : 'נוצרה ע"י ' + escHtml(_displayOf(c.createdBy)) + ' · ' + escHtml(_fmtDT(c.createdAt))}</div>` : ''}
     ${manage ? `<div style="display:flex;gap:6px;margin-bottom:10px"><input class="form-control" id="ciName" value="${escHtml(c.name||'')}" placeholder="שם הקבוצה"><button class="btn btn-navy btn-sm" onclick="renameChat()">שמור שם</button></div>` : ''}
-    <div style="font-size:12px;font-weight:700;margin-bottom:4px">${(c.members||[]).length} חברים</div>
+    ${canAdd ? (nonMembers.length
+      ? `<div style="display:flex;gap:6px;margin-bottom:12px;background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:10px;padding:8px"><select class="form-control" id="ciAdd">${nonMembers.map(u => `<option value="${escHtml(u.username||u.email)}">${escHtml(u.displayName||u.username||u.email)}</option>`).join('')}</select><button class="btn btn-navy btn-sm" onclick="addChatMember()">➕ הוסף חבר</button></div>`
+      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">כל המשתמשים כבר חברים בקבוצה</div>`) : ''}
+    <div style="font-size:12px;font-weight:700;margin-bottom:4px">${(c.members||[]).length} חברים${manage ? ' <span style="font-weight:400;color:var(--muted)">· ✕ להסרה</span>' : ''}</div>
     ${rows}
-    ${manage && nonMembers.length ? `<div style="display:flex;gap:6px;margin-top:12px"><select class="form-control" id="ciAdd">${nonMembers.map(u => `<option value="${escHtml(u.username||u.email)}">${escHtml(u.displayName||u.username||u.email)}</option>`).join('')}</select><button class="btn btn-outline btn-sm" onclick="addChatMember()">+ הוסף</button></div>` : ''}
     ${c.type === 'group' && !c.builtin ? `<button class="btn btn-danger btn-sm" style="margin-top:14px" onclick="leaveChat()">🚪 צא מהקבוצה</button>` : ''}`;
   openModal('chatInfoModal');
 }
@@ -9764,14 +9788,20 @@ function renameChat() {
   c.name = name; c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); renderChatList(); openChatInfo(); toast('✓ השם עודכן');
 }
 function addChatMember() {
-  const c = _chatById(_chatOpenId); if (!_canManage(c)) return;
+  const c = _chatById(_chatOpenId); if (!_canAddMembers(c)) return;
   const u = document.getElementById('ciAdd')?.value; if (!u || c.members.includes(u)) return;
-  c.members.push(u); c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); openChatInfo(); toast('✓ ' + _displayOf(u) + ' נוסף/ה לקבוצה');
+  c.members.push(u); c.updatedAt = new Date().toISOString(); saveDB();
+  auditLog('edit', `הוספת ${_displayOf(u)} לקבוצת השיחה "${_chatName(c)}"`);
+  _chatBroadcast('chat_msg', { m: null, chat: _chatPublic(c) });   // the newcomer sees the group right away
+  renderChatHeader(); openChatInfo(); toast('✓ ' + _displayOf(u) + ' נוסף/ה לקבוצה');
 }
 function removeChatMember(u) {
   const c = _chatById(_chatOpenId); if (!_canManage(c) || u === _me()) return;
   if (!confirm('להסיר את ' + _displayOf(u) + ' מהקבוצה?')) return;
-  c.members = c.members.filter(x => x !== u); c.updatedAt = new Date().toISOString(); saveDB(); renderChatHeader(); openChatInfo();
+  c.members = c.members.filter(x => x !== u); c.updatedAt = new Date().toISOString(); saveDB();
+  auditLog('edit', `הסרת ${_displayOf(u)} מקבוצת השיחה "${_chatName(c)}"`);
+  _chatBroadcast('chat_msg', { m: null, chat: _chatPublic(c) });
+  renderChatHeader(); openChatInfo();
 }
 function leaveChat() {
   const c = _chatById(_chatOpenId); if (!c || c.builtin) return;
