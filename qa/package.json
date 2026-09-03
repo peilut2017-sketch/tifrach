@@ -1,0 +1,15 @@
+{
+  "name": "tifrach-qa",
+  "private": true,
+  "description": "Browser and unit tests for index.html + the Supabase Edge Functions (run against a local static server)",
+  "scripts": {
+    "serve": "python3 -m http.server 8123 --directory ..",
+    "build:edge": "esbuild ../supabase/functions/self-service/index.ts --format=esm --target=es2022 --outfile=fn-self-service.js && esbuild ../supabase/functions/yemot-ivr/index.ts --format=esm --target=es2022 --outfile=fn-yemot-ivr.js && esbuild ../supabase/functions/admin-users/index.ts --format=esm --target=es2022 --outfile=fn-admin-users.js",
+    "test": "bash run-all.sh"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.2",
+    "esbuild": "0.24.0",
+    "playwright": "^1.50.0"
+  }
+}
