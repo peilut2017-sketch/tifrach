@@ -51,8 +51,8 @@ function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;')
   --ink:            #12213f;
 
   /* ── Accent: Warm Amber ── */
-  --gold:        #c07d10;
-  --gold-l:      #dd9b2e;
+  --gold:        #9f640c;
+  --gold-l:      #c48619;
   --gold-bg:     #fdf6e7;
   --gold-border: #f0dcae;
 
@@ -70,7 +70,7 @@ function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;')
   --stone-200: #dde5f0;
   --stone-300: #c2cddf;
   --stone-400: #93a2bb;
-  --stone-500: #64748f;
+  --stone-500: #55657f;
   --stone-600: #47546e;
   --stone-700: #33405a;
   --stone-800: #1f2a42;
@@ -110,7 +110,7 @@ function escHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;')
   --warn-bg:        var(--gold-bg);
   --purple:         #6d3fd4;
   --purple-bg:      #f3effd;
-  --teal:           #0d8a80;
+  --teal:           #086f67;
   --teal-bg:        #ebfaf8;
 
   /* ── Shadows (soft, blue-tinted) ── */
@@ -204,7 +204,7 @@ body {
   color: var(--ink); letter-spacing: -.3px;
   display: flex; align-items: center; gap: 8px;
 }
-.topbar-brand span { color: var(--muted); font-weight: 300; font-size: 14px }
+.topbar-brand span { color: var(--stone-600); font-weight: 400; font-size: 14px }
 .topbar-right { display: flex; align-items: center; gap: 12px }
 .user-pill {
   display: flex; align-items: center; gap: 7px;
@@ -213,7 +213,7 @@ body {
   font-size: 12px; color: var(--stone-600);
 }
 .role-badge {
-  font-size: 9px; background: linear-gradient(135deg, var(--gold-l), var(--gold)); color: #fff;
+  font-size: 9px; background: linear-gradient(135deg, var(--gold-l), var(--gold)); color: #fff; text-shadow:0 0 1px rgba(0,0,0,.35);
   padding: 2px 7px; border-radius: 99px;
   font-weight: 700; letter-spacing: .3px; text-transform: uppercase;
 }
@@ -658,7 +658,7 @@ tr:hover td { background: var(--primary-bg) }
 .wa-item-body{flex:1;min-width:0}
 .wa-item-top,.wa-item-bot{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .wa-item-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wa-item-time{font-size:11px;color:var(--wa-muted);flex-shrink:0}.wa-item-time.green{color:var(--wa-unread);font-weight:700}
+.wa-item-time{font-size:11px;color:var(--wa-muted);flex-shrink:0}.wa-item-time.green{color:var(--wa-green-dk);font-weight:700}
 .wa-item-preview{font-size:13px;color:var(--wa-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 .wa-item-preview .wa-tick{margin-left:3px}
 .wa-badge{background:var(--wa-unread);color:#fff;font-size:11px;font-weight:700;border-radius:99px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -733,6 +733,8 @@ tr:hover td { background: var(--primary-bg) }
   .wa-msg{max-width:86%}
 }
 
+.thead-primary th{color:#fff!important;background:transparent!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* ════ PRINT (in-app) ════ */
 @media print{.topbar,.toolbar,.row-actions,.nav-btn,.btn,.modal-overlay,#sidebar{display:none!important}#mainContent{margin-right:0!important}.page{padding:0}.table-wrap{box-shadow:none;border:1px solid #ccc}}
 @media print { tr { page-break-inside: avoid; } td { white-space: normal !important; word-wrap: break-word; max-height: calc(3 * 1.4em); overflow: hidden; line-height: 1.4; } table { page-break-inside: auto; } }
@@ -1009,10 +1011,10 @@ tr:hover td { background: var(--primary-bg) }
       <span style="display:flex;align-items:center;flex-shrink:0;color:var(--stone-400)"><i data-lucide="user" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span>
       <div class="sb-user-text">
         <div id="sbUserName" style="font-weight:600;color:var(--ink);font-size:12px;white-space:nowrap"></div>
-        <div id="sbUserRole" style="font-size:10px;opacity:.6;white-space:nowrap"></div>
+        <div id="sbUserRole" style="font-size:10px;color:var(--stone-500);white-space:nowrap"></div>
       </div>
     </div>
-    <button onclick="doLogout()" class="sb-item" style="padding:6px 8px;font-size:11px;opacity:.7;width:100%">
+    <button onclick="doLogout()" class="sb-item" style="padding:6px 8px;font-size:11px;width:100%;color:var(--stone-600)">
       <span class="sb-icon"><i data-lucide="log-out" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i></span><span class="sb-label">יציאה</span>
     </button>
   </div>
@@ -1031,7 +1033,7 @@ tr:hover td { background: var(--primary-bg) }
       <button id="refreshBtn" onclick="manualRefresh()" title="רענן נתונים מהשרת" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s"><i data-lucide="refresh-cw" style="width:14px;height:14px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> <span>רענן</span></button>
       <button onclick="openGlobalSearch()" title="חיפוש גלובלי (Ctrl+K)" style="background:var(--stone-50);border:1px solid var(--stone-200);color:var(--stone-600);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s">🔍 <span>חיפוש</span> <kbd style="font-size:10px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:4px;padding:0 4px">Ctrl+K</kbd></button>
     </div>
-    <div class="topbar-brand"><img class="app-logo" alt="עזר תורה" src="" style="height:34px;margin-left:8px;border-radius:4px"> עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;font-family:monospace;font-weight:600;opacity:.5;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:10px">v30 ☁️</span></div>
+    <div class="topbar-brand"><img class="app-logo" alt="עזר תורה" src="" style="height:34px;margin-left:8px;border-radius:4px"> עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;font-family:monospace;font-weight:600;color:var(--stone-600);background:var(--stone-100);padding:1px 7px;border-radius:10px">v30 ☁️</span></div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="syncStatusDot" title="סטטוס סנכרון" style="display:none;width:10px;height:10px;border-radius:50%;background:#6b7a9a;flex-shrink:0;transition:background .5s"></span>
       <button onclick="showPage('messages')" id="topMsgBadge" style="display:none;background:var(--danger);color:white;border:none;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif" title="הודעות שלא נקראו"></button>
@@ -1108,7 +1110,7 @@ tr:hover td { background: var(--primary-bg) }
     <div class="card-header"><h3>⏱️ תרומות אחרונות</h3><button class="btn btn-outline btn-sm" onclick="showPage('donors')">כל התורמים</button></div>
     <div class="card-body" style="padding:0;overflow-x:auto">
       <table style="width:100%;min-width:500px;border-collapse:collapse">
-        <thead style="background:var(--primary);color:white">
+        <thead class="thead-primary" style="background:var(--primary);color:white">
           <tr>
             <th style="padding:8px 10px;text-align:right;font-size:11px;white-space:nowrap">תורם</th>
             <th style="padding:8px 10px;text-align:right;font-size:11px;white-space:nowrap">מגבית</th>
@@ -1268,7 +1270,7 @@ tr:hover td { background: var(--primary-bg) }
       <table id="donorsTable">
         <thead id="donorsTableHead">
           <tr>
-            <th style="width:36px;padding:6px"><input type="checkbox" id="selectAllDonors" onclick="toggleSelectAllDonors(this)" title="בחר הכל"></th>
+            <th style="width:36px;padding:6px"><input type="checkbox" id="selectAllDonors" onclick="toggleSelectAllDonors(this)" title="בחר הכל" aria-label="בחר את כל התורמים בעמוד"></th>
             <th data-col="code" onclick="sortTable('code')"><span class="si">⇅</span>קוד</th>
             <th data-col="name" onclick="sortTable('name')"><span class="si">⇅</span>שם</th>
             <th data-col="address">כתובת</th>
@@ -1319,10 +1321,10 @@ tr:hover td { background: var(--primary-bg) }
   </div>
   <div class="toolbar" style="gap:8px">
     <input type="text" class="search-input" id="futureSearch" placeholder="חיפוש שם / הערות..." oninput="renderFuturePage()" style="max-width:280px">
-    <select class="filter-select" id="futureSort" onchange="renderFuturePage()">
+    <select class="filter-select" id="futureSort" aria-label="מיון לפי" onchange="renderFuturePage()">
       <option value="date">מיון: תאריך</option><option value="name">מיון: שם</option><option value="amount">מיון: סכום</option>
     </select>
-    <select class="filter-select" id="futureSortDir" onchange="renderFuturePage()">
+    <select class="filter-select" id="futureSortDir" aria-label="כיוון המיון" onchange="renderFuturePage()">
       <option value="asc">עולה ↑</option><option value="desc">יורד ↓</option>
     </select>
     <span id="futureCount" style="font-size:13px;color:var(--muted)"></span>
@@ -1367,7 +1369,7 @@ tr:hover td { background: var(--primary-bg) }
       <option>א</option><option>ב</option><option>ג</option><option>ד</option>
       <option>ה</option><option>ו</option><option>ז</option><option>מ</option>
     </select>
-    <select class="filter-select" id="frSortSel" onchange="renderFRList()">
+    <select class="filter-select" id="frSortSel" aria-label="מיון לפי" onchange="renderFRList()">
       <option value="name">מיון: שם</option>
       <option value="code">מיון: קוד</option>
       <option value="vaad">מיון: וועד</option>
@@ -1483,11 +1485,11 @@ tr:hover td { background: var(--primary-bg) }
     <!-- Date range -->
     <div style="display:flex;align-items:center;gap:4px;white-space:nowrap">
       <span style="font-size:12px;color:var(--muted)">מתאריך</span>
-      <input type="date" class="filter-select" id="donsFrom" onchange="renderDonationsPanel()" style="width:130px">
+      <input type="date" class="filter-select" id="donsFrom" aria-label="מתאריך" onchange="renderDonationsPanel()" style="width:130px">
     </div>
     <div style="display:flex;align-items:center;gap:4px;white-space:nowrap">
       <span style="font-size:12px;color:var(--muted)">עד</span>
-      <input type="date" class="filter-select" id="donsTo" onchange="renderDonationsPanel()" style="width:130px">
+      <input type="date" class="filter-select" id="donsTo" aria-label="עד תאריך" onchange="renderDonationsPanel()" style="width:130px">
     </div>
 
     <button class="filter-clear" onclick="clearDonsFilters()">✕ נקה</button>
@@ -1510,7 +1512,7 @@ tr:hover td { background: var(--primary-bg) }
           <th>מגבית</th>
           <th>מתרים / קבוצה</th>
           <th>הערות</th>
-          <th></th>
+          <th><span class="sr-only">פעולות</span></th>
         </tr></thead>
         <tbody id="donsPanelBody"></tbody>
       </table>
@@ -1541,7 +1543,7 @@ tr:hover td { background: var(--primary-bg) }
       <option value="שולם">שולם</option>
       <option value="אחר">אחר</option>
     </select>
-    <input type="month" class="form-control" id="expMonthFilter" onchange="renderExpenses()" style="max-width:160px;padding:7px 10px">
+    <input type="month" class="form-control" id="expMonthFilter" aria-label="סינון לפי חודש" onchange="renderExpenses()" style="max-width:160px;padding:7px 10px">
     <button class="btn btn-outline btn-sm" onclick="clearExpFilters()">נקה</button>
   </div>
   <div class="table-wrap">
@@ -2501,7 +2503,7 @@ tr:hover td { background: var(--primary-bg) }
     <div class="modal-header"><h3>💳 תרומה באשראי — נדרים פלוס</h3><button class="modal-close" onclick="closeNedarimModal()">✕</button></div>
     <div class="modal-body" style="padding:12px">
       <div id="nedarimIframeWrap" style="min-height:500px;position:relative">
-        <iframe id="nedarimIframe" style="width:100%;height:550px;border:none;border-radius:8px" allow="payment"></iframe>
+        <iframe id="nedarimIframe" title="נדרים פלוס" style="width:100%;height:550px;border:none;border-radius:8px" allow="payment"></iframe>
         <div id="nedarimLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:white;flex-direction:column;gap:12px">
           <div style="font-size:30px">💳</div>
           <div>טוען ממשק תשלום...</div>
@@ -2597,7 +2599,7 @@ tr:hover td { background: var(--primary-bg) }
       <div id="rpt_count" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
       <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
         <table id="rpt_table" style="width:100%;min-width:600px;border-collapse:collapse;font-size:12px">
-          <thead style="background:var(--primary);color:white;position:sticky;top:0">
+          <thead class="thead-primary" style="background:var(--primary);color:white;position:sticky;top:0">
             <tr>
               <th style="padding:7px 10px;text-align:right">שם</th>
               <th style="padding:7px 10px;text-align:right">כתובת</th>
@@ -2996,7 +2998,7 @@ tr:hover td { background: var(--primary-bg) }
                 <option value="group">שיוך ידני לקבוצה ספציפית</option>
                 <option value="route">שיוך ידני למסלול ספציפי</option>
               </select>
-              <select class="form-control" id="f_assignId" style="display:none;flex:1;min-width:200px"></select>
+              <select class="form-control" id="f_assignId" aria-label="בחירת יעד השיוך" style="display:none;flex:1;min-width:200px"></select>
             </div>
           </div>
           <div class="fg"><label class="form-label">שנת נישואין (עברי)</label><input class="form-control" id="f_marriageYear" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_cohort').focus()}"></div>
@@ -3064,7 +3066,7 @@ tr:hover td { background: var(--primary-bg) }
               <label class="form-label">סכום <span class="req">*</span></label>
               <div style="display:flex;gap:6px">
                 <input class="form-control" id="nd_amount" type="number" placeholder="0" min="0" style="flex:1" oninput="updateCurrencyConversion()">
-                <select class="form-control" id="nd_currency" onchange="updateCurrencyConversion()" style="max-width:80px">
+                <select class="form-control" id="nd_currency" aria-label="מטבע" onchange="updateCurrencyConversion()" style="max-width:80px">
                   <option value="ILS">₪</option>
                   <option value="USD">$</option>
                   <option value="EUR">€</option>
@@ -3114,7 +3116,7 @@ tr:hover td { background: var(--primary-bg) }
             <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border)">מגבית</th>
             <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border)">מתרים</th>
             <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border)">הערות</th>
-            <th style="padding:8px 10px;border-bottom:2px solid var(--border)"></th>
+            <th style="padding:8px 10px;border-bottom:2px solid var(--border)"><span class="sr-only">פעולות</span></th>
           </tr></thead>
           <tbody id="donationsBody"></tbody>
         </table>
@@ -3471,7 +3473,7 @@ tr:hover td { background: var(--primary-bg) }
         <button class="btn btn-gold btn-sm" onclick="addUserRow()">+ הוסף משתמש</button>
       </div>
       <div style="overflow-x:auto">
-        <table class="users-table"><thead><tr><th>מייל</th><th>שם לתצוגה</th><th>הרשאה</th><th>כניסה ראשונה</th><th></th></tr></thead><tbody id="usersBody"></tbody></table>
+        <table class="users-table"><thead><tr><th>מייל</th><th>שם לתצוגה</th><th>הרשאה</th><th>כניסה ראשונה</th><th><span class="sr-only">פעולות</span></th></tr></thead><tbody id="usersBody"></tbody></table>
       </div>
       <div id="createUserBox" style="display:none;margin-top:14px;background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:10px;padding:12px 14px">
         <div style="font-weight:700;font-size:13px;margin-bottom:8px">➕ יצירת משתמש חדש (כולל חשבון כניסה)</div>
@@ -3479,7 +3481,7 @@ tr:hover td { background: var(--primary-bg) }
           <input class="form-control" id="cu_email" type="email" placeholder="מייל" dir="ltr">
           <input class="form-control" id="cu_name" placeholder="שם לתצוגה">
           <input class="form-control" id="cu_pass" type="text" placeholder="סיסמה ראשונית (8+ תווים)" dir="ltr">
-          <select class="form-control" id="cu_role"><option value="viewer">מבקר</option><option value="editor">עורך</option><option value="admin">מנהל</option><option value="superadmin">מנהל ראשי</option></select>
+          <select class="form-control" id="cu_role" aria-label="הרשאה"><option value="viewer">מבקר</option><option value="editor">עורך</option><option value="admin">מנהל</option><option value="superadmin">מנהל ראשי</option></select>
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
           <button class="btn btn-navy btn-sm" id="cu_btn" onclick="createAuthUser()">צור משתמש</button>
@@ -3659,8 +3661,8 @@ async function loadDB() {
       let merged = false;
       try {
         if (localStorage.getItem('donorDB_dirty') === '1') {
-          const localStr = localStorage.getItem('donorDB_v6');
-          const baseStr  = localStorage.getItem('donorDB_base');
+          const localStr = await _cacheGet('donorDB_v6');
+          const baseStr  = await _cacheGet('donorDB_base');
           if (localStr) {
             const localDB  = JSON.parse(localStr);
             const baseSnap = baseStr ? JSON.parse(baseStr) : null;
@@ -3676,7 +3678,7 @@ async function loadDB() {
       _lastKnownCloudUpdatedAt = data.updated_at || null;
       _baseDB = _dbClone(data.data);   // remember exactly what the server holds
       // Update local cache
-      try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
+      _cacheSet('donorDB_v6', JSON.stringify(DB));
       loadedFromCloud = true;
       _showSyncStatus('ok');
       if (_dirty) _syncToSupabase();
@@ -3688,7 +3690,7 @@ async function loadDB() {
 
   // Fallback: localStorage
   if (!loadedFromCloud) {
-    const s = localStorage.getItem('donorDB_v6');
+    const s = await _cacheGet('donorDB_v6');
     if (s) { try { DB = JSON.parse(s); } catch(e){} }
     // Migration from v5
     if (!DB.donors || !DB.donors.length) {
@@ -3752,14 +3754,14 @@ async function loadDB() {
     DB.settings._affilsV2 = true;
   }
   // ── Load audit log from dedicated localStorage key (persists across upgrades) ──
-  _loadAuditLog();
+  await _loadAuditLog();
   // Stable ids for nested records — required by the merge engine
   _ensureRecordIds();
 }
 
 // Sync LOCAL → Cloud (first-time migration from localStorage to Supabase)
 async function migrateLocalToCloud() {
-  const s = localStorage.getItem('donorDB_v6');
+  const s = await _cacheGet('donorDB_v6');
   if (!s) return;
   try {
     const localDB = JSON.parse(s);
@@ -3794,17 +3796,53 @@ let _pendingRerender = false;
 let _baseDB = null;                 // last state known to exist on the server
 let _lastKnownCloudUpdatedAt = null;
 
+// ── Local cache. localStorage is fast and synchronous but capped at ~5MB per
+// origin: a few thousand donors plus the merge-base snapshot blow past it and
+// the write used to fail silently. Every big blob is mirrored to IndexedDB (no
+// practical limit); reads prefer localStorage and fall back to IndexedDB. ──
+const _idb = {
+  db: null,
+  open() {
+    return new Promise(res => {
+      if (this.db) return res(this.db);
+      try {
+        const r = indexedDB.open('tifrach-cache', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv');
+        r.onsuccess = () => { this.db = r.result; res(this.db); };
+        r.onerror = () => res(null); r.onblocked = () => res(null);
+      } catch(e) { res(null); }
+    });
+  },
+  async get(k) { const db = await this.open(); if (!db) return null; return new Promise(res => { try { const t = db.transaction('kv', 'readonly').objectStore('kv').get(k); t.onsuccess = () => res(t.result == null ? null : t.result); t.onerror = () => res(null); } catch(e) { res(null); } }); },
+  async set(k, v) { const db = await this.open(); if (!db) return false; return new Promise(res => { try { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(true); t.onerror = () => res(false); } catch(e) { res(false); } }); },
+  async del(k) { const db = await this.open(); if (!db) return; return new Promise(res => { try { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').delete(k); t.oncomplete = () => res(); t.onerror = () => res(); } catch(e) { res(); } }); },
+};
+function _cacheSet(key, str) {
+  let ok = false;
+  try { localStorage.setItem(key, str); ok = true; }
+  catch(e) { try { localStorage.removeItem(key); } catch(_) {} }   // over quota → IndexedDB copy is the one that counts
+  _idb.set(key, str);
+  return ok;
+}
+async function _cacheGet(key) {
+  let v = null;
+  try { v = localStorage.getItem(key); } catch(e) {}
+  if (v == null) v = await _idb.get(key);
+  return v;
+}
+function _cacheDel(key) { try { localStorage.removeItem(key); } catch(e) {} _idb.del(key); }
+
 function saveDB() {
   _ensureRecordIds();
   // Save locally immediately (fast, offline fallback)
-  try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
+  _cacheSet('donorDB_v6', JSON.stringify(DB));
   // Mark "unsynced edits exist" + snapshot the server base we edited against,
   // so a browser restart can 3-way-merge instead of dropping these edits.
   try {
     if (localStorage.getItem('donorDB_dirty') !== '1') {
       localStorage.setItem('donorDB_dirty', '1');
-      if (_baseDB) localStorage.setItem('donorDB_base', JSON.stringify(_baseDB));
-      else localStorage.removeItem('donorDB_base');
+      if (_baseDB) _cacheSet('donorDB_base', JSON.stringify(_baseDB));
+      else _cacheDel('donorDB_base');
     }
   } catch(e){}
   _dirty = true;
@@ -3814,9 +3852,9 @@ function saveDB() {
 function _clearDirtyFlag() {
   try {
     localStorage.setItem('donorDB_dirty', '0');
-    localStorage.removeItem('donorDB_base');
+    _cacheDel('donorDB_base');
     // keep the local cache aligned with what was pushed
-    localStorage.setItem('donorDB_v6', JSON.stringify(DB));
+    _cacheSet('donorDB_v6', JSON.stringify(DB));
   } catch(e){}
 }
 
@@ -4048,7 +4086,7 @@ function _applyRemoteMerge(remote) {
   DB = res.merged;
   _baseDB = _dbClone(remote.data || {});
   _lastKnownCloudUpdatedAt = remote.updated_at || null;
-  try { localStorage.setItem('donorDB_v6', JSON.stringify(DB)); } catch(e){}
+  _cacheSet('donorDB_v6', JSON.stringify(DB));
   if (res.remoteApplied > 0) {
     toast('🔄 שינויים של משתמש אחר שולבו אוטומטית');
     _requestRerender();
@@ -4370,24 +4408,16 @@ async function renderPresenceList() {
     container.innerHTML = '<span style="color:var(--muted);font-size:13px">לא ניתן לטעון נתוני נוכחות</span>';
   }
 }
-function _timeSince(date) {
-  const sec = Math.floor((Date.now() - date) / 1000);
-  if (sec < 60) return 'עכשיו';
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `לפני ${min} דק'`;
-  const hr = Math.floor(min / 60);
-  return `לפני ${hr} שע'`;
-}
 function donorName(d){return dName(d);}
 
 function statusBadge(s) {
-  const map={active:`<span style="color:#10b981;font-size:11px">✅ פעיל</span>`,inactive:`<span style="color:#64748b;font-size:11px">⏸ לא פעיל</span>`,deceased:`<span style="color:#94a3b8;font-size:11px">🕯️ נפטר</span>`,low:`<span style="color:#f59e0b;font-size:11px">📉 נמוך</span>`};
+  const map={active:`<span style="color:var(--success);font-size:11px">✅ פעיל</span>`,inactive:`<span style="color:#64748b;font-size:11px">⏸ לא פעיל</span>`,deceased:`<span style="color:#94a3b8;font-size:11px">🕯️ נפטר</span>`,low:`<span style="color:#b45309;font-size:11px">📉 נמוך</span>`};
   return map[s||'active']||map.active;
 }
 function ratingStars(r) {
   if(!r) return '';
   const n=parseInt(r)||0;
-  return '<span style="color:#f59e0b;font-size:12px">'+'⭐'.repeat(n)+'</span>';
+  return '<span style="color:#b45309;font-size:12px">'+'⭐'.repeat(n)+'</span>';
 }
 function genCode() { return 'T'+String(DB.nextCode++).padStart(4,'0'); }
 
@@ -4472,6 +4502,17 @@ function hideInactivityWarning() {
 // ── Auto-login from saved session ──
 // Boot: the login screen is revealed only once we know there is no session
 // (F5 used to flash the login form and then "log in" again).
+// Uncaught errors: log + one calm toast (throttled) so a failed action is never silent.
+let _lastErrToast = 0;
+function _reportUncaught(msg) {
+  try { console.error('[app] ' + msg); } catch(e) {}
+  if (!currentUser || /Supabase library not loaded|Failed to fetch|NetworkError|Load failed|ResizeObserver/.test(msg || '')) return;
+  if (Date.now() - _lastErrToast < 8000) return;
+  _lastErrToast = Date.now();
+  toast('⚠️ אירעה שגיאה לא צפויה — אם הפעולה לא הושלמה, נסה שוב');
+}
+window.addEventListener('error', e => _reportUncaught(e.message || String(e.error || '')));
+window.addEventListener('unhandledrejection', e => _reportUncaught(e.reason && e.reason.message || String(e.reason || '')));
 function _bootDone(showLogin) {
   const b = document.getElementById('bootLoader'); if (b) b.remove();
   if (showLogin) { const ls = document.getElementById('loginScreen'); if (ls) ls.style.display = 'flex'; }
@@ -4660,7 +4701,10 @@ function _setupSession(user) {
   if(dot) dot.style.display = 'inline-block';
   setupNavForRole();
   initSidebar();
-  showPage('dash');
+  showPage(_pageFromHash() || 'dash');
+  if (_donorFromHash()) setTimeout(_applyHash, 150);   // shared link straight to a donor card
+  _a11yEnhance(document);
+  console.info('[boot] app ready in ' + Math.round(performance.now()) + 'ms');
   startInactivityTimer();
   startPresence(user);
   // Show Nedarim Plus buttons if configured
@@ -4823,15 +4867,6 @@ function gregToHebYear(hebNumericYear) {
   }
   return result;
 }
-function toHebYear(gregYear) {
-  // Convert Gregorian year to approximate Hebrew year text
-  if (!gregYear) return '';
-  const n = parseInt(gregYear);
-  if (isNaN(n)) return gregYear; // already Hebrew text
-  // Hebrew year offset: add 3760 for years before Tishrei, 3761 after
-  const hy = n + 3760;
-  return hebYearStr(hy);
-}
 const HEB_ONES=['','א','ב','ג','ד','ה','ו','ז','ח','ט'];
 const HEB_TENS=['','י','כ','ל','מ','נ','ס','ע','פ','צ'];
 const HEB_HUNDREDS=['','ק','ר','ש','ת','תק','תר','תש','תת','תתק'];
@@ -4847,15 +4882,6 @@ function hebYearStr(n) {
   else if(t===1&&n===6){s+='טז';}
   else{s+=(HEB_TENS[t]||'')+(HEB_ONES[n]||'');}
   return 'תש'+s.slice(2)||s; // just return as is
-}
-function toHebYearLabel(val) {
-  if (!val) return '';
-  // If it looks like a 4-digit Gregorian year, convert
-  if (/^\d{4}$/.test(val.toString().trim())) {
-    const hy = parseInt(val) + 3760;
-    return 'תש' + numberToHebLetters(hy % 1000);
-  }
-  return val; // already Hebrew
 }
 function numberToHebLetters(n) {
   if (n<=0) return '';
@@ -4907,8 +4933,19 @@ function toggleSbDropdown(id) {
   if(arrow) arrow.textContent = open ? '▸' : '▾';
 }
 
+const PAGE_IDS = ['dash','donors','donations','future','campaign','fundraisers','groups','routes','expenses','messages','admin'];
+function _pageFromHash() { const h = (location.hash || '').replace(/^#\/?/, '').split(/[?&]/)[0]; return PAGE_IDS.includes(h) ? h : null; }
+function _donorFromHash() { const m = /[#&?]donor=([\w-]+)/.exec(location.hash || ''); return m ? m[1] : null; }
+function _applyHash() {
+  const p = _pageFromHash(); if (p && p !== window._currentPage) showPage(p);
+  const d = _donorFromHash();
+  if (d && (DB.donors || []).some(x => x.id === d) && (currentDonorId !== d || !document.getElementById('donorModal').classList.contains('open'))) openDonorModal(d);
+}
+window.addEventListener('popstate', () => { if (currentUser) _applyHash(); });
 function showPage(name) {
   closeMobileNav();
+  if (!PAGE_IDS.includes(name)) name = 'dash';
+  if (name === 'admin' && typeof can === 'function' && !can('admin')) name = 'dash';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const pg = document.getElementById('page'+name.charAt(0).toUpperCase()+name.slice(1));
@@ -4945,6 +4982,10 @@ function showPage(name) {
     if(dd) { dd.style.display='block'; if(arrow) arrow.textContent='▾'; }
   }
   setSidebarActive(name);
+  _a11yEnhance(pg || document);
+  setTimeout(() => _a11yEnhance(pg || document), 350);   // pages that render asynchronously
+  // deep link: the address bar mirrors the page (refresh / back / share)
+  if (_pageFromHash() !== name) { try { history.pushState(null, '', '#' + name); } catch(e) {} }
 }
 
 // ════════════════════════════════════════════════════
@@ -5167,7 +5208,7 @@ function sortAndRender() {
     const lastDon = (d.donations||[]).map(dn=>dn.date||'').filter(Boolean).sort().pop()||'';
     const waBtn = d.mobile ? `<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${escHtml(d.mobile)}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()" title="WhatsApp">💬</button>` : '';
     const emBtn = d.email  ? `<button class="btn-icon em" style="width:26px;height:26px;font-size:12px" onclick="openSendEmailModal('${d.id}');event.stopPropagation()" title="שלח מייל">✉️</button>` : '';
-    const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" ${_selDonorIds.has(d.id)?'checked':''} onchange="toggleDonorSel(this)" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
+    const cbHtml = can('admin') ? `<td style="width:36px;padding:4px;text-align:center" onclick="event.stopPropagation()"><input type="checkbox" class="donor-row-cb" data-id="${d.id}" ${_selDonorIds.has(d.id)?'checked':''} onchange="toggleDonorSel(this)" aria-label="בחר את ${escHtml(donorName(d))}" style="cursor:pointer;transform:scale(1.1)"></td>` : '<td></td>';
     return `<tr onclick="openDonorModal('${d.id}')">
       ${cbHtml}
       <td data-col="code"><strong>${escHtml(d.code||'')}</strong></td>
@@ -5175,7 +5216,7 @@ function sortAndRender() {
       <td data-col="address" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(d.address||'')}${d.entrance?' '+escHtml(d.entrance):''}</td>
       <td data-col="phones"><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">${d.phone?`<span style="font-size:11px">${escHtml(d.phone)}</span>`:''} ${d.mobile?`<span style="font-size:11px">${escHtml(d.mobile)}</span>`:''} ${waBtn}</div></td>
       <td data-col="email"><div style="display:flex;gap:4px;align-items:center">${d.email?`<span style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:block">${escHtml(d.email)}</span>`:''} ${emBtn}</div></td>
-      <td data-col="affil"><span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(d.affil||'')}</span></td>
+      <td data-col="affil"><span class="badge" style="background:var(--stone-100);color:var(--stone-700)">${escHtml(d.affil||'')}</span></td>
       <td data-col="prefTime">${escHtml(d.prefTime||'')}</td>
       <td data-col="total"><strong style="color:var(--success)">₪${total.toLocaleString()}</strong></td>
       <td data-col="lastDon">${lastDon ? dateCell(lastDon) : ''}</td>
@@ -5258,6 +5299,7 @@ function openNewDonorModal() {
 function openDonorModal(id) {
   const d=DB.donors.find(x=>x.id===id); if(!d) return;
   currentDonorId=id; currentDTab='details';
+  try { if (_donorFromHash() !== id) history.replaceState(null, '', '#' + (window._currentPage || 'donors') + '&donor=' + id); } catch(e) {}
   document.getElementById('donorModalTitle').textContent=donorName(d);
   document.getElementById('deleteDonorBtn').style.display=can('edit')?'':'none';
   document.getElementById('saveDonorBtnTop').style.display=can('edit')?'':'none';
@@ -5921,7 +5963,7 @@ function renderFuturePage() {
         return `<tr style="cursor:pointer" onclick="openDonorAndFuture('${d.id}',${fi})">
           <td><strong>${escHtml(donorName(d))}</strong></td>
           <td style="font-size:12px;color:var(--muted)">${escHtml(d.code||'')}</td>
-          <td><span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(d.affil||'')}</span></td>
+          <td><span class="badge" style="background:var(--stone-100);color:var(--stone-700)">${escHtml(d.affil||'')}</span></td>
           <td>${f.date?`<strong>${fmt(f.date)}</strong>`:'<span style="color:var(--muted)">-</span>'}</td>
           <td style="font-size:11px;color:var(--muted)">${f.date?toHeb(f.date):''}</td>
           <td>${f.expectedAmount?`<strong style="color:var(--purple)">₪${parseFloat(f.expectedAmount).toLocaleString()}</strong>`:'<span style="color:var(--muted)">לא צוין</span>'}</td>
@@ -6319,7 +6361,7 @@ function renderCampaignPage() {
     const countdownHtml = ac.deadline ? '<div class="camp-countdown"></div>' : '';
     html+=`<div class="card" style="border:2px solid var(--gold)">
       <div class="card-header" style="background:linear-gradient(135deg,var(--slate-900),#2a3f6b)">
-        <h3>🎯 ${escHtml(ac.name)} ${ac.year?'— '+escHtml(ac.year):''} <span style="background:var(--gold);color:var(--slate-900);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:8px">פעילה</span></h3>
+        <h3>🎯 ${escHtml(ac.name)} ${ac.year?'— '+escHtml(ac.year):''} <span style="background:var(--gold);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:8px">פעילה</span></h3>
         ${``}
       </div>
       <div class="card-body">
@@ -6350,7 +6392,7 @@ function renderCampaignPage() {
 
   // All campaigns list
   html+=`<div class="card"><div class="card-header"><h3>כל המגביות</h3></div><div class="card-body" style="padding:0">
-    <table><thead><tr><th>שם</th><th>שנה</th><th>יעד</th><th>נתרם</th><th>תאריך יעד</th><th>סטטוס</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>שם</th><th>שנה</th><th>יעד</th><th>נתרם</th><th>תאריך יעד</th><th>סטטוס</th><th><span class="sr-only">פעולות</span></th></tr></thead><tbody>
     ${DB.campaigns.map(c=>{
       const raised=DB.donors.reduce((s,d)=>s+(d.donations||[]).filter(dn=>dn.campaignId===c.id).reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0),0);
       return `<tr>
@@ -6418,8 +6460,8 @@ function deleteCampaign(id) {
 // ════════════════════════════════════════════════════
 function openWA(){const m=document.getElementById('f_mobile')?.value;if(m)openWAfor(m);}
 function openMail(){const e=document.getElementById('f_email')?.value;if(e){if(getEmailSettings().publicKey&&currentDonorId){openSendEmailModal(currentDonorId);}else{openMailfor(e);}}}
-function openWAfor(m){const n=m.replace(/\D/g,'');window.open('https://wa.me/'+(n.startsWith('0')?'972'+n.slice(1):n),'_blank');}
-function openMailfor(e){window.open('mailto:'+e,'_blank');}
+function openWAfor(m){if(!m)return;const n=String(m).replace(/\D/g,'');window.open('https://wa.me/'+(n.startsWith('0')?'972'+n.slice(1):n),'_blank');}
+function openMailfor(e){if(!e)return;window.open('mailto:'+e,'_blank');}
 
 // ════════════════════════════════════════════════════
 // USERS MODAL
@@ -6468,8 +6510,8 @@ function renderUsersTable(){
   const isSA = can('superadmin');
   document.getElementById('usersBody').innerHTML=_usersDraft.map((u,i)=>`<tr>
     <td><input class="form-control" type="email" value="${escHtml(u.email||u.username||'')}" oninput="_usersDraft[${i}].email=this.value;_usersDraft[${i}].username=this.value" style="width:160px" placeholder="user@example.com" ${!isSA?'readonly':''}></td>
-    <td><input class="form-control" value="${escHtml(u.displayName||u.username||'')}" oninput="_usersDraft[${i}].displayName=this.value" style="width:110px"></td>
-    <td><select class="form-control" onchange="_usersDraft[${i}].role=this.value" style="width:120px" ${!isSA?'disabled':''}>
+    <td><input class="form-control" value="${escHtml(u.displayName||u.username||'')}" oninput="_usersDraft[${i}].displayName=this.value" style="width:110px" aria-label="שם לתצוגה"></td>
+    <td><select class="form-control" onchange="_usersDraft[${i}].role=this.value" style="width:120px" aria-label="הרשאה" ${!isSA?'disabled':''}>
       ${roles.map(r=>`<option value="${r.v}"${u.role===r.v?' selected':''}>${r.l}</option>`).join('')}
     </select></td>
     <td style="text-align:center"><label title="כניסה ראשונה - יחייב שינוי סיסמה"><input type="checkbox" ${u.firstLogin!==false?'checked':''} onchange="_usersDraft[${i}].firstLogin=this.checked"> ראשונה</label></td>
@@ -6611,12 +6653,6 @@ function _refreshSelectsFromSettingsCore() {
   updateSelect('relType', S.relTypes, '');
 }
 
-function populateSelectFromSettings(id, key, emptyLabel) {
-  const S = getSettings();
-  const el = document.getElementById(id); if(!el) return;
-  const vals = S[key] || DEFAULT_SETTINGS[key] || [];
-  el.innerHTML = (emptyLabel !== undefined ? `<option value="">${emptyLabel}</option>` : '') + vals.map(v=>`<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
-}
 
 // ════════════════════════════════════════════════════
 // IMPORT / EXPORT
@@ -6694,6 +6730,7 @@ function impReset(){
 }
 
 function impLoadFile(input){
+  if (!_xlsxReady()) return;
   if(!can('import')){alert('אין הרשאה');return;}
   const file=input.files[0]; if(!file)return;
   const reader=new FileReader();
@@ -6899,7 +6936,10 @@ async function runGeocodeBatch(){
 
 
 
+// SheetJS is loaded from a CDN — say so instead of throwing when it did not arrive
+function _xlsxReady(){ if (typeof XLSX !== 'undefined') return true; toast('⚠️ ספריית Excel לא נטענה (אין חיבור לאינטרנט?) — רענן את הדף ונסה שוב'); return false; }
 function exportExcel(){
+  if (!_xlsxReady()) return;
   if(!can('export')){alert('אין הרשאת ייצוא');return;}
   const wb=XLSX.utils.book_new();
   const donorRows=DB.donors.map(d=>({'קוד':d.code,'תואר':d.title,'שם פרטי':d.firstName,'שם משפחה':d.lastName,'שיוך':d.affil,'כתובת':d.address,'כניסה':d.entrance||'','מיקוד':d.zip||'','טלפון':d.phone,'סלולרי':d.mobile,'מייל':d.email,'ת"ז':d.idNumber||'','מועד תרמה':d.prefTime,'שנת נישואין':d.marriageYear||'','חודש נישואין':d.marriageMonth||'','מחזור':d.cohort||'','הערות':d.notes,'הערות כרטיס':d.cardNotes||'','סך תרומות':getTotal(d),'תרומה גבוהה':getMax(d),'תאריך יצירה':fmt(d.createdAt?.split('T')[0]||'')}));
@@ -6924,14 +6964,76 @@ function populateReportCampaigns(){
 // ════════════════════════════════════════════════════
 // MODALS
 // ════════════════════════════════════════════════════
-function openModal(id){closeMobileNav();document.getElementById(id)?.classList.add('open');}
+function openModal(id){
+  closeMobileNav();
+  const m = document.getElementById(id); if (!m) return;
+  if (!m.classList.contains('open')) m._opener = document.activeElement;   // to restore focus on close
+  m.classList.add('open');
+  m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+  const h = m.querySelector('.modal-header h3, .modal-header h2, h3');
+  if (h) { if (!h.id) h.id = id + '_title'; m.setAttribute('aria-labelledby', h.id); }
+  _a11yEnhance(m);
+  // move focus inside unless the caller already focused a specific field
+  setTimeout(() => {
+    if (!m.classList.contains('open') || (document.activeElement && m.contains(document.activeElement))) return;
+    const f = [...m.querySelectorAll('input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not(.modal-close)')].find(el => el.offsetParent !== null);
+    if (f) { try { f.focus({ preventScroll: true }); } catch(e) {} }
+  }, 120);
+}
+// Escape closes the topmost small dialog / open menu (large editing cards are
+// left alone so a stray Escape cannot throw away a half-filled form).
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  const menu = document.querySelector('.more-menu-list.open, #waMsgMenu');
+  if (menu) { _closeMoreMenus(); closeMsgMenu(); return; }
+  const opens = [...document.querySelectorAll('.modal-overlay.open')];
+  const top = opens[opens.length - 1];
+  if (!top || top.querySelector('.modal-lg, .modal-xl')) return;
+  closeModal(top.id);
+});
+// Accessibility pass over freshly rendered markup: associate labels, name
+// unlabeled controls from their placeholder, make scroll regions reachable.
+let _a11yN = 0;
+function _a11yEnhance(root) {
+  root = root || document;
+  try {
+    root.querySelectorAll('label').forEach(lb => {
+      if (lb.getAttribute('for') || lb.querySelector('input,select,textarea')) return;
+      let ctl = lb.nextElementSibling;
+      if (ctl && !/^(INPUT|SELECT|TEXTAREA)$/.test(ctl.tagName)) ctl = ctl.querySelector ? ctl.querySelector('input:not([type=hidden]),select,textarea') : null;
+      if (!ctl || ctl.type === 'hidden' || ctl.closest('label')) return;
+      if (!ctl.id) ctl.id = 'a11y_' + (++_a11yN);
+      lb.setAttribute('for', ctl.id);
+    });
+    root.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(ctl => {
+      if (ctl.getAttribute('aria-label') || ctl.getAttribute('aria-labelledby') || ctl.closest('label') || (ctl.id && document.querySelector('label[for="' + CSS.escape(ctl.id) + '"]'))) return;
+      let name = ctl.getAttribute('placeholder') || ctl.title || '';
+      if (!name && ctl.tagName === 'SELECT' && ctl.options.length && !ctl.options[0].value) name = ctl.options[0].textContent.trim();
+      if (!name && ctl.type === 'checkbox') { const cell = ctl.closest('td,th,div'); name = cell ? cell.textContent.trim().slice(0, 60) : ''; }
+      if (name) ctl.setAttribute('aria-label', name.replace(/^[^\p{L}\p{N}]+/u, '').trim() || name);
+    });
+    root.querySelectorAll('button, a[href]').forEach(b => {
+      if (!b.getAttribute('aria-label') && b.title && !b.textContent.replace(/[^\p{L}\p{N}]/gu, '').trim()) b.setAttribute('aria-label', b.title);
+    });
+    root.querySelectorAll('.table-scroll, .donor-tabs-bar, .topbar-nav, .wa-list, .wa-msgs, .donor-tab-content, .modal-body, .pick-results, .multi-filter-opts, .gp-kpis, .rp-list, .rp-sidebar, #rpTopbar, .rp-topbar').forEach(el => { if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0'); });
+    root.querySelectorAll('.card-body, .table-wrap, .rp-list, .gp-list, [style*="overflow"]').forEach(el => {
+      if (el.hasAttribute('tabindex')) return;
+      const cs = getComputedStyle(el);
+      if (/(auto|scroll)/.test(cs.overflowY + cs.overflowX) && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) el.setAttribute('tabindex', '0');
+    });
+    root.querySelectorAll('iframe:not([title])').forEach(f => f.setAttribute('title', 'מפה'));
+  } catch(e) { /* never let an a11y decoration break the page */ }
+}
 function closeModal(id){
   const _m=document.getElementById(id);
   if(!_m) return;
+  const hadFocus = document.activeElement && _m.contains(document.activeElement);
   _m.classList.remove('open');
+  if (hadFocus && _m._opener && document.body.contains(_m._opener) && !_m._opener.closest('.modal-overlay:not(.open)')) { try { _m._opener.focus({ preventScroll: true }); } catch(e) {} }
   if(id==='donorModal'){
     _setEditingDonor(null);
     const lb=document.getElementById('donorLockBanner'); if(lb) lb.remove();
+    try { if (_donorFromHash()) history.replaceState(null, '', '#' + (window._currentPage || 'dash')); } catch(e) {}
   }
   if(id==='quickDonModal'){
     const s=document.getElementById('qd_search');
@@ -7245,43 +7347,11 @@ function exportGroupsReport() {
   a.download = 'groups-report.csv'; a.click();
 }
 
-function printGroupReport(grpId) {
-  if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
-  const grp = DB.groups.find(g=>g.id===grpId); if(!grp) return;
-  const ac = activeCampaign();
-  const members = (grp.memberIds||[]).map(id=>{
-    const f=DB.fundraisers.find(x=>x.id===id);
-    return f ? (f.firstName||'')+' '+(f.lastName||'') : '';
-  }).filter(Boolean);
-  const w = window.open('','_blank','width=800,height=600');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-    <title>דוח קבוצה — ${escHtml(grp.name)}</title>
-    <style>
-      body{font-family:Arial,sans-serif;margin:40px;color:#17408f;direction:rtl}
-      .org{font-size:22px;font-weight:900;color:#17408f;border-bottom:3px solid #c07d10;padding-bottom:8px;margin-bottom:6px}
-      .camp{font-size:14px;color:#555;margin-bottom:20px}
-      .grp-title{font-size:18px;font-weight:700;margin-bottom:4px}
-      .grp-code{font-size:13px;color:#888;margin-bottom:16px}
-      .member{display:inline-block;background:#f0f4ff;border:1px solid #17408f;border-radius:6px;padding:5px 14px;margin:4px;font-size:13px}
-      @media print{body{margin:20px}tr{page-break-inside:avoid}td{white-space:normal!important;line-height:1.35;max-height:calc(3 * 1.35em);overflow:hidden}}
-    </style></head><body>
-    <div class="org">${ORG_NAME}</div>
-    <div class="camp">${ac?'מגבית: '+escHtml(ac.name)+' '+escHtml(ac.year||''):''}</div>
-    <div class="grp-title">קבוצה: ${escHtml(grp.name)}</div>
-    <div class="grp-code">קוד קבוצה: ${escHtml(grp.code||'—')} | וועד: ${escHtml(grp.vaad||'—')}</div>
-    <h3 style="margin-top:20px;font-size:14px">חברי הקבוצה (${members.length})</h3>
-    <div>${members.map(m=>`<span class="member">${escHtml(m)}</span>`).join('')}</div>
-    <div style="margin-top:30px;font-size:12px;color:#aaa">הודפס: ${new Date().toLocaleDateString('he-IL')}</div>
-    <script>window.onload=()=>window.print();<\/script>
-    </body></html>`);
-  w.document.close();
-}
 
 
 // Tanex label formats
 // The simple labels modal was consolidated into the Labels Wizard
 // (openLabelsWizard) — one label system, richer options.
-function openLabelsModal() { openIOCenter('labels'); }
 
 
 // ══════════════════════════════════════════════════════
@@ -7383,7 +7453,7 @@ function printReport() {
   const mapCoords = rows.filter(d=>d.lat&&d.lng);
   const mapSection = mapCoords.length > 0
     ? `<div style="margin-top:20px"><h3 style="font-size:12px">\u05de\u05e4\u05ea \u05d0\u05d9\u05e1\u05d5\u05e3</h3>
-        <iframe src="https://maps.google.com/maps?q=${encodeURIComponent(mapCoords.slice(0,5).map(d=>d.address||'').join('|'))}&output=embed&z=14" 
+        <iframe title="מפה" src="https://maps.google.com/maps?q=${encodeURIComponent(mapCoords.slice(0,5).map(d=>d.address||'').join('|'))}&output=embed&z=14" 
           width="100%" height="280" style="border:1px solid #ccc;border-radius:6px" loading="lazy"></iframe></div>` : '';
 
   const w = window.open('','_blank','width=1000,height=700');
@@ -7404,7 +7474,6 @@ function printReport() {
 // ══════════════════════════════════════════════════════
 // PRINT MODAL
 // ══════════════════════════════════════════════════════
-function openPrintModal() { openIOCenter('print'); }
 
 // ── Unified Import/Export Center ──
 let _ioContext = 'donors';
@@ -7596,7 +7665,7 @@ function runFrPrint() {
   const ORG = '\u05e2\u05d6\u05e8 \u05ea\u05d5\u05e8\u05d4 \u2013 \u05ea\u05d5\u05e9\u05d9\u05d4 \u05ea\u05e4\u05e8\u05d7';
   const mapCoords = donors.filter(d=>d.lat&&d.lng);
   const mapSection = mapCoords.length > 0
-    ? `<div style="margin-top:16px"><h3 style="font-size:12px">\u05de\u05e4\u05ea \u05d0\u05d9\u05e1\u05d5\u05e3</h3><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(mapCoords.slice(0,8).map(d=>d.address||'').join('|'))}&output=embed&z=14" width="100%" height="280" style="border:1px solid #ccc;border-radius:6px" loading="lazy"></iframe></div>` : '';
+    ? `<div style="margin-top:16px"><h3 style="font-size:12px">\u05de\u05e4\u05ea \u05d0\u05d9\u05e1\u05d5\u05e3</h3><iframe title="מפה" src="https://maps.google.com/maps?q=${encodeURIComponent(mapCoords.slice(0,8).map(d=>d.address||'').join('|'))}&output=embed&z=14" width="100%" height="280" style="border:1px solid #ccc;border-radius:6px" loading="lazy"></iframe></div>` : '';
 
   const w = window.open('','_blank','width=1000,height=700');
   w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>\u05d2\u05d9\u05dc\u05d9\u05d5\u05df \u05d4\u05ea\u05e8\u05de\u05d4</title><style>body{font-family:Arial,sans-serif;margin:25px 30px;color:#17408f;direction:rtl;font-size:11px}.org{font-size:20px;font-weight:900;border-bottom:3px solid #c07d10;padding-bottom:5px;margin-bottom:4px}.sub{font-size:11px;color:#666;margin-bottom:10px}.mbrs{background:#f0f4ff;padding:6px 12px;border-radius:6px;font-size:10px;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#17408f;color:white;padding:5px 8px;text-align:right;font-size:10px}td{padding:4px 8px;border-bottom:1px solid #eee;vertical-align:top}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:12px}td{max-height:none;word-break:break-word;overflow-wrap:break-word}}</style></head><body>`);
@@ -7792,7 +7861,7 @@ function renderFRList() {
         const avail = f.availPhone === 'home' ? (f.homePhone||'') : f.availPhone === 'studentMobile' ? (f.studentMobile||'') : (f.parentMobile||f.mobile||'');
         const milestone = target > 0 && raised >= target ? ' 🏆' : target > 0 && raised >= target*0.5 ? ' 🎯' : '';
         return `<tr onclick="openFRModal('${f.id}')">
-          <td onclick="event.stopPropagation()" style="padding:6px"><input type="checkbox" class="fr-row-cb" data-id="${f.id}" onchange="updateFRBulkBar()"></td>
+          <td onclick="event.stopPropagation()" style="padding:6px"><input type="checkbox" class="fr-row-cb" data-id="${f.id}" aria-label="בחר את ${escHtml((f.firstName||'')+' '+(f.lastName||''))}" onchange="updateFRBulkBar()"></td>
           <td><strong>${escHtml(f.code||'')}</strong></td>
           <td>${escHtml(f.firstName||'')} ${escHtml(f.lastName||'')}${milestone}</td>
           <td>${escHtml(f.vaad||'')}</td>
@@ -7963,54 +8032,7 @@ function deleteFRById(id) {
 
 // ── Import FR from Excel ──
 
-function showFRImportFormat() {
-  const msg = `פורמט קובץ ייבוא מתרימים (Excel):\n\nעמודות נדרשות — שמות העמודות בכותרת הראשונה:\n\n` +
-    `• קוד — קוד מתרים (אם ריק — ייווצר אוטומטי M0001+)\n` +
-    `• שם פרטי — שדה חובה\n` +
-    `• שם משפחה\n` +
-    `• וועד / שיעור — למשל: וועד א, וועד ב...\n` +
-    `• קוד קבוצה — 3 ספרות\n` +
-    `• טלפון בית\n` +
-    `• פלאפון / סלולרי\n` +
-    `• יעד — סכום יעד אישי (מספר בלבד)\n\n` +
-    `הערה: שורה ראשונה = כותרות בדיוק כפי שמוצג למעלה`;
-  alert(msg);
-}
 
-function importFR(input) {
-  if (!can('admin')) { alert('אין הרשאה'); return; }
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-    let added = 0, skipped = 0;
-    rows.forEach(row => {
-      let code = String(row['קוד']||row['קוד מתרים']||'').trim();
-      if (!code) code = genFRCode();
-      if (DB.fundraisers.find(f => f.code === code)) {
-        const existing = DB.fundraisers.find(f => f.code === code);
-        if (existing && existing.firstName===(row['שם פרטי']||'') && existing.lastName===(row['שם משפחה']||'')) { skipped++; return; }
-        code = genFRCode();
-        while (DB.fundraisers.find(f => f.code === code)) code = genFRCode();
-      }
-      DB.fundraisers.push({
-        id: 'FR'+Date.now()+Math.random(),
-        code, firstName: row['שם פרטי']||'', lastName: row['שם משפחה']||'',
-        vaad: row['וועד']||row['שיעור']||'', groupCode: row['קוד קבוצה']||'',
-        homePhone: row['טלפון בית']||'', mobile: row['פלאפון']||row['סלולרי']||'',
-        availPhone: 'mobile', target: parseFloat(row['יעד']||0)||0,
-      });
-      added++;
-    });
-    saveDB(); renderFRList();
-    let msg = 'יובאו ' + added + ' מתרימים';
-    if (skipped > 0) msg += ` | ${skipped} כפולים דולגו`;
-    toast(msg);
-    input.value = '';
-  };
-  reader.readAsArrayBuffer(file);
-}
 
 
 // ── FR Import Modal with column mapping ──
@@ -8051,6 +8073,7 @@ function frImpReset() {
   document.getElementById('frImportStatus').innerHTML = '';
 }
 function frImpLoadFile(input) {
+  if (!_xlsxReady()) return;
   const file = input.files[0]; if (!file) return;
   document.getElementById('frImportStatus').innerHTML = '⏳ טוען קובץ...';
   const reader = new FileReader();
@@ -8227,12 +8250,6 @@ function toggleDonAssignType() {
 
 
 
-function clearGrpSel() {
-  document.getElementById('nd_grp_search').value = '';
-  document.getElementById('nd_grp_results').innerHTML = '';
-  document.getElementById('nd_grp_id').value = '';
-  document.getElementById('nd_grp_info').textContent = '';
-}
 
 // ══════════════════════════════════════════════════════
 // GROUPS (קבוצות מתרימים)
@@ -8248,7 +8265,7 @@ function renderGroupsPage() {
     const dates = [...(DB.fundraisingDates||[])].sort((a,b)=>(a.orderIndex||0)-(b.orderIndex||0));
     if (_grpSelDate && !dates.some(fd=>fd.id===_grpSelDate)) _grpSelDate = '';
     chips.innerHTML = `<button class="gp-date-chip ${!_grpSelDate?'active':''}" onclick="grpSelectDate('')">כל התאריכים</button>` +
-      dates.map(fd => `<button class="gp-date-chip ${_grpSelDate===fd.id?'active':''}" onclick="grpSelectDate('${fd.id}')">${escHtml(fd.label)}${fd.date?` <span style="opacity:.65;font-weight:400">${escHtml(fmt(fd.date))}</span>`:''}</button>`).join('');
+      dates.map(fd => `<button class="gp-date-chip ${_grpSelDate===fd.id?'active':''}" onclick="grpSelectDate('${fd.id}')">${escHtml(fd.label)}${fd.date?` <span style="font-weight:400">${escHtml(fmt(fd.date))}</span>`:''}</button>`).join('');
   }
 
   const inScope = g => !_grpSelDate || g.fundraisingDateId === _grpSelDate;
@@ -8304,7 +8321,7 @@ function renderGroupsPage() {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
         <div>
           <strong style="font-size:15px">${escHtml(g.name)} ${milestones.join('')}</strong><br>
-          <span class="badge" style="background:var(--slate-200);color:var(--muted)">${escHtml(g.code||'')}</span>
+          <span class="badge" style="background:var(--stone-100);color:var(--stone-700)">${escHtml(g.code||'')}</span>
           ${g.vaad ? `<span class="badge" style="background:var(--teal-bg);color:var(--teal);margin-right:4px">${escHtml(g.vaad)}</span>` : ''}
           ${fd ? `<span class="badge" style="background:var(--gold-bg);color:#7a5c00;margin-right:4px;font-size:10px">${escHtml(fd.label)}</span>` : ''}
         </div>
@@ -8656,7 +8673,7 @@ function makeSelectAddable(selId, settingsKey, addBlank) {
     el.parentNode.insertBefore(addRow, el.nextSibling);
     document.getElementById('addinput_'+selId).addEventListener('keydown', ev => {
       if(ev.key==='Enter') confirmAddOpt(selId, sk);
-      if(ev.key==='Escape') cancelAddOpt(selId);
+      if(ev.key==='Escape') { cancelAddOpt(selId); ev.stopPropagation(); }
     });
   }
   
@@ -9018,21 +9035,6 @@ function toggleDonMode(prefix) {
     }
   }
 }
-function updateGrpInfo(prefix) {
-  const selId = prefix+'_grp_sel';
-  const infoId = prefix+'_grp_info';
-  const grpId = document.getElementById(selId)?.value;
-  const grp = grpId ? DB.groups.find(g=>g.id===grpId) : null;
-  const el = document.getElementById(infoId);
-  if (!el) return;
-  if (grp && grp.memberIds?.length) {
-    const names = grp.memberIds.map(id=>frNameById(id)).filter(Boolean);
-    el.textContent = `התרומה תחולק בין: ${names.join(' | ')} (${names.length} חברים)`;
-    el.style.color = 'var(--teal)';
-  } else {
-    el.textContent = '';
-  }
-}
 function getDonAttribution(prefix) {
   // Single source of truth: the assignment-type <select> when the form has
   // one (donor card), otherwise the radio pair (quick-donation modal).
@@ -9076,22 +9078,17 @@ function auditLog(type, description, undoData, meta) {
 }
 
 function _saveAuditLog() {
-  // Save full audit log (with undoData) to its own localStorage key
-  try {
-    localStorage.setItem('donorAuditLog_v1', JSON.stringify(DB.auditLog));
-  } catch(e) {
-    // If localStorage is full, trim and retry
-    if (DB.auditLog.length > 50) {
-      DB.auditLog = DB.auditLog.slice(0, 50);
-      try { localStorage.setItem('donorAuditLog_v1', JSON.stringify(DB.auditLog)); } catch(e2) {}
-    }
-  }
+  // Local copy keeps the undo snapshots — but only for the newest 20 entries:
+  // a bulk delete snapshots the whole donor list, and 500 of those would be
+  // tens of MB. Older entries stay in the log without their undo payload.
+  const slim = (DB.auditLog || []).map((e, i) => (i < 20 || !e.undoData) ? e : { ...e, undoData: { _hasUndo: true } });
+  _cacheSet('donorAuditLog_v1', JSON.stringify(slim));
 }
 
-function _loadAuditLog() {
+async function _loadAuditLog() {
   // Load audit log from separate key (persists across version upgrades)
   try {
-    const s = localStorage.getItem('donorAuditLog_v1');
+    const s = await _cacheGet('donorAuditLog_v1');
     if (s) {
       const loaded = JSON.parse(s);
       // Merge: prefer entries not already in DB.auditLog
@@ -9158,14 +9155,13 @@ function renderAuditLog() {
       }).join('');
 }
 
-function undoAuditEntry(entryId) {
+async function undoAuditEntry(entryId) {
   const entry = (DB.auditLog||[]).find(e => e.id === entryId);
   if (!entry || !entry.undoData) { toast('אין מידע לשחזור'); return; }
-  // Check if undoData was stripped (cloud version — reload from localStorage)
+  // Check if undoData was stripped (cloud version — reload from the local cache)
   if (entry.undoData._hasUndo && !entry.undoData.type) {
-    // Try to restore from localStorage audit log
     try {
-      const stored = JSON.parse(localStorage.getItem('donorAuditLog_v1') || '[]');
+      const stored = JSON.parse((await _cacheGet('donorAuditLog_v1')) || '[]');
       const full = stored.find(e => e.id === entryId);
       if (full && full.undoData && full.undoData.type) {
         entry.undoData = full.undoData;
@@ -9195,7 +9191,7 @@ function clearAuditLog() {
   if (!can('superadmin')) { toast('רק מנהל ראשי יכול לנקות את הלוג'); return; }
   if (!confirm('למחוק את כל לוג הפעולות?')) return;
   DB.auditLog = [];
-  try { localStorage.removeItem('donorAuditLog_v1'); } catch(e) {}
+  _cacheDel('donorAuditLog_v1');
   saveDB(); renderAuditLog();
 }
 
@@ -9330,7 +9326,7 @@ function _userByName(u) { return (DB.users||[]).find(x => x.username === u || x.
 function _displayOf(u) { const x = _userByName(u); return x ? (x.displayName || x.username || x.email) : (u || '?'); }
 function _dmId(a, b) { return 'dm:' + [a, b].sort().join('|'); }
 function _initials(name) { return String(name||'?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?'; }
-const _AV_COLORS = ['#e57373','#f06292','#ba68c8','#7986cb','#4fc3f7','#4db6ac','#81c784','#ffb74d','#a1887f','#90a4ae','#2360d8','#c07d10'];
+const _AV_COLORS = ['#c0392b','#ad1457','#6a1b9a','#283593','#0277bd','#00695c','#2e7d32','#d84315','#6d4c41','#455a64','#1a4fb8','#9a5f0a'];  // all ≥ 4.5:1 under white initials
 function _colorFor(str) { let h = 0; for (const c of String(str||'')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return _AV_COLORS[h % _AV_COLORS.length]; }
 function _hhmm(iso) { return iso ? new Date(iso).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : ''; }
 function _dayKey(iso) { const d = new Date(iso); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
@@ -9400,8 +9396,6 @@ function updateUnreadBadge() {
 
 // ── page ──
 function _initMessagesPage() { renderChatPage(); }
-function renderMsgThreads() { renderChatPage(); }          // legacy name
-function openComposeMsg() { openNewChatModal(); }           // legacy name
 function _waFitHeight() {
   const app = document.getElementById('waApp'); if (!app || window._currentPage !== 'messages') return;
   const vh = (window.visualViewport && window.visualViewport.height) || innerHeight;
@@ -9454,7 +9448,7 @@ function renderChatList() {
     else if (last) {
       const who = c.type === 'group' && last.from !== me ? escHtml(_displayOf(last.from).split(' ')[0]) + ': ' : (last.from === me ? 'אתה: ' : '');
       preview = (last.from === me ? _ticks(last, c) : '') + who + (last.deleted ? '<span class="wa-deleted">🚫 הודעה נמחקה</span>' : escHtml(String(last.text||'').replace(/\s+/g, ' ').slice(0, 70)));
-    } else preview = '<span style="color:#aaa">שיחה חדשה</span>';
+    } else preview = '<span style="color:var(--wa-muted)">שיחה חדשה</span>';
     const mentioned = unread.some(m => (m.mentions||[]).includes(me));
     return `<div class="wa-item${c.id === _chatOpenId ? ' active' : ''}" onclick="openChat('${escHtml(c.id)}')">
       ${_avatarHtml(c)}
@@ -9810,7 +9804,6 @@ function leaveChat() {
   closeModal('chatInfoModal'); closeChat(); updateUnreadBadge();
 }
 // legacy entry point used by older code paths
-function replyToUser(partner) { openDmWith(partner); }
 
 // ════════════════════════════════════════════════════
 // DONOR SELF-SERVICE PORTAL
@@ -9944,6 +9937,7 @@ function showSSForDonor(donorId) {
 
 
 function exportAllSelfServiceLinks() {
+  if (!_xlsxReady()) return;
   if(!can('admin')){toast('אין הרשאה');return;}
   const rows = DB.donors
     .filter(d => d.email || true)
@@ -10864,10 +10858,10 @@ function mapPreviewHtml(lat, lng) {
   lat = parseFloat(lat); lng = parseFloat(lng);
   const key = getGoogleMapsKey();
   if (key) {
-    return `<iframe width="100%" height="120" frameborder="0" style="border-radius:8px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+    return `<iframe title="מפה" width="100%" height="120" frameborder="0" style="border-radius:8px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
       src="https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(key)}&q=${lat},${lng}&zoom=16&language=iw"></iframe>`;
   }
-  return `<iframe width="100%" height="120" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-.0018},${lat-.0018},${lng+.0018},${lat+.0018}&layer=mapnik&marker=${lat},${lng}" style="border-radius:8px"></iframe>`;
+  return `<iframe title="מפה" width="100%" height="120" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-.0018},${lat-.0018},${lng+.0018},${lat+.0018}&layer=mapnik&marker=${lat},${lng}" style="border-radius:8px"></iframe>`;
 }
 
 // Background geocode right after a donor is saved with a new address —
@@ -11613,7 +11607,7 @@ function rpRenderNbhList() {
     ? '<div style="color:var(--muted);font-size:12px;padding:6px">אין כללים ידניים</div>'
     : entries.map(([pat,name])=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-app);border-radius:8px;margin-bottom:5px;font-size:12px">
         <span style="flex:1"><strong>${escHtml(pat)}</strong> → ${escHtml(name)}</span>
-        <button class="btn btn-danger btn-sm" onclick="rpDelNbhRule(${JSON.stringify(pat)})">✕</button>
+        <button class="btn btn-danger btn-sm" data-pat="${escHtml(pat)}" onclick="rpDelNbhRule(this.dataset.pat)" aria-label="הסר כלל">✕</button>
       </div>`).join('');
 }
 
@@ -11729,6 +11723,7 @@ function openNedarimImport() {
   openModal('nedarimImportModal');
 }
 function processNedarimImport(input) {
+  if (!_xlsxReady()) return;
   if(!can('import')){toast('אין הרשאת ייבוא');return;}
   const file=input.files[0]; if(!file) return;
   const statusEl=document.getElementById('ndImportStatus');
@@ -11815,7 +11810,7 @@ function openDonationFormPage() {
 </head><body><div class="wrap">
 <div class="logo">✡️ ${escHtml(orgName)}</div>
 <div id="loading" class="loading">⏳ טוען טופס תרומה...</div>
-<iframe id="donIframe" src="https://matara.pro/nedarimplus/online/?${params.toString()}" onload="iframeReady()"></iframe>
+<iframe id="donIframe" title="תשלום מאובטח" src="https://matara.pro/nedarimplus/online/?${params.toString()}" onload="iframeReady()"></iframe>
 <div id="successMsg" style="display:none;text-align:center;padding:32px 20px;color:#16a34a">
   <div style="font-size:48px;margin-bottom:12px">✅</div>
   <div style="font-size:20px;font-weight:700">תרומתך התקבלה בהצלחה!</div>
@@ -12748,6 +12743,7 @@ function wizExecuteExport() {
 
 // ── Quick Export ──
 function quickExcelExport(context) {
+  if (!_xlsxReady()) return;
   if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
   let data=[];
   if(context==='donors'){
@@ -12820,6 +12816,7 @@ ${clone.outerHTML}
 
 // ── Wizard Excel ──
 function wizDoExcel() {
+  if (!_xlsxReady()) return;
   const LABELS={code:'קוד',firstName:'שם פרטי',lastName:'שם משפחה',affiliation:'שיוך',prefTime:'מועד תרמה',notes:'הערות',street:'רחוב',city:'עיר',zip:'מיקוד',phone:'טלפון',mobile:'פלאפון',email:'מייל',totalDonations:'סך תרומות',lastDonation:'תרומה אחרונה',maxDonation:'מקסימלי',donationCount:'מספר תרומות',lastCampaign:'מגבית אחרונה'};
   const cols=[...document.querySelectorAll('input[name="exc_col"]:checked')].map(c=>c.value);
   const fmt=document.querySelector('input[name="exc_format"]:checked')?.value||'xlsx';
@@ -13010,7 +13007,7 @@ function wizDoPdfPackets() {
       <table style="border-collapse:collapse;width:100%">
         <thead>
           <tr style="background:#17408f;color:white">${topCols.map(c=>`<th style="padding:3px 6px;font-size:9px;border:1px solid #333;text-align:right">${LABELS[c]||c}</th>`).join('')}</tr>
-          <tr style="background:#2d4070;color:#ccd">${btmCols.map(c=>`<th style="padding:2px 5px;font-size:8px;border:1px solid #333;text-align:right;font-style:italic">${LABELS[c]||c}</th>`).join('')}${topCols.length>btmCols.length?`<th colspan="${topCols.length-btmCols.length}" style="border:1px solid #333"></th>`:''}</tr>
+          <tr style="background:#2d4070;color:#ccd">${btmCols.map(c=>`<th style="padding:2px 5px;font-size:8px;border:1px solid #333;text-align:right;font-style:italic">${LABELS[c]||c}</th>`).join('')}${topCols.length>btmCols.length?`<th colspan="${topCols.length-btmCols.length}" style="border:1px solid #333"><span class="sr-only">פעולות</span></th>`:''}</tr>
         </thead>
         <tbody>${donorRows}</tbody>
       </table>
@@ -13306,7 +13303,7 @@ function renderExpenses() {
   if(month) exps = exps.filter(e=>(e.date||'').startsWith(month));
   exps.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
-  const statusColor = {שולם:'#10b981',לתשלום:'#f59e0b',אחר:'#6b7280'};
+  const statusColor = {שולם:'var(--success)',לתשלום:'#f59e0b',אחר:'#6b7280'};
   const ce = can('edit');
   body.innerHTML = exps.length===0
     ? `<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted)">אין הוצאות</td></tr>`
@@ -13348,7 +13345,7 @@ function renderExpDeptSummary(exps) {
         <div style="font-size:20px;font-weight:900;color:var(--danger)">₪${data.total.toLocaleString()}</div>
         <div style="font-size:11px;color:var(--muted)">${data.count} רשומות | שולם: ₪${data.paid.toLocaleString()}</div>
         <div style="background:#e5e7eb;height:4px;border-radius:4px;margin-top:6px">
-          <div style="background:#10b981;height:4px;border-radius:4px;width:${data.total?Math.min(100,Math.round(data.paid/data.total*100)):0}%"></div>
+          <div style="background:var(--success);height:4px;border-radius:4px;width:${data.total?Math.min(100,Math.round(data.paid/data.total*100)):0}%"></div>
         </div>
       </div>`).join('');
 }
@@ -13365,7 +13362,7 @@ function renderExpSummary() {
   bar.innerHTML = `
     <div style="text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">סך הכנסות</div>
-      <div style="font-size:22px;font-weight:900;color:#059669">₪${totalIncome.toLocaleString()}</div>
+      <div style="font-size:22px;font-weight:900;color:var(--success)">₪${totalIncome.toLocaleString()}</div>
     </div>
     <div style="text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">סך הוצאות</div>
@@ -13373,11 +13370,11 @@ function renderExpSummary() {
     </div>
     <div style="text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">שולם</div>
-      <div style="font-size:22px;font-weight:900;color:#10b981">₪${paidExp.toLocaleString()}</div>
+      <div style="font-size:22px;font-weight:900;color:var(--success)">₪${paidExp.toLocaleString()}</div>
     </div>
     <div style="text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">לתשלום</div>
-      <div style="font-size:22px;font-weight:900;color:#f59e0b">₪${pendingExp.toLocaleString()}</div>
+      <div style="font-size:22px;font-weight:900;color:#b45309">₪${pendingExp.toLocaleString()}</div>
     </div>
     <div style="text-align:center">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">יתרה</div>
@@ -13386,6 +13383,7 @@ function renderExpSummary() {
 }
 
 function exportExpensesExcel() {
+  if (!_xlsxReady()) return;
   if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
   const exps = DB.expenses||[];
   if(!exps.length){alert('אין הוצאות לייצוא');return;}
@@ -13413,8 +13411,8 @@ function renderFRStats() {
   banner.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;background:var(--bg-app);border-radius:10px;padding:14px 18px;margin-bottom:14px">
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">₪${totalTarget.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">יעד כולל</div></div>
-      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:#059669">₪${totalRaised.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">גויס</div></div>
-      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'#10b981':'var(--gold)'}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
+      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--success)">₪${totalRaised.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">גויס</div></div>
+      <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:${pct>=100?'var(--success)':'var(--gold)'}">${pct}%</div><div style="font-size:11px;color:var(--muted)">התקדמות</div></div>
       <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--slate-900)">${frs.length}</div><div style="font-size:11px;color:var(--muted)">מתרימים</div></div>
     </div>
     <div style="background:#e5e7eb;border-radius:8px;height:10px;margin-bottom:16px;overflow:hidden">
@@ -13434,7 +13432,7 @@ function renderDashExpWidget() {
     <div class="card-header"><h3>💸 הכנסות / הוצאות</h3></div>
     <div class="card-body" style="padding:14px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#059669">₪${totalIncome.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">הכנסות</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:var(--success)">₪${totalIncome.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">הכנסות</div></div>
         <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:var(--danger)">₪${totalExp.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">הוצאות</div></div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:10px;text-align:center">
@@ -13512,7 +13510,7 @@ function renderBondScore(id) {
   // 4. Consistency score: shorter avg gap = better (if only 1 donation, give partial)
   const consistencyScore = count===1?10:avgGap===0?25:Math.min(25, Math.round((1-(Math.min(avgGap,365)/365))*25));
   const total4 = freqScore+amtScore+recencyScore+consistencyScore;
-  const grade = total4>=85?{l:'מצוין',c:'#10b981'}:total4>=65?{l:'טוב',c:'#2360d8'}:total4>=45?{l:'ממוצע',c:'#f59e0b'}:total4>=25?{l:'חלש',c:'#f97316'}:{l:'דורש טיפול',c:'#ef4444'};
+  const grade = total4>=85?{l:'מצוין',c:'var(--success)'}:total4>=65?{l:'טוב',c:'#2360d8'}:total4>=45?{l:'ממוצע',c:'#f59e0b'}:total4>=25?{l:'חלש',c:'#f97316'}:{l:'דורש טיפול',c:'#ef4444'};
   // Nedarim link moved to donations tab
   const nedarimHtml = '';
 
@@ -13580,7 +13578,7 @@ function renderDonorHistory(id) {
     return;
   }
   const typeIcon={'create':'✅','edit':'✏️','delete':'🗑️','import':'📥','login':'🔑','logout':'🚪','export':'📤','print':'🖨️'};
-  const typeColor={'create':'#10b981','edit':'#2360d8','delete':'#ef4444','import':'#06b6d4','print':'#8b5cf6'};
+  const typeColor={'create':'var(--success)','edit':'#2360d8','delete':'#ef4444','import':'#06b6d4','print':'#8b5cf6'};
   el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px">נמצאו <strong>${log.length}</strong> רשומות היסטוריה</div>
     <div style="display:flex;flex-direction:column;gap:6px">
     ${log.map(e=>{
