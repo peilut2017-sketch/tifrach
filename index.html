@@ -139,6 +139,8 @@ body {
 
 /* Accessible focus ring everywhere */
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px }
+.btn:focus-visible, button:focus-visible, a:focus-visible, .sb-item:focus-visible, .nav-btn:focus-visible { outline: 2px solid var(--primary) !important; outline-offset: 2px }
+.form-control:focus-visible, .search-input:focus-visible, .filter-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px }
 
 ::selection { background: var(--primary-bg); color: var(--primary-dark) }
 
@@ -369,8 +371,8 @@ tr:hover td { background: var(--primary-bg) }
 .filter-clear:hover { color: var(--danger) }
 
 /* ════ MODAL ════ */
-.modal-overlay { position: fixed; inset: 0; background: rgba(18,33,63,.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity .22s }
-.modal-overlay.open { opacity: 1; pointer-events: all }
+.modal-overlay { position: fixed; inset: 0; background: rgba(18,33,63,.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .22s, visibility 0s linear .22s }
+.modal-overlay.open { opacity: 1; visibility: visible; pointer-events: all; transition: opacity .22s, visibility 0s }
 .modal { background: var(--white); border-radius: var(--r-xl); box-shadow: var(--sh-lg); border: 1px solid var(--stone-200); width: 700px; max-width: 96vw; max-height: 88vh; overflow: hidden; transform: translateY(22px) scale(.97); transition: transform var(--spring); display: flex; flex-direction: column }
 .modal-body { overflow-y: auto; flex: 1; min-height: 0 }
 .modal-footer { flex-shrink: 0 }
@@ -10026,7 +10028,7 @@ function _publicFormBody(d, affiliations) {
         ${_ssField('ss_cohort','מחזור — השנה שבה היית שיעור א׳ בישיבה',d.cohort,'text','placeholder="תשע\"ב"')}
       </div>
       <div><label style="${_ssLabel}" for="ss_notes">הערות</label><textarea id="ss_notes" rows="3" style="${_ssInput}">${escHtml(d.notes||'')}</textarea></div>
-      <input id="ss_website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+      <input id="ss_website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none" aria-hidden="true">
     </div>
     <div id="ss_result" style="margin-top:12px;display:none;text-align:center;padding:10px;border-radius:8px;font-size:14px"></div>`;
 }

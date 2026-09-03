@@ -7,7 +7,8 @@ supabase/
 ├── config.toml                     הגדרות CLI + Edge Functions
 ├── migrations/
 │   ├── 0001_init.sql               טבלת app_state + RLS + טריגר + seed
-│   └── 0002_edge_atomic_writes.sql פונקציות SQL אטומיות ל-Edge Functions
+│   ├── 0002_edge_atomic_writes.sql פונקציות SQL אטומיות ל-Edge Functions
+│   └── 0003_delete_hardening.sql   מחיקה מותרת רק לשורות נוכחות (לא לשורת main)
 └── functions/
     ├── self-service/index.ts       פורטל עדכון עצמי לתורם (מאובטח בטוקן)
     └── yemot-ivr/index.ts          Webhook לתרומות טלפוניות (אופציונלי)
@@ -36,7 +37,9 @@ supabase link --project-ref <YOUR_PROJECT_REF>
 ```bash
 supabase db push
 ```
-**לחלופין ידני** (בלי CLI): Dashboard → SQL Editor → New query → הדבק את תוכן `migrations/0001_init.sql` → Run, ואז את `migrations/0002_edge_atomic_writes.sql` → Run.
+**לחלופין ידני** (בלי CLI): Dashboard → SQL Editor → New query → הדבק את תוכן `migrations/0001_init.sql` → Run, ואז את `migrations/0002_edge_atomic_writes.sql` → Run, ואז את `migrations/0003_delete_hardening.sql` → Run.
+
+> **מיגרציה 0003 (3.9.26):** עד עכשיו כל משתמש מחובר יכול היה למחוק את שורת `main` (כל בסיס הנתונים) בקריאת API אחת. אחרי המיגרציה מותר למחוק רק שורות נוכחות. מומלץ להריץ, אין תלות בקוד.
 
 > **חשוב:** מיגרציה 0002 נדרשת ל-Edge Functions העדכניות — הן כותבות דרך פונקציות SQL אטומיות (`append_pending_edit`, `append_donor_donation`) במקום לשכתב את כל בסיס הנתונים, כך ששמירה של צוות במקביל לא תימחק. אחרי הרצתה יש לפרוס מחדש את הפונקציות (`supabase functions deploy`).
 
@@ -83,6 +86,13 @@ const SUPABASE_KEY = "<YOUR_ANON_KEY>";   // מפתח anon — מותר שיהי
 הלוגים המלאים: Dashboard → Edge Functions → self-service → **Logs** (כל כשל כתיבה נרשם שם עם הסיבה).
 
 ---
+
+## מודל ההרשאות — מה נאכף איפה
+- **כניסה:** רק חשבונות שנוצרו ב-Supabase Auth (ואף אחד לא יכול להירשם לבד — ראה סעיף 4). ה-RLS חוסם את המפתח האנונימי לחלוטין.
+- **תפקידים (מנהל ראשי / מנהל / עורך / מבקר):** נאכפים **בצד הלקוח** (כפתורים מוסתרים, פעולות חסומות). ברמת בסיס הנתונים כל חשבון מחובר יכול לעדכן את שורת `main`, כי גם "מבקר" כותב אליה באופן לגיטימי (הודעות צ'אט, אישורי קריאה, מועד התחברות). המשמעות: מי שיש לו חשבון במערכת הוא איש צוות מהימן — אל תיצור חשבונות לאנשים שאינם כאלה.
+- **מחיקה:** אחרי מיגרציה 0003 אף חשבון לא יכול למחוק את שורת `main` דרך ה-API.
+- **מחיקה מרובה של תורמים:** מנהל ראשי בלבד, עד 100 בפעולה, אחרי אימות סיסמה מול Supabase Auth.
+- **Edge Functions:** `self-service` ו-`yemot-ivr` כותבות דרך פונקציות SQL אטומיות (או compare-and-swap) ולעולם לא דורסות שמירה מקבילה; `admin-users` דורשת JWT של מנהל ראשי.
 
 ## פעולות אבטחה נוספות מומלצות
 - **הימות/נדרים/EmailJS:** הכנס את המפתחות דרך פאנל הניהול במערכת (אל תשאיר את הישנים — הם נחשפו וכדאי להחליף בשירותים עצמם).
