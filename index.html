@@ -574,7 +574,10 @@ tr:hover td { background: var(--primary-bg) }
   .stat-card, .sc { padding: 10px; }
   .toolbar { flex-direction: column; align-items: stretch; gap: 6px; flex-wrap: wrap; }
   .toolbar > * { width: 100%; }
-  .toolbar .btn { width: 100%; justify-content: center; }
+  .toolbar .btn { width: auto; flex: 1 1 calc(50% - 4px); justify-content: center; }
+  .toolbar .btn-gold { flex-basis: 100%; }
+  .toolbar .more-menu { width: auto; flex: 1 1 calc(50% - 4px); display: flex; }
+  .toolbar .more-menu > .btn { width: 100%; }
   .search-input, .si-input { min-width: 0 !important; width: 100% !important; }
   .table-wrap, .tw { overflow: hidden; border-radius: var(--r-md); }
   .table-scroll, .ts { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -628,6 +631,7 @@ tr:hover td { background: var(--primary-bg) }
 }
 
 @media (max-width: 480px) {
+  #saveNewDonorBtn { display: none !important; }
   .stat-grid, .sg { grid-template-columns: 1fr 1fr !important; }
   .form-grid, .fg3 { grid-template-columns: 1fr !important; }
   .fg4 { grid-template-columns: 1fr 1fr !important; }
@@ -734,6 +738,8 @@ tr:hover td { background: var(--primary-bg) }
 }
 
 .thead-primary th{color:#fff!important;background:transparent!important}
+.sync-text{font-size:11px;font-weight:600;white-space:nowrap}
+@media(max-width:900px){.sync-text{display:none}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* ════ PRINT (in-app) ════ */
 @media print{.topbar,.toolbar,.row-actions,.nav-btn,.btn,.modal-overlay,#sidebar{display:none!important}#mainContent{margin-right:0!important}.page{padding:0}.table-wrap{box-shadow:none;border:1px solid #ccc}}
@@ -1035,7 +1041,7 @@ tr:hover td { background: var(--primary-bg) }
     </div>
     <div class="topbar-brand"><img class="app-logo" alt="עזר תורה" src="" style="height:34px;margin-left:8px;border-radius:4px"> עזר תורה <span>| תושיה תפרח</span> <span style="font-size:10px;font-family:monospace;font-weight:600;color:var(--stone-600);background:var(--stone-100);padding:1px 7px;border-radius:10px">v30 ☁️</span></div>
     <div style="display:flex;align-items:center;gap:8px">
-      <span id="syncStatusDot" title="סטטוס סנכרון" style="display:none;width:10px;height:10px;border-radius:50%;background:#6b7a9a;flex-shrink:0;transition:background .5s"></span>
+      <span id="syncStatusDot" title="סטטוס סנכרון" style="display:none;width:10px;height:10px;border-radius:50%;background:#6b7a9a;flex-shrink:0;transition:background .5s"></span><span id="syncStatusText" class="sync-text" aria-live="polite"></span>
       <button onclick="showPage('messages')" id="topMsgBadge" style="display:none;background:var(--danger);color:white;border:none;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif" title="הודעות שלא נקראו"></button>
     </div>
   </div>
@@ -1359,7 +1365,7 @@ tr:hover td { background: var(--primary-bg) }
   </div>
 
   <!-- Stats Banner -->
-  <div id="frStatsBanner" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px"></div>
+  <div id="frStatsBanner" style="display:block;margin-bottom:16px"></div>
 
   <!-- Filters & Search -->
   <div class="toolbar" style="gap:8px;margin-bottom:12px;flex-wrap:wrap">
@@ -3473,7 +3479,7 @@ tr:hover td { background: var(--primary-bg) }
         <button class="btn btn-gold btn-sm" onclick="addUserRow()">+ הוסף משתמש</button>
       </div>
       <div style="overflow-x:auto">
-        <table class="users-table"><thead><tr><th>מייל</th><th>שם לתצוגה</th><th>הרשאה</th><th>כניסה ראשונה</th><th><span class="sr-only">פעולות</span></th></tr></thead><tbody id="usersBody"></tbody></table>
+        <div class="table-scroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="users-table"><thead><tr><th>מייל</th><th>שם לתצוגה</th><th>הרשאה</th><th>כניסה ראשונה</th><th><span class="sr-only">פעולות</span></th></tr></thead><tbody id="usersBody"></tbody></table></div>
       </div>
       <div id="createUserBox" style="display:none;margin-top:14px;background:var(--primary-bg);border:1px solid var(--primary-border);border-radius:10px;padding:12px 14px">
         <div style="font-weight:700;font-size:13px;margin-bottom:8px">➕ יצירת משתמש חדש (כולל חשבון כניסה)</div>
@@ -4189,6 +4195,8 @@ function _showSyncStatus(status) {
   const s = map[status] || map['loading'];
   el.style.background = s.color;
   el.title = s.title;
+  const txt = document.getElementById('syncStatusText');
+  if (txt) { txt.textContent = { ok: 'מסונכרן', error: 'לא מסונכרן', offline: 'לא מקוון', loading: 'מסנכרן…' }[status] || ''; txt.style.color = s.color; }
 }
 
 // ── Manual refresh: pull + merge (never overwrites local edits) ──
@@ -5232,7 +5240,7 @@ function sortAndRender() {
         ${ce ? `<button class="btn btn-danger btn-sm" onclick="deleteDonorRow('${d.id}')">🗑️</button>` : ''}
       </div></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="18" style="text-align:center;padding:32px;color:var(--muted)">אין תורמים להצגה</td></tr>`;
+  }).join('') || _emptyState(18, (DB.donors||[]).length ? { action: 'clearFilters()' } : null, { icon: '👥', title: 'אין תורמים עדיין', hint: 'הוסף תורם ראשון, או ייבא רשימה קיימת מאקסל דרך "עוד"', action: 'openNewDonorModal()', label: '+ הוסף תורם', needEdit: true });
 
   // Mobile: card list mirroring the same page of rows (CSS swaps table↔cards at 768px)
   const cardsHost = document.getElementById('donorsCardsMobile');
@@ -5253,7 +5261,7 @@ function sortAndRender() {
           <button class="btn btn-navy btn-sm" onclick="openDonorModal('${d.id}')">✏️ פתיחה</button>
         </div>
       </div>`;
-    }).join('') || `<div style="text-align:center;padding:32px;color:var(--muted)">אין תורמים להצגה</div>`;
+    }).join('') || _emptyState(0, (DB.donors||[]).length ? { action: 'clearFilters()' } : null, { icon: '👥', title: 'אין תורמים עדיין', hint: 'הוסף תורם ראשון או ייבא מאקסל', action: 'openNewDonorModal()', label: '+ הוסף תורם', needEdit: true });
   }
   applyColVis();
   updateBulkBar();
@@ -5957,7 +5965,7 @@ function renderFuturePage() {
   const body=document.getElementById('futureBody'); if(!body) return;
   const canE=can('edit');
   body.innerHTML=rows.length===0
-    ?`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">אין תרומות עתידיות</td></tr>`
+    ? _emptyState(9, (DB.donors||[]).some(d => (d.futureDonations||[]).length) ? { action: "document.getElementById('futureSearch')&&(document.getElementById('futureSearch').value='');renderFuturePage()", label: 'נקה חיפוש' } : null, { icon: '⭐', title: 'אין תרומות עתידיות מתוכננות', hint: 'התחייבות עתידית נרשמת מכרטיס התורם, בלשונית "עתידיות"' })
     :rows.map(({donor:d,f,fi})=>{
         const waBtn=d.mobile?`<button class="btn-icon wa" style="width:26px;height:26px;font-size:12px" data-mobile="${escHtml(d.mobile)}" onclick="openWAfor(this.dataset.mobile);event.stopPropagation()">💬</button>`:'';
         return `<tr style="cursor:pointer" onclick="openDonorAndFuture('${d.id}',${fi})">
@@ -6532,6 +6540,7 @@ function removeUser(i){
   renderUsersTable();
 }
 function saveUsers(){
+  if (_tooSoon('users')) return;
   const cleaned=_usersDraft.map(u=>({...u,email:(u.email||'').trim(),username:(u.email||'').trim()||u.username}))
     .filter(u=>(u.email||u.username||'').trim());
   // Safety rails: never lock the system out of a superadmin, no duplicate emails
@@ -6621,6 +6630,7 @@ function _stDrop(ev) {
 function _stDragEnd(ev) { ev.currentTarget.classList.remove('dragging'); ev.currentTarget.draggable = false; document.querySelectorAll('.setting-item.drag-over').forEach(x => x.classList.remove('drag-over')); _stDragEl = null; }
 
 function saveSettings() {
+  if (_tooSoon('settings')) return;
   const S = getSettings();
   SETTINGS_LISTS.forEach(({key},li) => {
     const items = document.querySelectorAll(`#slist_${li} .setting-item input`);
@@ -6937,6 +6947,16 @@ async function runGeocodeBatch(){
 
 
 // SheetJS is loaded from a CDN — say so instead of throwing when it did not arrive
+// Empty-list state: tells the user whether the list is empty or only filtered, and offers the next step
+function _emptyState(colspan, filtered, empty) {
+  const o = filtered ? { icon: '🔍', title: 'אין תוצאות לסינון הנוכחי', action: filtered.action, label: filtered.label || 'נקה סינון', hint: filtered.hint || '' } : empty;
+  const inner = `<div style="font-size:30px;margin-bottom:6px;line-height:1">${o.icon || '📭'}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--stone-700)">${o.title}</div>
+    ${o.hint ? `<div style="font-size:12px;margin-top:4px;color:var(--muted)">${o.hint}</div>` : ''}
+    ${o.action && (!o.needEdit || can('edit')) ? `<button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="${o.action}">${o.label}</button>` : ''}`;
+  return colspan ? `<tr><td colspan="${colspan}" style="text-align:center;padding:36px 16px;color:var(--muted)">${inner}</td></tr>`
+                 : `<div style="text-align:center;padding:36px 16px;color:var(--muted)">${inner}</div>`;
+}
 function _xlsxReady(){ if (typeof XLSX !== 'undefined') return true; toast('⚠️ ספריית Excel לא נטענה (אין חיבור לאינטרנט?) — רענן את הדף ונסה שוב'); return false; }
 function exportExcel(){
   if (!_xlsxReady()) return;
@@ -7154,6 +7174,7 @@ function openFundraisingDateModal(id) {
 }
 
 function saveFundraisingDate() {
+  if (_tooSoon('fdate')) return;
   const label = document.getElementById('fd_label').value.trim();
   if (!label) { alert('יש להזין תווית'); return; }
   const editId = document.getElementById('fd_editId').value;
@@ -7277,7 +7298,7 @@ function renderDonationsPanel() {
   const body = document.getElementById('donsPanelBody');
   if (!body) return;
   body.innerHTML = rows.length === 0
-    ? '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)">אין תרומות תואמות</td></tr>'
+    ? _emptyState(9, (DB.donors||[]).some(d => (d.donations||[]).length) ? { action: 'clearDonsFilters()' } : null, { icon: '💰', title: 'עדיין לא נרשמו תרומות', hint: 'רשום תרומה ראשונה או ייבא מנדרים פלוס', action: 'openQuickDonationModal()', label: '+ הוסף תרומה', needEdit: true })
     : rows.map(r => {
         const donor = r._donor;
         const dn = { amount:r.amount, date:r.date, method:r.method, campaignId:r.campaignId, fundraiserId:r.frId, groupId:r.groupId, notes:r.notes };
@@ -7480,7 +7501,7 @@ let _ioContext = 'donors';
 function openIOCenter(tab, context) {
   if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
   if (context) _ioContext = context;
-  switchIOTab(tab || 'excel');
+  switchIOTab(['excel','print','labels','import'].includes(tab) ? tab : 'excel');
   openModal('ioCenterModal');
 }
 function switchIOTab(tab) {
@@ -7853,7 +7874,7 @@ function renderFRList() {
   if (!body) return;
   const ce = can('edit');
   body.innerHTML = rows.length === 0
-    ? `<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--muted)">אין מתרימים רשומים</td></tr>`
+    ? _emptyState(12, (DB.fundraisers||[]).length ? { action: "document.getElementById('frSearch')&&(document.getElementById('frSearch').value='');document.getElementById('frVaad')&&(document.getElementById('frVaad').value='');renderFRList()" } : null, { icon: '🎓', title: 'אין מתרימים עדיין', hint: 'הוסף מתרים או ייבא רשימת תלמידים מאקסל', action: 'openFRModal()', label: '+ הוסף מתרים', needEdit: true })
     : rows.map(f => {
         const raised = frRaisedTotal(f.id, ac?.id);
         const target = ac?.id && f.campaignTargets ? (f.campaignTargets[ac.id]||f.target||0) : parseFloat(f.target||0);
@@ -8854,6 +8875,7 @@ async function _pwcSubmit() {
 }
 
 async function deleteSelectedDonors() {
+  if (_tooSoon('bulkdel')) return;
   const ids = [..._selDonorIds].filter(id => (DB.donors||[]).some(d => d.id === id));
   if (!ids.length) return;
   if (!currentUser || currentUser.role !== 'superadmin') { alert('מחיקה מרובה של תורמים מותרת למנהל ראשי בלבד'); return; }
@@ -9744,6 +9766,7 @@ function openDmWith(u) {
   openChat(id);
 }
 function createGroupFromModal() {
+  if (_tooSoon('chatgrp')) return;
   const name = document.getElementById('ncGroupName').value.trim();
   const members = [...document.querySelectorAll('#ncMemberList input:checked')].map(c => c.value);
   if (!name) { toast('נא לתת שם לקבוצה'); return; }
@@ -10219,6 +10242,7 @@ function _publicDupHints(n) {
 }
 
 function approveNewDonorRequest(idx) {
+  if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx]; if (!pe || !pe.edits || !pe.edits._newDonor) return;
   if (!can('edit')) { toast('אין הרשאה'); return; }
   const n = pe.edits._newDonor;
@@ -10234,6 +10258,7 @@ function approveNewDonorRequest(idx) {
 }
 
 function approvePhoneDonation(idx) {
+  if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx]; if (!pe || !pe.edits || !pe.edits._phoneDonation) return;
   if (!can('edit')) { toast('אין הרשאה'); return; }
   const ph = pe.edits._phoneDonation;
@@ -10249,6 +10274,7 @@ function approvePhoneDonation(idx) {
 }
 
 function approvePendingEdit(idx) {
+  if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx];
   if (!pe) return;
   const d = DB.donors.find(x => x.id === pe.donorId);
@@ -10270,6 +10296,7 @@ function approvePendingEdit(idx) {
 }
 
 function rejectPendingEdit(idx) {
+  if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx];
   const d = pe ? DB.donors.find(x => x.id === pe.donorId) : null;
   DB.pendingEdits.splice(idx, 1);
@@ -13243,6 +13270,7 @@ function saveExpense() {
   const date = document.getElementById('exp_date').value;
   const purpose = document.getElementById('exp_purpose').value.trim();
   const amount = parseFloat(document.getElementById('exp_amount').value) || 0;
+  if(!(amount > 0)) { alert('יש להזין סכום תקין'); return; }
   if(!dept) { alert('יש לבחור מחלקה'); return; }
   if(!date) { alert('יש להזין תאריך'); return; }
   if(!purpose) { alert('יש להזין מטרת ההוצאה'); return; }
@@ -13306,7 +13334,7 @@ function renderExpenses() {
   const statusColor = {שולם:'var(--success)',לתשלום:'#f59e0b',אחר:'#6b7280'};
   const ce = can('edit');
   body.innerHTML = exps.length===0
-    ? `<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted)">אין הוצאות</td></tr>`
+    ? _emptyState(9, (DB.expenses||[]).length ? { action: 'clearExpFilters()' } : null, { icon: '💸', title: 'אין הוצאות רשומות', hint: 'הוצאות נרשמות כאן ומופיעות מול ההכנסות בדשבורד', action: 'openExpenseModal()', label: '+ הוסף הוצאה', needEdit: true })
     : exps.map(e=>`<tr>
         <td style="font-size:12px">${fmt(e.date)}</td>
         <td><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">${escHtml(e.dept)}</span></td>
