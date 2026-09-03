@@ -1,4 +1,4 @@
-qa/node_modules/
+qa/node_modules
 qa/package-lock.json
 qa/*.png
 qa/fn-*.js
