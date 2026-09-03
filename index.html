@@ -371,8 +371,8 @@ tr:hover td { background: var(--primary-bg) }
 .filter-clear:hover { color: var(--danger) }
 
 /* ════ MODAL ════ */
-.modal-overlay { position: fixed; inset: 0; background: rgba(18,33,63,.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .22s, visibility 0s linear .22s }
-.modal-overlay.open { opacity: 1; visibility: visible; pointer-events: all; transition: opacity .22s, visibility 0s }
+.modal-overlay { position: fixed; inset: 0; background: rgba(18,33,63,.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 500; opacity: 0; pointer-events: none; transition: opacity .22s }
+.modal-overlay.open { opacity: 1; pointer-events: all }
 .modal { background: var(--white); border-radius: var(--r-xl); box-shadow: var(--sh-lg); border: 1px solid var(--stone-200); width: 700px; max-width: 96vw; max-height: 88vh; overflow: hidden; transform: translateY(22px) scale(.97); transition: transform var(--spring); display: flex; flex-direction: column }
 .modal-body { overflow-y: auto; flex: 1; min-height: 0 }
 .modal-footer { flex-shrink: 0 }
@@ -4198,7 +4198,7 @@ function _showSyncStatus(status) {
   el.style.background = s.color;
   el.title = s.title;
   const txt = document.getElementById('syncStatusText');
-  if (txt) { txt.textContent = { ok: 'מסונכרן', error: 'לא מסונכרן', offline: 'לא מקוון', loading: 'מסנכרן…' }[status] || ''; txt.style.color = s.color; }
+  if (txt) { txt.textContent = { ok: 'מסונכרן', error: 'לא מסונכרן', offline: 'לא מקוון', loading: 'מסנכרן…' }[status] || ''; txt.style.color = { ok: '#15803d', error: '#b91c1c', offline: '#b45309', loading: '#47546e' }[status] || '#47546e'; }
 }
 
 // ── Manual refresh: pull + merge (never overwrites local edits) ──
@@ -5482,7 +5482,7 @@ function _overrideNotice(list, ctx) {
   if (!list.length) return;
   const kindLbl = { fr:'מתרים', group:'קבוצה', route:'מסלול' };
   const lines = list.slice(0, 12).map(x => `• ${donorName(x.d)} → ${kindLbl[x.kind]||''}: ${x.target}`).join('\n');
-  alert(`⚠️ ב${ctx} יש ${list.length} תורמים שהוחרגו ידנית ושויכו למקום אחר:\n\n${lines}${list.length>12?'\n…':''}\n\n(השיוך הידני בכרטיס התורם גובר על השיבוץ האוטומטי)`);
+  showInfoDialog('⚠️ תורמים שהוחרגו', `ב${ctx} יש ${list.length} תורמים שהוחרגו ידנית ושויכו למקום אחר:\n\n${lines}${list.length>12?'\n…':''}\n\n(השיוך הידני בכרטיס התורם גובר על השיבוץ האוטומטי)`);
 }
 
 function switchDTab(tab) {
@@ -5545,7 +5545,7 @@ function saveDonor() {
   if(!can('edit')) return;
   const fn=document.getElementById('f_firstName').value.trim();
   const ln=document.getElementById('f_lastName').value.trim();
-  if(!fn&&!ln){alert('חובה להזין שם');return;}
+  if(!fn&&!ln){toastWarn('חובה להזין שם'); return;}
   const data=_collectDonorForm();
 
   const fieldLabels={firstName:'שם פרטי',lastName:'שם משפחה',phone:'טלפון',mobile:'סלולרי',email:'מייל',address:'כתובת',entrance:'כניסה',zip:'מיקוד',idNumber:'תעודת זהות',status:'סטטוס',rating:'דירוג',notes:'הערות',cardNotes:'הערות כרטיס',affil:'שיוך',code:'קוד',title:'תואר',prefTime:'מועד תרמה',cohort:'מחזור',marriageYear:'שנת נישואין',marriageMonth:'חודש נישואין',closingName:'שם סגירה',assignKind:'סוג שיוך גיוס',assignId:'שיוך גיוס'};
@@ -5590,7 +5590,7 @@ function saveDonorAndNew() {
   if(!can('edit')) return;
   const fn=document.getElementById('f_firstName').value.trim();
   const ln=document.getElementById('f_lastName').value.trim();
-  if(!fn&&!ln){alert('חובה להזין שם');return;}
+  if(!fn&&!ln){toastWarn('חובה להזין שם'); return;}
   const data=_collectDonorForm();
   if(currentDonorId){
     const idx=DB.donors.findIndex(x=>x.id===currentDonorId);
@@ -5769,7 +5769,7 @@ function editDonation(idx) {
 function saveDonation() {
   if(_tooSoon('ndon')) return;
   const rawAmount=parseFloat(document.getElementById('nd_amount').value);
-  if(!rawAmount||rawAmount<=0){alert('יש להזין סכום תקין');return;}
+  if(!rawAmount||rawAmount<=0){toastWarn('יש להזין סכום תקין'); return;}
   const currency = document.getElementById('nd_currency')?.value || 'ILS';
   const amount = currency === 'ILS' ? rawAmount : getDonationILSAmount();
   const attrib = getDonAttribution('nd');
@@ -5893,7 +5893,7 @@ function saveFutureDonation() {
   if(_tooSoon('future')) return;
   const date=document.getElementById('nf_date').value;
   const notes=document.getElementById('nf_notes').value.trim();
-  if(!date&&!notes){alert('יש להזין לפחות תאריך יעד');return;}
+  if(!date&&!notes){toastWarn('יש להזין לפחות תאריך יעד'); return;}
   const obj={date,expectedAmount:document.getElementById('nf_amount').value?parseFloat(document.getElementById('nf_amount').value):null,campaignId:document.getElementById('nf_campaign').value||'',notes};
   const ei=document.getElementById('nf_editIdx').value;
 
@@ -6168,7 +6168,7 @@ function addDonorFromQD(prefill) {
 function saveDonorThenQD() {
   const fn = document.getElementById('f_firstName')?.value?.trim();
   const ln = document.getElementById('f_lastName')?.value?.trim();
-  if (!fn && !ln) { alert('יש להזין שם'); return; }
+  if (!fn && !ln) { toastWarn('יש להזין שם'); return; }
   saveDonor();
   setTimeout(() => {
     // Find the newly created donor (last one added)
@@ -6201,9 +6201,9 @@ function pickQDDonor(id) {
 
 function saveQuickDonation() {
   if(_tooSoon('qdon')) return;
-  if(!qd_selectedId){alert('יש לבחור תורם');return;}
+  if(!qd_selectedId){toastWarn('יש לבחור תורם'); return;}
   const rawAmount=parseFloat(document.getElementById('qd_amount').value);
-  if(!rawAmount||rawAmount<=0){alert('יש להזין סכום תקין');return;}
+  if(!rawAmount||rawAmount<=0){toastWarn('יש להזין סכום תקין'); return;}
   const currency = document.getElementById('qd_currency')?.value || 'ILS';
   const amount = currency === 'ILS' ? rawAmount : getQDILSAmount();
   const d=DB.donors.find(x=>x.id===qd_selectedId); if(!d) return;
@@ -6254,9 +6254,9 @@ async function updateQDCurrencyConversion() {
 
 function saveQuickDonationAndNew() {
   if(_tooSoon('qdon')) return;
-  if(!qd_selectedId){alert('יש לבחור תורם');return;}
+  if(!qd_selectedId){toastWarn('יש לבחור תורם'); return;}
   const rawAmount=parseFloat(document.getElementById('qd_amount').value);
-  if(!rawAmount||rawAmount<=0){alert('יש להזין סכום תקין');return;}
+  if(!rawAmount||rawAmount<=0){toastWarn('יש להזין סכום תקין'); return;}
   const currency = document.getElementById('qd_currency')?.value || 'ILS';
   const amount = currency === 'ILS' ? rawAmount : getQDILSAmount();
   const d=DB.donors.find(x=>x.id===qd_selectedId); if(!d) return;
@@ -6308,7 +6308,7 @@ function openNewCampaignModal() {
 function saveCampaign() {
   if(_tooSoon('campaign')) return;
   const name=document.getElementById('cm_name').value.trim();
-  if(!name){alert('יש להזין שם');return;}
+  if(!name){toastWarn('יש להזין שם'); return;}
   const isActive=document.getElementById('cm_active').value==='true';
   if(isActive) DB.campaigns.forEach(c=>c.active=false);
   const editId=document.getElementById('cm_editId').value;
@@ -6536,7 +6536,7 @@ function addUserRow(){
 function removeUser(i){
   if(!can('superadmin')){toast('רק מנהל ראשי יכול למחוק משתמשים');return;}
   const u=_usersDraft[i];
-  if((u.email||u.username)===(currentUser.email||currentUser.username)){alert('לא ניתן למחוק את המשתמש הנוכחי');return;}
+  if((u.email||u.username)===(currentUser.email||currentUser.username)){toastWarn('לא ניתן למחוק את המשתמש הנוכחי'); return;}
   if(!confirm(`למחוק את המשתמש ${u.displayName||u.email||u.username}?`)) return;
   _usersDraft.splice(i,1);
   renderUsersTable();
@@ -6546,9 +6546,9 @@ function saveUsers(){
   const cleaned=_usersDraft.map(u=>({...u,email:(u.email||'').trim(),username:(u.email||'').trim()||u.username}))
     .filter(u=>(u.email||u.username||'').trim());
   // Safety rails: never lock the system out of a superadmin, no duplicate emails
-  if(!cleaned.some(u=>u.role==='superadmin')){alert('חייב להישאר לפחות מנהל ראשי אחד');return;}
+  if(!cleaned.some(u=>u.role==='superadmin')){toastWarn('חייב להישאר לפחות מנהל ראשי אחד'); return;}
   const emails=cleaned.map(u=>(u.email||u.username).toLowerCase());
-  if(new Set(emails).size!==emails.length){alert('קיימות כתובות מייל כפולות ברשימה');return;}
+  if(new Set(emails).size!==emails.length){toastWarn('קיימות כתובות מייל כפולות ברשימה'); return;}
   DB.users=cleaned;
   // If my own role changed, apply it live
   const me=cleaned.find(u=>(u.email||'').toLowerCase()===(currentUser.email||'').toLowerCase());
@@ -6743,7 +6743,7 @@ function impReset(){
 
 function impLoadFile(input){
   if (!_xlsxReady()) return;
-  if(!can('import')){alert('אין הרשאה');return;}
+  if(!can('import')){toastWarn('אין הרשאה'); return;}
   const file=input.files[0]; if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
@@ -6962,7 +6962,7 @@ function _emptyState(colspan, filtered, empty) {
 function _xlsxReady(){ if (typeof XLSX !== 'undefined') return true; toast('⚠️ ספריית Excel לא נטענה (אין חיבור לאינטרנט?) — רענן את הדף ונסה שוב'); return false; }
 function exportExcel(){
   if (!_xlsxReady()) return;
-  if(!can('export')){alert('אין הרשאת ייצוא');return;}
+  if(!can('export')){toastWarn('אין הרשאת ייצוא'); return;}
   const wb=XLSX.utils.book_new();
   const donorRows=DB.donors.map(d=>({'קוד':d.code,'תואר':d.title,'שם פרטי':d.firstName,'שם משפחה':d.lastName,'שיוך':d.affil,'כתובת':d.address,'כניסה':d.entrance||'','מיקוד':d.zip||'','טלפון':d.phone,'סלולרי':d.mobile,'מייל':d.email,'ת"ז':d.idNumber||'','מועד תרמה':d.prefTime,'שנת נישואין':d.marriageYear||'','חודש נישואין':d.marriageMonth||'','מחזור':d.cohort||'','הערות':d.notes,'הערות כרטיס':d.cardNotes||'','סך תרומות':getTotal(d),'תרומה גבוהה':getMax(d),'תאריך יצירה':fmt(d.createdAt?.split('T')[0]||'')}));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(donorRows),'תורמים');
@@ -6989,7 +6989,7 @@ function populateReportCampaigns(){
 function openModal(id){
   closeMobileNav();
   const m = document.getElementById(id); if (!m) return;
-  if (!m.classList.contains('open')) m._opener = document.activeElement;   // to restore focus on close
+  if (!m.classList.contains('open')) { const ae = document.activeElement; m._opener = (ae && !m.contains(ae) && !ae.closest('.modal-overlay')) ? ae : _lastOuterFocus; }   // to restore focus on close
   m.classList.add('open');
   m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
   const h = m.querySelector('.modal-header h3, .modal-header h2, h3');
@@ -7002,6 +7002,19 @@ function openModal(id){
     if (f) { try { f.focus({ preventScroll: true }); } catch(e) {} }
   }, 120);
 }
+// Closed dialogs are `inert`: invisible to Tab and to screen readers, whatever
+// code path toggled the .open class. Also remember the last focused element
+// outside any dialog, so closing returns focus to where the user was.
+let _lastOuterFocus = null;
+document.addEventListener('focusin', e => { if (e.target && e.target.closest && !e.target.closest('.modal-overlay')) _lastOuterFocus = e.target; });
+function _syncInert(el) { const open = el.classList.contains('open'); if (open) el.removeAttribute('inert'); else el.setAttribute('inert', ''); }
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(_syncInert);
+  new MutationObserver(muts => muts.forEach(m => {
+    if (m.type === 'attributes' && m.target.classList && m.target.classList.contains('modal-overlay')) _syncInert(m.target);
+    if (m.type === 'childList') m.addedNodes.forEach(n => { if (n.nodeType === 1) { if (n.classList.contains('modal-overlay')) _syncInert(n); n.querySelectorAll && n.querySelectorAll('.modal-overlay').forEach(_syncInert); } });
+  })).observe(document.body, { attributes: true, attributeFilter: ['class'], subtree: true, childList: true });
+});
 // Escape closes the topmost small dialog / open menu (large editing cards are
 // left alone so a stray Escape cannot throw away a half-filled form).
 document.addEventListener('keydown', e => {
@@ -7051,7 +7064,10 @@ function closeModal(id){
   if(!_m) return;
   const hadFocus = document.activeElement && _m.contains(document.activeElement);
   _m.classList.remove('open');
-  if (hadFocus && _m._opener && document.body.contains(_m._opener) && !_m._opener.closest('.modal-overlay:not(.open)')) { try { _m._opener.focus({ preventScroll: true }); } catch(e) {} }
+  if (hadFocus) {
+    const back = _m._opener && document.body.contains(_m._opener) && !_m._opener.closest('.modal-overlay:not(.open)') ? _m._opener : null;
+    try { if (back) back.focus({ preventScroll: true }); else document.activeElement.blur(); } catch(e) {}
+  }
   if(id==='donorModal'){
     _setEditingDonor(null);
     const lb=document.getElementById('donorLockBanner'); if(lb) lb.remove();
@@ -7178,7 +7194,7 @@ function openFundraisingDateModal(id) {
 function saveFundraisingDate() {
   if (_tooSoon('fdate')) return;
   const label = document.getElementById('fd_label').value.trim();
-  if (!label) { alert('יש להזין תווית'); return; }
+  if (!label) { toastWarn('יש להזין תווית'); return; }
   const editId = document.getElementById('fd_editId').value;
   if (!DB.fundraisingDates) DB.fundraisingDates = [];
   const obj = {
@@ -7727,7 +7743,7 @@ function printGroupsOverview() {
 
 function printCampaignSummary() {
   if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
-  const ac = activeCampaign(); if(!ac){alert('\u05d0\u05d9\u05df \u05de\u05d2\u05d1\u05d9\u05ea \u05e4\u05e2\u05d9\u05dc\u05d4');return;}
+  const ac = activeCampaign(); if(!ac){toastWarn('\u05d0\u05d9\u05df \u05de\u05d2\u05d1\u05d9\u05ea \u05e4\u05e2\u05d9\u05dc\u05d4'); return;}
   const tot = DB.donors.reduce((s,d)=>s+(d.donations||[]).filter(dn=>dn.campaignId===ac.id).reduce((ss,dn)=>ss+parseFloat(dn.amount||0),0),0);
   const target = parseFloat(ac.goal||0);
   const pct = target>0?Math.round(tot/target*100):0;
@@ -7927,7 +7943,7 @@ function updateFRBulkBar() {
 }
 
 function deleteSelectedFR() {
-  if (!can('admin')) { alert('אין הרשאה'); return; }
+  if (!can('admin')) { toastWarn('אין הרשאה'); return; }
   const ids = Array.from(document.querySelectorAll('.fr-row-cb:checked')).map(el => el.dataset.id);
   if (!ids.length) return;
   if (!confirm(`האם למחוק ${ids.length} מתרימים? פעולה זו בלתי הפיכה!`)) return;
@@ -7973,7 +7989,7 @@ function openFRModal(id) {
 function _collectFRForm() {
   const fn = document.getElementById('fr_firstName').value.trim();
   const ln = document.getElementById('fr_lastName').value.trim();
-  if (!fn && !ln) { alert('יש להזין שם'); return null; }
+  if (!fn && !ln) { toastWarn('יש להזין שם'); return null; }
   const editId = document.getElementById('fr_editId').value;
   // Duplicate detection: idNumber + cross-field phones (warn, don't block)
   const dupCheck = checkFRDuplicates({
@@ -8602,9 +8618,9 @@ function removeTempDonor(id) {
 function saveGroup() {
   if(_tooSoon('group')) return;
   const name = document.getElementById('grp_name').value.trim();
-  if (!name) { alert('יש להזין שם קבוצה'); return; }
+  if (!name) { toastWarn('יש להזין שם קבוצה'); return; }
   const fundraisingDateId = document.getElementById('grp_fundraisingDateId').value;
-  if (!fundraisingDateId) { alert('יש לבחור תאריך גיוס'); return; }
+  if (!fundraisingDateId) { toastWarn('יש לבחור תאריך גיוס'); return; }
   // Check fundraiser conflict: same fundraiser cannot be in two groups with same fundraisingDateId
   const editId = document.getElementById('grp_editId').value;
   const conflictGroup = DB.groups.find(g =>
@@ -8615,8 +8631,7 @@ function saveGroup() {
   if (conflictGroup) {
     const conflictFR = grpTempMembers.find(mid => (conflictGroup.memberIds||[]).includes(mid));
     const frObj = DB.fundraisers.find(f => f.id === conflictFR);
-    alert(`מתרים ${frObj ? (frObj.firstName+' '+frObj.lastName) : conflictFR} כבר משוייך לקבוצה "${conflictGroup.name}" עם אותו תאריך גיוס`);
-    return;
+    toastWarn(`מתרים ${frObj ? (frObj.firstName+' '+frObj.lastName) : conflictFR} כבר משוייך לקבוצה "${conflictGroup.name}" עם אותו תאריך גיוס`); return;
   }
   const routeIds = [...grpTempRoutes];
   const existing = editId ? DB.groups.find(x => x.id === editId) : null;
@@ -8880,8 +8895,8 @@ async function deleteSelectedDonors() {
   if (_tooSoon('bulkdel')) return;
   const ids = [..._selDonorIds].filter(id => (DB.donors||[]).some(d => d.id === id));
   if (!ids.length) return;
-  if (!currentUser || currentUser.role !== 'superadmin') { alert('מחיקה מרובה של תורמים מותרת למנהל ראשי בלבד'); return; }
-  if (ids.length > 100) { alert(`ניתן למחוק עד 100 תורמים בפעולה אחת (נבחרו ${ids.length}). צמצם את הבחירה ונסה שוב.`); return; }
+  if (!currentUser || currentUser.role !== 'superadmin') { toastWarn('מחיקה מרובה של תורמים מותרת למנהל ראשי בלבד'); return; }
+  if (ids.length > 100) { toastWarn(`ניתן למחוק עד 100 תורמים בפעולה אחת (נבחרו ${ids.length}). צמצם את הבחירה ונסה שוב.`); return; }
   if (!confirm(`האם למחוק ${ids.length} תורמים? פעולה זו בלתי הפיכה!`)) return;
   const ok = await confirmWithPassword(`מחיקת ${ids.length} תורמים`, 'פעולה רגישה: לאישור הקש את סיסמת הכניסה שלך.');
   if (!ok) return;
@@ -8908,17 +8923,33 @@ function _tooSoon(key, ms = 800) {
   return false;
 }
 
-function toast(msg) {
+let _toastTimer = null;
+function toast(msg, type) {
   let t = document.getElementById('toastMsg');
   if (!t) {
     t = document.createElement('div');
-    t.id = 'toastMsg';
-    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#17408f;color:white;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s';
+    t.id = 'toastMsg'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#17408f;color:white;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;max-width:min(92vw,520px);text-align:center;box-shadow:0 6px 24px rgba(18,33,63,.25)';
     document.body.appendChild(t);
   }
+  t.style.background = type === 'warn' ? '#b45309' : type === 'error' ? '#b91c1c' : type === 'success' ? '#157347' : '#17408f';
   t.textContent = msg;
   t.style.opacity = '1';
-  setTimeout(() => { t.style.opacity = '0'; }, 2500);
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.style.opacity = '0'; }, type === 'warn' || type === 'error' ? 3500 : 2500);
+}
+function toastWarn(msg) { toast('⚠️ ' + msg, 'warn'); }
+// Information that needs more than a toast (lists, details) — a small dialog instead of alert()
+function showInfoDialog(title, text) {
+  let m = document.getElementById('infoDialog');
+  if (!m) {
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="modal-overlay" id="infoDialog"><div class="modal modal-sm"><div class="modal-header"><h3 id="infoDialogTitle"></h3><button class="modal-close" onclick="closeModal('infoDialog')">✕</button></div><div class="modal-body" id="infoDialogBody" style="white-space:pre-line;font-size:13.5px;line-height:1.6;max-height:60vh;overflow:auto"></div><div class="modal-footer"><button class="btn btn-navy" onclick="closeModal('infoDialog')">סגור</button></div></div></div>`;
+    document.body.appendChild(div.firstElementChild); m = document.getElementById('infoDialog');
+  }
+  document.getElementById('infoDialogTitle').textContent = title;
+  document.getElementById('infoDialogBody').textContent = text;
+  openModal('infoDialog');
 }
 
 
@@ -10694,7 +10725,7 @@ function _refreshDupBanner() {
   const openBtn = x => `<button class="btn btn-outline btn-sm" onclick="closeModal('donorModal');setTimeout(()=>openDonorModal('${x.d.id}'),100)">פתח ${escHtml(donorName(x.d))}</button>`;
   if (banner) {
     banner.style.display = 'flex';
-    banner.innerHTML = `<span style="font-size:16px">⚠️</span><span style="flex:1"><strong>כפילות אפשרית:</strong> ${items.slice(0,3).map(x => `${escHtml(donorName(x.d))} <span style="opacity:.75">(${escHtml(x.fields.join(', '))})</span>`).join(' · ')}${items.length>3?' ועוד…':''}</span>${items.slice(0,2).map(openBtn).join('')}`;
+    banner.innerHTML = `<span style="font-size:16px">⚠️</span><span style="flex:1"><strong>כפילות אפשרית:</strong> ${items.slice(0,3).map(x => `${escHtml(donorName(x.d))} <span style="color:#78350f">(${escHtml(x.fields.join(', '))})</span>`).join(' · ')}${items.length>3?' ועוד…':''}</span>${items.slice(0,2).map(openBtn).join('')}`;
   }
   if (warn && list && title) {
     title.textContent = `⚠️ נמצאו ${items.length} כרטיסים עם פרטים זהים`;
@@ -12658,7 +12689,7 @@ function _updateWizStepIndicators() {
 }
 
 function wizStep(dir) {
-  if(dir===1 && wizCurrentStep===1 && !wizType){ alert('אנא בחר סוג תוצר'); return; }
+  if(dir===1 && wizCurrentStep===1 && !wizType){ toastWarn('אנא בחר סוג תוצר'); return; }
   if(dir===1 && wizCurrentStep===2) wizComputeFilter();
   const next=Math.max(1,Math.min(4,wizCurrentStep+dir));
   if(next===wizCurrentStep) return;
@@ -12794,8 +12825,8 @@ function quickExcelExport(context) {
     data=[['קוד','שם פרטי','שם משפחה','ת"ז','וועד','טלפון בית','נייד הורה','נייד תלמיד','יעד (₪)']];
     (DB.fundraisers||[]).forEach(fr=>data.push([fr.code||'',fr.firstName||'',fr.lastName||'',fr.idNumber||'',fr.vaad||'',fr.homePhone||'',fr.parentMobile||fr.mobile||'',fr.studentMobile||'',fr.target||'']));
   }
-  if(!data.length||data.length<2){alert('אין נתונים לייצוא');return;}
-  if(typeof XLSX==='undefined'){alert('ספריית Excel לא טעונה');return;}
+  if(!data.length||data.length<2){toastWarn('אין נתונים לייצוא'); return;}
+  if(typeof XLSX==='undefined'){toastWarn('ספריית Excel לא טעונה'); return;}
   const ws=XLSX.utils.aoa_to_sheet(data);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'נתונים');
@@ -12815,7 +12846,7 @@ function quickPdfExport(context) {
   }
   if(context==='donations'){ printDonationsPanel(); return; }
   const tbl=document.getElementById('donorsTable');
-  if(!tbl){alert('טבלה לא נמצאה');return;}
+  if(!tbl){toastWarn('טבלה לא נמצאה'); return;}
   const title=context==='donors'?'רשימת תורמים':'רשימת תרומות';
   const inst='עזר תורה - תושיה';
   const camp=(window.campaigns||[]).find(c=>c.active)?.name||'';
@@ -12872,7 +12903,7 @@ function wizDoExcel() {
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='donors-'+today()+'.csv';a.click();
   } else {
-    if(typeof XLSX==='undefined'){alert('ספריית Excel לא טעונה');return;}
+    if(typeof XLSX==='undefined'){toastWarn('ספריית Excel לא טעונה'); return;}
     const ws=XLSX.utils.aoa_to_sheet(data);
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,'תורמים');
@@ -13272,11 +13303,11 @@ function saveExpense() {
   const date = document.getElementById('exp_date').value;
   const purpose = document.getElementById('exp_purpose').value.trim();
   const amount = parseFloat(document.getElementById('exp_amount').value) || 0;
-  if(!(amount > 0)) { alert('יש להזין סכום תקין'); return; }
-  if(!dept) { alert('יש לבחור מחלקה'); return; }
-  if(!date) { alert('יש להזין תאריך'); return; }
-  if(!purpose) { alert('יש להזין מטרת ההוצאה'); return; }
-  if(!amount || amount <= 0) { alert('יש להזין סכום חיובי'); return; }
+  if(!(amount > 0)) { toastWarn('יש להזין סכום תקין'); return; }
+  if(!dept) { toastWarn('יש לבחור מחלקה'); return; }
+  if(!date) { toastWarn('יש להזין תאריך'); return; }
+  if(!purpose) { toastWarn('יש להזין מטרת ההוצאה'); return; }
+  if(!amount || amount <= 0) { toastWarn('יש להזין סכום חיובי'); return; }
 
   const exp = {
     id: document.getElementById('exp_editId').value || 'E'+Date.now(),
@@ -13357,7 +13388,7 @@ function renderExpenses() {
 function showExpenseDetail(id) {
   const e = (DB.expenses||[]).find(x=>x.id===id);
   if(!e) return;
-  alert(`📋 פירוט הוצאה\n\nמחלקה: ${e.dept}\nמטרה: ${e.purpose}\nסכום: ₪${parseFloat(e.amount||0).toLocaleString()}\nתאריך: ${fmt(e.date)}\nמקבל: ${e.payee||'-'}\nטלפון: ${e.payeePhone||'-'}\n\nפירוט:\n${e.details||'-'}\n\nהערות:\n${e.notes||'-'}`);
+  showInfoDialog('📋 פירוט הוצאה', `מחלקה: ${e.dept}\nמטרה: ${e.purpose}\nסכום: ₪${parseFloat(e.amount||0).toLocaleString()}\nתאריך: ${fmt(e.date)}\nמקבל: ${e.payee||'-'}\nטלפון: ${e.payeePhone||'-'}\n\nפירוט:\n${e.details||'-'}\n\nהערות:\n${e.notes||'-'}`);
 }
 
 function renderExpDeptSummary(exps) {
@@ -13416,7 +13447,7 @@ function exportExpensesExcel() {
   if (!_xlsxReady()) return;
   if(!can('export')){toast('אין הרשאת ייצוא והדפסה');return;}
   const exps = DB.expenses||[];
-  if(!exps.length){alert('אין הוצאות לייצוא');return;}
+  if(!exps.length){toastWarn('אין הוצאות לייצוא'); return;}
   const rows=[['מחלקה','תאריך','מטרה','סכום','אופן תשלום','מי שילם','מקבל','טלפון מקבל','מצב','פירוט','הערות']];
   exps.forEach(e=>rows.push([e.dept||'',e.date||'',e.purpose||'',e.amount||0,e.method||'',e.payer||'',e.payee||'',e.payeePhone||'',e.status||'',e.details||'',e.notes||'']));
   const ws=XLSX.utils.aoa_to_sheet(rows);
