@@ -6,7 +6,6 @@
 cd qa
 npm install
 npx playwright install chromium        # או: export CHROME_PATH=/path/to/chrome
-npm run build:edge                     # מתרגם את ה-Edge Functions לבדיקת היחידה
 npm test                               # מרים שרת סטטי על :8123 ומריץ הכל
 ```
 
@@ -26,3 +25,7 @@ npm test                               # מרים שרת סטטי על :8123 ו�
 | `qa-a11y.js` | axe-core על כל עמוד ומודאל, מחשב + טלפון |
 | `qa-perf.js` | זמני רינדור עם 3,000 תורמים |
 | `test-edge.js` | Edge Function `self-service`: RPC, נפילה ל-CAS, טוקנים, diag |
+
+`npm test` מתרגם בעצמו את ה-Edge Functions (`build-edge.sh`) כשהקבצים חסרים או ישנים מהמקור, כך ש-`test-edge.js` תמיד רץ מול ה-TypeScript העדכני. אפשר גם להריץ ידנית: `npm run build:edge`.
+
+בדיקות נוספות שאינן חלק מ-`npm test` ומיועדות לאבחון ידני: `qa-perf.js` (זמנים עם 3,000 תורמים), `qa-overflow.js` (גלישה רוחבית), `qa-empty.js` (מסד נתונים ריק).

@@ -4095,6 +4095,7 @@ function _applyRemoteMerge(remote) {
   _baseDB = _dbClone(remote.data || {});
   _lastKnownCloudUpdatedAt = remote.updated_at || null;
   _cacheSet('donorDB_v6', JSON.stringify(DB));
+  _retryDeepDonor();
   if (res.remoteApplied > 0) {
     toast('🔄 שינויים של משתמש אחר שולבו אוטומטית');
     _requestRerender();
@@ -4712,7 +4713,7 @@ function _setupSession(user) {
   setupNavForRole();
   initSidebar();
   showPage(_pageFromHash() || 'dash');
-  if (_donorFromHash()) setTimeout(_applyHash, 150);   // shared link straight to a donor card
+  _applyHash();   // shared link straight to a donor card
   _a11yEnhance(document);
   console.info('[boot] app ready in ' + Math.round(performance.now()) + 'ms');
   startInactivityTimer();
@@ -4946,10 +4947,26 @@ function toggleSbDropdown(id) {
 const PAGE_IDS = ['dash','donors','donations','future','campaign','fundraisers','groups','routes','expenses','messages','admin'];
 function _pageFromHash() { const h = (location.hash || '').replace(/^#\/?/, '').split(/[?&]/)[0]; return PAGE_IDS.includes(h) ? h : null; }
 function _donorFromHash() { const m = /[#&?]donor=([\w-]+)/.exec(location.hash || ''); return m ? m[1] : null; }
+// A shared link can point at a donor the local cache does not hold yet (first
+// visit on this device, or a card another user has just created). Remember the
+// id and open the card as soon as the cloud data that contains it arrives —
+// rather than guessing with a timer — but give up after a minute so a link to a
+// deleted donor never re-opens something later on.
+let _pendingDeepDonor = null, _pendingDeepDonorUntil = 0;
 function _applyHash() {
   const p = _pageFromHash(); if (p && p !== window._currentPage) showPage(p);
   const d = _donorFromHash();
-  if (d && (DB.donors || []).some(x => x.id === d) && (currentDonorId !== d || !document.getElementById('donorModal').classList.contains('open'))) openDonorModal(d);
+  if (!d) { _pendingDeepDonor = null; return; }
+  const modal = document.getElementById('donorModal');
+  if (currentDonorId === d && modal && modal.classList.contains('open')) { _pendingDeepDonor = null; return; }
+  if ((DB.donors || []).some(x => x.id === d)) { _pendingDeepDonor = null; openDonorModal(d); return; }
+  _pendingDeepDonor = d; _pendingDeepDonorUntil = Date.now() + 60000;
+}
+// Called after every merge of remote data.
+function _retryDeepDonor() {
+  if (!_pendingDeepDonor) return;
+  if (Date.now() > _pendingDeepDonorUntil || _donorFromHash() !== _pendingDeepDonor) { _pendingDeepDonor = null; return; }
+  if ((DB.donors || []).some(x => x.id === _pendingDeepDonor)) { const id = _pendingDeepDonor; _pendingDeepDonor = null; openDonorModal(id); }
 }
 window.addEventListener('popstate', () => { if (currentUser) _applyHash(); });
 function showPage(name) {
