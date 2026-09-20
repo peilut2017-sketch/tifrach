@@ -10023,9 +10023,12 @@ function leaveChat() {
 // DONOR SELF-SERVICE PORTAL
 // ════════════════════════════════════════════════════
 function generateSelfServiceToken(donorId) {
-  if (!needRole('edit', 'לערוך נתונים')) return;
   if (!DB.selfServiceTokens) DB.selfServiceTokens = {};
+  // Reading an existing link is free; minting a new one is a write, and this
+  // runs in a loop over donors — so the guard sits on the write, not the call,
+  // or a viewer opening a bulk screen would get one toast per donor.
   if (!DB.selfServiceTokens[donorId]) {
+    if (!needRole('edit', 'לערוך נתונים')) return '';
     // 128-bit random token (the link is effectively a password for the donor's data)
     let tok;
     try {
