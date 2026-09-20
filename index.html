@@ -4940,10 +4940,45 @@ function fmt(d) { if(!d) return ''; const p=d.split('-'); return p[2]+'/'+p[1]+'
 function dateCell(d) { if(!d) return ''; return `<div class="date-cell"><span>${fmt(d)}</span><span class="date-heb">${toHeb(d)}</span></div>`; }
 // LOCAL date (not UTC) — with toISOString, entries made after midnight
 // Israel time were stamped with yesterday's date.
-function today() {
-  const d = new Date();
+function today() { return _ymd(new Date()); }
+// A Date rendered as YYYY-MM-DD in the *local* calendar. Never use
+// toISOString() for this: in Israel (UTC+2/+3) it returns yesterday's date
+// for anything before 02:00, which silently back-dates records.
+function _ymd(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
+
+// Parse a date out of an imported spreadsheet cell into YYYY-MM-DD.
+// Handles Excel serial numbers, ISO, and the Israeli d/m/Y that Nedarim Plus
+// and most local exports produce — which `new Date()` either misreads as m/d/Y
+// or rejects outright. Returns '' when the cell holds no usable date.
+function parseImportDate(raw) {
+  if (raw == null || raw === '') return '';
+  if (raw instanceof Date && !isNaN(raw)) return _ymd(raw);
+  // Excel stores dates as days since 1899-12-30; the epoch day is UTC-based,
+  // so build the calendar date from the UTC parts.
+  const serial = typeof raw === 'number' ? raw : (/^\d+(\.\d+)?$/.test(String(raw).trim()) ? parseFloat(raw) : NaN);
+  if (!isNaN(serial) && serial > 25569 && serial < 80000) {
+    const d = new Date(Math.round((serial - 25569) * 86400000));
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+  }
+  const txt = String(raw).trim().split(/[ T]/)[0];
+  let m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(txt);      // 2026-01-15
+  if (m) return _padYMD(m[1], m[2], m[3]);
+  m = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2}|\d{4})$/.exec(txt);    // 15/01/2026 or 1/15/26
+  if (m) {
+    let [, a, b, y] = m;
+    a = +a; b = +b;
+    // Israeli exports are day-first; only flip when the numbers say otherwise.
+    const [day, mon] = b > 12 && a <= 12 ? [b, a] : [a, b];
+    if (day > 31 || mon > 12) return '';
+    if (y.length === 2) y = (+y > 70 ? '19' : '20') + y;
+    return _padYMD(y, mon, day);
+  }
+  const d = new Date(txt);                                        // "Jan 15 2026" etc.
+  return isNaN(d) ? '' : _ymd(d);
+}
+function _padYMD(y, m, d) { return y + '-' + String(+m).padStart(2,'0') + '-' + String(+d).padStart(2,'0'); }
 
 // ════════════════════════════════════════════════════
 // HELPERS
@@ -11930,17 +11965,8 @@ function importNedarimRows(rows) {
     const dateRaw=row['תאריך']||row['Date']||row['date']||row['תאריך תרומה']||'';
     const method=String(row['אמצעי תשלום']||row['PaymentMethod']||'אשראי').trim();
     const notes =String(row['הערות']||row['Notes']||'').trim();
-    let date='';
-    try {
-      if (typeof dateRaw === 'number' && dateRaw > 25569 && dateRaw < 80000) {
-        // Excel serial date (days since 1900) — common in Nedarim exports
-        date = new Date(Math.round((dateRaw - 25569) * 86400 * 1000)).toISOString().split('T')[0];
-      } else {
-        const d=new Date(dateRaw);
-        if(!isNaN(d)) date=d.toISOString().split('T')[0]; else date=String(dateRaw).split(' ')[0];
-      }
-    } catch(e){ date=String(dateRaw).split(' ')[0]||''; }
-    if(!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) date=today();
+    let date = parseImportDate(dateRaw);
+    if (!date) date = today();
     const donation={amount,date,method:method||'אשראי',campaignId:ac?ac.id:'',notes:(notes?notes+' | ':'')+'ייבוא נדרים פלוס',source:'nedarim'};
     let donor=null;
     if(mobile) donor=DB.donors.find(d=>d.mobile&&d.mobile.replace(/\D/g,'')===mobile);

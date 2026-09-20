@@ -43,6 +43,35 @@ const { chromium } = require('playwright');
     ok('nedarim new donor created', DB.donors.some(d=>d.firstName==='חדש'), '');
     ok('nedarim rerun dedupes', (()=>{ importNedarimRows([{'שם פרטי':'ראובן','שם משפחה':'כהן','נייד':'0501112222','סכום':180,'תאריך':45718}]); return reuven.donations.length===1; })(), reuven.donations.length);
 
+    // 2b. imported dates: Israeli d/m/Y must not be read as m/d/Y, and no
+    // value may drift a day through UTC (the old code did both)
+    const dateCases = [
+      [45718,          '2025-03-02', 'Excel serial'],
+      ['2026-01-15',   '2026-01-15', 'ISO'],
+      ['15/01/2026',   '2026-01-15', 'Israeli d/m/Y'],
+      ['05/03/2026',   '2026-03-05', 'ambiguous d/m/Y stays day-first'],
+      ['3/15/2026',    '2026-03-15', 'US m/d/Y when the day cannot be a month'],
+      ['15.1.2026',    '2026-01-15', 'dots'],
+      ['15-01-26',     '2026-01-15', 'two-digit year'],
+      ['2026-01-15 14:30:00', '2026-01-15', 'ISO with a time'],
+      ['',             '',           'empty'],
+      ['לא תאריך',      '',           'not a date'],
+    ];
+    dateCases.forEach(([input, want, label]) => {
+      const got = parseImportDate(input);
+      ok('import date — ' + label, got === want, JSON.stringify({ input, got, want }));
+    });
+    // a locally-parsed date keeps its calendar day whatever the clock says
+    ok('_ymd uses the local calendar', _ymd(new Date(2026, 0, 15, 0, 30)) === '2026-01-15', _ymd(new Date(2026, 0, 15, 0, 30)));
+    // the importer stores the parsed day, not today
+    (() => {
+      const before = DB.donors.length;
+      importNedarimRows([{ 'שם פרטי':'תאריך', 'שם משפחה':'ישראלי', 'נייד':'0544444444', 'סכום':50, 'תאריך':'15/01/2026' }]);
+      const d = DB.donors.find(x => x.lastName === 'ישראלי');
+      ok('nedarim keeps an Israeli d/m/Y date', !!d && d.donations[0].date === '2026-01-15', d && d.donations[0].date);
+      void before;
+    })();
+
     // 3. Hebrew date correctness (Purim 5786 = 3 Mar 2026 → י"ד אדר)
     const heb = toHeb('2026-03-03');
     ok('toHeb Purim', heb.includes('יד') && heb.includes('אדר'), heb);

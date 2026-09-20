@@ -37,6 +37,11 @@ function secretOk(given: string | null): boolean {
 
 function normPhone(p: string) { return (p || "").replace(/\D/g, "").replace(/^972/, "0"); }
 
+// The function runs in UTC, but a donation belongs to the Israeli calendar day
+// it was made on — toISOString() would back-date every call made before 02:00.
+const ISRAEL_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" });
+function israelToday() { return ISRAEL_DAY.format(new Date()); }
+
 // Compare-and-swap write of the whole blob after `mutate` — used only when the
 // atomic SQL helpers from migration 0002 are unavailable. The update lands only
 // if nobody saved in between (updated_at unchanged), otherwise re-read + retry,
@@ -99,7 +104,7 @@ Deno.serve(async (req) => {
     // stable id — required by the client's multi-user merge engine
     id: "dn" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     amount,
-    date: new Date().toISOString().slice(0, 10),
+    date: israelToday(),
     method: "טלפון (ימות)",
     campaignId: activeCamp?.id || "",
     notes: "תרומה טלפונית דרך ימות המשיח",
