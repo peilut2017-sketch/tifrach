@@ -23,9 +23,9 @@ npm test                               # מרים שרת סטטי על :8123 ו�
 | `qa-keyboard.js` | ניווט מקלדת: כניסה, תפריט, מודאלים, Ctrl+K |
 | `qa-clickall.js` | לחיצה על כל handler בכל עמוד/מודאל — 0 חריגות |
 | `qa-a11y.js` | axe-core על כל עמוד ומודאל, מחשב + טלפון |
-| `qa-perf.js` | זמני רינדור עם 3,000 תורמים |
+| `qa-perf.js` | 3,000 תורמים: תקציבי זמן לנתיבים החמים + עימוד הטבלאות |
 | `test-edge.js` | Edge Function `self-service`: RPC, נפילה ל-CAS, טוקנים, diag |
 
 `npm test` מתרגם בעצמו את ה-Edge Functions (`build-edge.sh`) כשהקבצים חסרים או ישנים מהמקור, כך ש-`test-edge.js` תמיד רץ מול ה-TypeScript העדכני. אפשר גם להריץ ידנית: `npm run build:edge`.
 
-בדיקות נוספות שאינן חלק מ-`npm test` ומיועדות לאבחון ידני: `qa-perf.js` (זמנים עם 3,000 תורמים), `qa-overflow.js` (גלישה רוחבית), `qa-empty.js` (מסד נתונים ריק).
+בדיקות נוספות שאינן חלק מ-`npm test` ומיועדות לאבחון ידני: `qa-overflow.js` (גלישה רוחבית), `qa-empty.js` (מסד נתונים ריק).

@@ -1526,6 +1526,7 @@ tr:hover td { background: var(--primary-bg) }
       </table>
     </div>
   </div>
+  <div id="donsPagination" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap"></div>
 </div>
 
 <!-- ════ EXPENSES PAGE ════ -->
@@ -7245,7 +7246,40 @@ function deleteFundraisingDate() {
 // DONATIONS PANEL
 // ══════════════════════════════════════
 let donsPanelSort = { col:'date', dir:-1 };
-let donsPanelRows = [];
+let _donsPage = 1, _donsFilterSig = null;
+const DONS_PER_PAGE = 200;
+
+// id → display-name maps for the donations panel. Rebuilt per render (cheap)
+// so a campaign renamed in another tab shows up immediately, but built once
+// instead of a linear .find() per donation — that was O(donations x campaigns).
+function _donsLookups() {
+  const camp = new Map((DB.campaigns||[]).map(c => [c.id, c.name || '']));
+  const fr = new Map((DB.fundraisers||[]).map(f => [f.id, ((f.firstName||'') + ' ' + (f.lastName||'')).trim()]));
+  const grp = new Map((DB.groups||[]).map(g => [g.id, g.name || '']));
+  return { camp, fr, grp };
+}
+// Who brought this donation in: the fundraiser if one is set, otherwise the group.
+function _donFrLabel(dn, frById, grpById) {
+  if (dn.frId) return frById.get(dn.frId) || '';
+  if (dn.fundraiserId) return frById.get(dn.fundraiserId) || '';
+  if (dn.groupId) return grpById.get(dn.groupId) || '';
+  return '';
+}
+
+function renderDonsPagination(total) {
+  const el = document.getElementById('donsPagination');
+  if (!el) return;
+  const totalPages = Math.ceil(total / DONS_PER_PAGE);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  const page = _donsPage;
+  const btn = (label, target, disabled, active) =>
+    `<button onclick="_donsPage=${target};renderDonationsPanel()" ${disabled ? 'disabled' : ''} style="border:1px solid ${active?'var(--primary)':'var(--slate-300)'};background:${active?'var(--primary)':'none'};color:${active?'white':'inherit'};border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;min-width:30px">${label}</button>`;
+  let html = `<span style="font-size:12px;color:var(--slate-500)">${(page-1)*DONS_PER_PAGE+1}–${Math.min(page*DONS_PER_PAGE,total)} מתוך ${total.toLocaleString()}</span>`;
+  html += btn('«', 1, page === 1) + btn('‹', page - 1, page === 1);
+  for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) html += btn(p, p, false, p === page);
+  html += btn('›', page + 1, page === totalPages) + btn('»', totalPages, page === totalPages);
+  el.innerHTML = html;
+}
 
 function renderDonationsPanel() {
   rebuildDonsFilters();
@@ -7263,15 +7297,19 @@ function renderDonationsPanel() {
   updateMultiLabel('donsCampFilterLabel',   'donsCampOpts',   'כל המגביות');
   updateMultiLabel('donsFRFilterLabel',     'donsFROpts',     'כל המתרימים');
 
+  // Any change to the filters or the sort puts the reader back on page 1 —
+  // otherwise a narrower filter can leave them staring at an empty page 7.
+  const filterSig = [q, from, to, donsPanelSort.col, donsPanelSort.dir,
+    donorSel && [...donorSel].join('\u0001'), methodSel && [...methodSel].join('\u0001'),
+    campSel && [...campSel].join('\u0001'), frSel && [...frSel].join('\u0001')].join('\u0002');
+  if (filterSig !== _donsFilterSig) { _donsFilterSig = filterSig; _donsPage = 1; }
+
   let rows = [];
+  const { camp: campById, fr: frById, grp: grpById } = _donsLookups();
   DB.donors.forEach((donor, donorIdx) => {
     (donor.donations||[]).forEach((dn, idx) => {
-      const campObj = DB.campaigns.find(c => c.id === dn.campaignId);
-      const campName_ = campObj ? campObj.name : '';
-      let frLabel = '';
-      if (dn.frId) { const fr = DB.fundraisers.find(f => f.id === dn.frId); if(fr) frLabel = ((fr.firstName||'')+' '+(fr.lastName||'')).trim(); }
-      else if (dn.fundraiserId) { const fr = DB.fundraisers.find(f => f.id === dn.fundraiserId); if(fr) frLabel = ((fr.firstName||'')+' '+(fr.lastName||'')).trim(); }
-      else if (dn.groupId) { const g = DB.groups.find(x => x.id === dn.groupId); if(g) frLabel = g.name; }
+      const campName_ = campById.get(dn.campaignId) || '';
+      const frLabel = _donFrLabel(dn, frById, grpById);
 
       if (q && !donorName(donor).toLowerCase().includes(q) && !(dn.notes||'').toLowerCase().includes(q) && !(donor.code||'').toLowerCase().includes(q)) return;
       if (from && dn.date < from) return;
@@ -7297,8 +7335,7 @@ function renderDonationsPanel() {
     return av<bv ? donsPanelSort.dir : -donsPanelSort.dir;
   });
 
-  _lastDonsRows = rows; // for print
-  donsPanelRows = rows.map(r => ({ donor: r._donor, dn: { amount:r.amount, date:r.date, method:r.method, campaignId:r.campaignId, fundraiserId:r.frId, groupId:r.groupId, notes:r.notes }, donorIdx:r.donorIdx, idx:r.idx }));
+  _lastDonsRows = rows; // every filtered row — print and Excel export use the full set
 
   const totalAmt = rows.reduce((s,r) => s+parseFloat(r.amount||0), 0);
   const avgAmt   = rows.length ? totalAmt/rows.length : 0;
@@ -7328,13 +7365,19 @@ function renderDonationsPanel() {
       </div>
     </div>`;
 
-  document.getElementById('donsPanelCount').textContent = rows.length + ' תרומות';
+  document.getElementById('donsPanelCount').textContent = rows.length.toLocaleString() + ' תרומות';
 
   const body = document.getElementById('donsPanelBody');
   if (!body) return;
+  // Only the current page reaches the DOM — a full year of donations is tens of
+  // thousands of rows, and the browser stalls long before it finishes painting.
+  const totalPages = Math.ceil(rows.length / DONS_PER_PAGE);
+  if (_donsPage > totalPages) _donsPage = 1;
+  const pageRows = totalPages > 1 ? rows.slice((_donsPage - 1) * DONS_PER_PAGE, _donsPage * DONS_PER_PAGE) : rows;
+  renderDonsPagination(rows.length);
   body.innerHTML = rows.length === 0
     ? _emptyState(9, (DB.donors||[]).some(d => (d.donations||[]).length) ? { action: 'clearDonsFilters()' } : null, { icon: '💰', title: 'עדיין לא נרשמו תרומות', hint: 'רשום תרומה ראשונה או ייבא מנדרים פלוס', action: 'openQuickDonationModal()', label: '+ הוסף תרומה', needEdit: true })
-    : rows.map(r => {
+    : pageRows.map(r => {
         const donor = r._donor;
         const dn = { amount:r.amount, date:r.date, method:r.method, campaignId:r.campaignId, fundraiserId:r.frId, groupId:r.groupId, notes:r.notes };
         return `<tr onclick="openDonorById('${donor.id}')" style="cursor:pointer">
@@ -11731,9 +11774,18 @@ function findDuplicateDonors() {
   Object.entries(phoneMap).forEach(([v,ids]) =>addGroup(ids,'טלפון/סלולרי: '+v));
   Object.entries(emailMap).forEach(([v,ids]) =>addGroup(ids,'מייל: '+v));
   Object.entries(nameMap).forEach(([v,ids])  =>addGroup(ids,'שם זהה: '+v));
-  // an ID number of one donor appearing inside another donor's notes
-  Object.entries(idMap).forEach(([idn,ids])=>{
-    donors.forEach(d=>{ if(!ids.includes(d.id) && (String(d.notes||'').includes(idn)||String(d.cardNotes||'').includes(idn))) addGroup([...ids,d.id],'ת"ז '+idn+' מופיעה בהערות'); });
+  // An ID number of one donor written into another donor's notes.
+  // Scan each donor's notes for digit runs and look those up, instead of
+  // testing every known ID against every donor's notes (that was quadratic and
+  // took ~150ms on 3,000 donors — long enough to freeze the click).
+  donors.forEach(d=>{
+    const text=String(d.notes||'')+' '+String(d.cardNotes||'');
+    (text.match(/\d{7,}/g)||[]).forEach(run=>{
+      for(let len=7; len<=run.length; len++) for(let i=0; i+len<=run.length; i++){
+        const idn=run.slice(i,i+len), ids=idMap[idn];
+        if(ids && !ids.includes(d.id)) addGroup([...ids,d.id],'ת"ז '+idn+' מופיעה בהערות');
+      }
+    });
   });
   return groups;
 }
@@ -12332,18 +12384,26 @@ function applyFilters() {
 // ════════════════════════════════════════════════════
 // ITEM 10+11 — Donations panel with new multi-filters
 // ════════════════════════════════════════════════════
+let _donsFiltersSig = null;
 function rebuildDonsFilters() {
-  const donors = [...new Set(DB.donors.map(d => donorName(d)).filter(Boolean))].sort();
-  const methods = [...new Set(DB.donors.flatMap(d => (d.donations||[]).map(dn => dn.method)).filter(Boolean))].sort();
-  const camps = [...new Set(DB.donors.flatMap(d => (d.donations||[]).map(dn => {
-    const camp = DB.campaigns.find(c => c.id === dn.campaignId);
-    return camp ? camp.name : '';
-  })).filter(Boolean))].sort();
-  const frs = [...new Set(DB.donors.flatMap(d => (d.donations||[]).map(dn => {
-    if (dn.frId) { const fr = DB.fundraisers.find(f => f.id === dn.frId); return fr ? ((fr.firstName||'')+' '+(fr.lastName||'')).trim() : ''; }
-    if (dn.groupId) { const g = DB.groups.find(x => x.id === dn.groupId); return g ? g.name : ''; }
-    return '';
-  })).filter(Boolean))].sort();
+  const { camp: campById, fr: frById, grp: grpById } = _donsLookups();
+  const donorSet = new Set(), methodSet = new Set(), campSet = new Set(), frSet = new Set();
+  (DB.donors||[]).forEach(d => {
+    const n = donorName(d); if (n) donorSet.add(n);
+    (d.donations||[]).forEach(dn => {
+      if (dn.method) methodSet.add(dn.method);
+      const c = campById.get(dn.campaignId); if (c) campSet.add(c);
+      const f = _donFrLabel(dn, frById, grpById); if (f) frSet.add(f);
+    });
+  });
+  const donors = [...donorSet].sort(), methods = [...methodSet].sort(),
+        camps = [...campSet].sort(), frs = [...frSet].sort();
+  // Rebuilding four option lists means thousands of checkbox nodes; the panel
+  // re-renders on every keystroke in the search box, so only touch the DOM when
+  // the available options actually changed (and keep the user's ticks intact).
+  const sig = donors.length + '|' + methods.join('\u0001') + '|' + camps.join('\u0001') + '|' + frs.join('\u0001') + '|' + donors.join('\u0001');
+  if (sig === _donsFiltersSig) return;
+  _donsFiltersSig = sig;
 
   buildMultiOpts('donsDonorOpts',  donors,  'renderDonationsPanel()');
   buildMultiOpts('donsMethodOpts', methods, 'renderDonationsPanel()');

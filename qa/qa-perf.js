@@ -1,49 +1,83 @@
-// Performance probe with a large dataset: how long do the hot paths take?
+// Scale test: 3,000 donors (~4,500 donations, ~2.3 MB of JSON).
+// Measures the hot paths against a budget and checks that the big tables
+// paginate instead of pushing thousands of rows into the DOM.
 const { chromium } = require('playwright');
 const S = require('./fake-sb.js');
 const { bigFixture } = require('./fixture.js');
+
+// Budgets are generous (CI machines are slow) but catch a return to the
+// quadratic renders that used to cost hundreds of milliseconds per click.
+const BUDGET = {
+  'boot to app': 6000, 'renderAll': 400, 'showPage donors': 400, 'showPage donations': 250,
+  'showPage dash': 400, 'donors filter': 250, 'donations search keystroke': 150,
+  'openDonorModal': 400, 'findDuplicateDonors': 250, 'checkAllFieldDuplicates': 250,
+  'saveDB': 500, '_merge3DB self': 250,
+};
+
 (async () => {
   const browser = await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}), args: ['--no-sandbox'] });
+  const T = []; const ok = (n, c, x) => T.push((c ? 'PASS ' : 'FAIL ') + n + (c ? '' : ' | ' + JSON.stringify(x)));
   S.seed(); S.rows.main.data = bigFixture(3000);
   const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+  page.on('pageerror', e => T.push('FAIL pageerror | ' + e.message.split('\n')[0]));
   page.on('dialog', d => d.accept());
   await page.exposeFunction('__srv', req => JSON.stringify(S.serve(JSON.parse(req))));
   await page.addInitScript(S.FAKE_CLIENT);
   const t0 = Date.now();
   await page.goto((process.env.QA_URL || 'http://localhost:8123/index.html'), { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => typeof currentUser !== 'undefined' && currentUser && document.getElementById('appWrapper').style.display === 'flex', null, { timeout: 20000 });
-  console.log('boot to app (3000 donors):', Date.now() - t0, 'ms');
-  const timings = await page.evaluate(async () => {
+  await page.waitForFunction(() => typeof currentUser !== 'undefined' && currentUser && document.getElementById('appWrapper').style.display === 'flex', null, { timeout: 30000 });
+  const bootMs = Date.now() - t0;
+
+  const r = await page.evaluate(() => {
     const T = {};
     const time = (name, fn) => { const s = performance.now(); fn(); T[name] = Math.round(performance.now() - s); };
-    T.appReadyAt = Math.round(performance.now());
-    time('JSON.stringify(DB)', () => JSON.stringify(DB));
-    time('_dbClone(DB)', () => _dbClone(DB));
-    time('_stripForCloud(DB)', () => _stripForCloud(DB));
-    time('localStorage.setItem', () => { try { localStorage.setItem('perf_tmp', JSON.stringify(DB)); localStorage.removeItem('perf_tmp'); } catch(e) { T.lsErr = e.message; } });
-    time('_ensureRecordIds', () => _ensureRecordIds());
-    time('initMessaging', () => initMessaging());
-    time('renderGlobalStats', () => renderGlobalStats());
     time('renderAll', () => renderAll());
     time('showPage donors', () => showPage('donors'));
-    const si = document.querySelector('#pageDonors input.search-input, #pageDonors input[type=search], #pageDonors input[type=text]');
-    time('donors filter "כהן"', () => { if (si) { si.value = 'כהן'; si.dispatchEvent(new Event('input')); } });
-    if (si) { si.value = ''; si.dispatchEvent(new Event('input')); }
+    T.donorRowsInDom = document.getElementById('donorsBody').children.length;
+    const ms = document.getElementById('mainSearch');
+    time('donors filter', () => { ms.value = 'כהן'; ms.dispatchEvent(new Event('input')); });
+    ms.value = ''; ms.dispatchEvent(new Event('input'));
     time('showPage donations', () => showPage('donations'));
+    T.donationRowsInDom = document.getElementById('donsPanelBody').children.length;
+    T.donationsTotalLabel = document.getElementById('donsPanelCount').textContent;
+    T.donationsPagerShown = !!document.getElementById('donsPagination').innerHTML;
+    T.donationsExportRows = _lastDonsRows.length;    // print / Excel see every row
+    const ds = document.getElementById('donsSearch');
+    time('donations search keystroke', () => { ds.value = 'כהן'; ds.dispatchEvent(new Event('input')); });
+    ds.value = ''; ds.dispatchEvent(new Event('input'));
+    // paging keeps the totals and moves the window
+    const firstPageTop = document.getElementById('donsPanelBody').children[0].textContent;
+    _donsPage = 2; renderDonationsPanel();
+    T.page2Differs = document.getElementById('donsPanelBody').children[0].textContent !== firstPageTop;
+    T.page2Total = document.getElementById('donsPanelCount').textContent;
+    // a filter change resets to page 1
+    ds.value = 'כהן'; ds.dispatchEvent(new Event('input'));
+    T.pageResetOnFilter = _donsPage === 1;
+    ds.value = ''; ds.dispatchEvent(new Event('input'));
     time('showPage dash', () => showPage('dash'));
-    time('showPage future', () => showPage('future'));
-    time('showPage campaign', () => showPage('campaign'));
-    time('showPage groups', () => showPage('groups'));
-    time('showPage admin', () => showPage('admin'));
     time('openDonorModal', () => openDonorModal('D5'));
+    closeModal('donorModal');
     time('checkAllFieldDuplicates', () => checkAllFieldDuplicates());
     time('findDuplicateDonors', () => findDuplicateDonors());
-    time('saveDB (stringify+localStorage)', () => saveDB());
+    time('saveDB', () => saveDB());
     time('_merge3DB self', () => _merge3DB(_baseDB, DB, _baseDB));
-    time('globalSearch "כהן"', () => { const i = document.getElementById('globalSearchInput'); if (i) { i.value = 'כהן'; (window.runGlobalSearch || window.doGlobalSearch || (() => {}))(); } });
     T.jsonKB = Math.round(JSON.stringify(DB).length / 1024);
     return T;
   });
-  console.log(JSON.stringify(timings, null, 1));
+
+  r['boot to app'] = bootMs;
+  Object.entries(BUDGET).forEach(([k, max]) => ok(`${k} ≤ ${max}ms`, r[k] <= max, r[k] + 'ms'));
+  ok('donors table paginates (200 rows in the DOM)', r.donorRowsInDom === 200, r.donorRowsInDom);
+  ok('donations table paginates (200 rows in the DOM)', r.donationRowsInDom === 200, r.donationRowsInDom);
+  ok('donations pager is shown', r.donationsPagerShown, r);
+  ok('donations count covers every filtered row', /4,?\d\d\d תרומות/.test(r.donationsTotalLabel), r.donationsTotalLabel);
+  ok('print/export set holds every filtered row', r.donationsExportRows > 1000, r.donationsExportRows);
+  ok('page 2 shows a different window', r.page2Differs, r);
+  ok('totals stay whole-set across pages', r.page2Total === r.donationsTotalLabel, [r.page2Total, r.donationsTotalLabel]);
+  ok('changing a filter returns to page 1', r.pageResetOnFilter, r);
+
+  console.log(JSON.stringify(r, null, 1));
+  T.forEach(l => console.log(l));
+  console.log(T.some(l => l.startsWith('FAIL')) ? 'SCALE FAILURES' : 'ALL SCALE TESTS PASS');
   await browser.close();
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
