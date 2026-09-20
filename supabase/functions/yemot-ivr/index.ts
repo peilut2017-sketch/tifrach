@@ -6,16 +6,41 @@
 // Yemot calls this URL with query params (ApiPhone, ApiExtension, and any
 // values you collect in the IVR). Here we look up a donor by phone and
 // append a donation to the app blob, then return a Yemot "read" response.
+//
+// Deploying it is optional — but once deployed, YEMOT_WEBHOOK_SECRET must be
+// set and passed as ?secret=..., otherwise the function rejects every call.
 // Docs: https://f2.freeivr.co.il/post/1094  (Yemot API)
 // ════════════════════════════════════════════════════════════════
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-// Optional shared secret: set YEMOT_WEBHOOK_SECRET and pass ?secret=... from Yemot.
+// Shared secret — REQUIRED. Set YEMOT_WEBHOOK_SECRET and pass ?secret=... from
+// Yemot. Without it this URL would be an open, unauthenticated write endpoint:
+// anyone who guessed it could push donations into the system. If the secret is
+// missing the function refuses every call rather than running wide open.
 const WEBHOOK_SECRET = Deno.env.get("YEMOT_WEBHOOK_SECRET") ?? "";
+// Sanity bounds for a phone donation. A typo or a hostile caller should not be
+// able to book a nine-figure donation that then skews every report.
+const MAX_AMOUNT = 1_000_000;
+// The unassigned-donation queue is reviewed by hand; never let it grow unbounded.
+const MAX_PENDING = 500;
+
+// Constant-time-ish comparison so the secret cannot be recovered byte by byte.
+function secretOk(given: string | null): boolean {
+  const a = new TextEncoder().encode(given ?? "");
+  const b = new TextEncoder().encode(WEBHOOK_SECRET);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+  return diff === 0;
+}
 
 function normPhone(p: string) { return (p || "").replace(/\D/g, "").replace(/^972/, "0"); }
+
+// The function runs in UTC, but a donation belongs to the Israeli calendar day
+// it was made on — toISOString() would back-date every call made before 02:00.
+const ISRAEL_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" });
+function israelToday() { return ISRAEL_DAY.format(new Date()); }
 
 // Compare-and-swap write of the whole blob after `mutate` — used only when the
 // atomic SQL helpers from migration 0002 are unavailable. The update lands only
@@ -43,19 +68,27 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const q = url.searchParams;
 
-  if (WEBHOOK_SECRET && q.get("secret") !== WEBHOOK_SECRET) {
-    return new Response("id_list_message=t-שגיאת אבטחה", { headers: { "Content-Type": "text/plain; charset=utf-8" } });
-  }
-
-  const phone = normPhone(q.get("ApiPhone") || q.get("phone") || "");
-  const amount = parseFloat(q.get("amount") || q.get("Amount") || "0");
-
   const reply = (text: string) =>
     new Response("id_list_message=t-" + text, {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
 
+  if (!WEBHOOK_SECRET) {
+    console.error("YEMOT_WEBHOOK_SECRET is not set — refusing to accept donations. " +
+                  "Run: supabase secrets set YEMOT_WEBHOOK_SECRET=<secret>");
+    return reply("השירות אינו מוגדר, פנו למשרד");
+  }
+  if (!secretOk(q.get("secret"))) return reply("שגיאת אבטחה");
+
+  const phone = normPhone(q.get("ApiPhone") || q.get("phone") || "");
+  const rawAmount = parseFloat(q.get("amount") || q.get("Amount") || "0");
+  const amount = Number.isFinite(rawAmount) ? Math.round(rawAmount * 100) / 100 : 0;
+
   if (!phone || !(amount > 0)) return reply("לא התקבלו פרטי תרומה תקינים");
+  if (amount > MAX_AMOUNT) {
+    console.warn("rejected out-of-range phone donation:", rawAmount, "from", phone);
+    return reply("סכום התרומה חורג מהמותר, פנו למשרד");
+  }
 
   const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
   const { data: row, error } = await sb
@@ -71,7 +104,7 @@ Deno.serve(async (req) => {
     // stable id — required by the client's multi-user merge engine
     id: "dn" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     amount,
-    date: new Date().toISOString().slice(0, 10),
+    date: israelToday(),
     method: "טלפון (ימות)",
     campaignId: activeCamp?.id || "",
     notes: "תרומה טלפונית דרך ימות המשיח",
@@ -98,6 +131,10 @@ Deno.serve(async (req) => {
     } else if (!ok) return reply("שגיאה בשמירת התרומה");
   } else {
     // unknown caller — queue as a pending edit for manual assignment
+    if (Array.isArray(DB.pendingEdits) && DB.pendingEdits.length >= MAX_PENDING) {
+      console.warn("pending queue full — rejecting phone donation from", phone);
+      return reply("המערכת עמוסה, נסו שוב מאוחר יותר");
+    }
     const edit = {
       id: "PE" + Date.now() + Math.random().toString(36).slice(2, 6),
       donorId: null,
