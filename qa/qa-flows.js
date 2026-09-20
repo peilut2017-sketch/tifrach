@@ -61,6 +61,22 @@ const { chromium } = require('playwright');
       const got = parseImportDate(input);
       ok('import date — ' + label, got === want, JSON.stringify({ input, got, want }));
     });
+    // imported money cells: a thousands separator must not shrink a donation
+    [[1200, 1200, 'number'], ['1200', 1200, 'plain string'], ['1,200', 1200, 'thousands comma'],
+     ['1,200,000', 1200000, 'two groups'], ['₪1,200', 1200, 'currency sign'], ['1200.50', 1200.5, 'decimal point'],
+     ['12,50', 12.5, 'decimal comma'], ['1.200,50', 1200.5, 'european'], ['1,200.50', 1200.5, 'us'],
+     ['\u200f1,200 ₪', 1200, 'bidi marks and a trailing sign'], ['(300)', -300, 'accounting negative'],
+     ['', 0, 'empty'], ['שלוש מאות', 0, 'not a number']
+    ].forEach(([input, want, label]) => {
+      const got = parseImportAmount(input);
+      ok('import amount — ' + label, got === want, JSON.stringify({ input, got, want }));
+    });
+    (() => {
+      importNedarimRows([{ 'שם פרטי':'סכום', 'שם משפחה':'מעוצב', 'נייד':'0545555555', 'סכום':'1,450', 'תאריך':'2026-02-02' }]);
+      const d = DB.donors.find(x => x.lastName === 'מעוצב');
+      ok('nedarim keeps a formatted amount whole', !!d && d.donations[0].amount === 1450, d && d.donations[0].amount);
+    })();
+
     // a locally-parsed date keeps its calendar day whatever the clock says
     ok('_ymd uses the local calendar', _ymd(new Date(2026, 0, 15, 0, 30)) === '2026-01-15', _ymd(new Date(2026, 0, 15, 0, 30)));
     // the importer stores the parsed day, not today
