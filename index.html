@@ -10180,9 +10180,27 @@ function _ssShowResult(ok, msg) {
 }
 // Short reason for the person filling the form (and for the admin who gets the
 // screenshot): the server's error + detail, never a raw stack.
+// The edge function answers in short English codes; a donor filling in the
+// public form should read a sentence, not "queue full".
+const _SS_ERRORS = {
+  'too many requests': 'נשלחו יותר מדי בקשות מהמכשיר הזה. נסו שוב בעוד דקה.',
+  'queue full':        'רשימת הבקשות הממתינות מלאה כרגע. נסו שוב מאוחר יותר או התקשרו למשרד.',
+  'name required':     'נא למלא שם.',
+  'contact required':  'נא למלא לפחות טלפון או מייל ליצירת קשר.',
+  'invalid token':     'הקישור אינו בתוקף. בקשו מהמשרד קישור חדש.',
+  'donor not found':   'לא נמצא כרטיס עבור הקישור הזה. פנו למשרד.',
+  'missing params':    'הקישור חסר פרטים. בקשו מהמשרד קישור חדש.',
+  'state unavailable': 'השרת אינו זמין כרגע. נסו שוב בעוד כמה רגעים.',
+  'save failed':       'השמירה בשרת נכשלה. נסו שוב בעוד כמה רגעים.',
+};
 function _ssErrText(out) {
-  if (!out || typeof out !== 'object') return 'אין תשובה מהשרת';
-  const parts = [out.error, out.detail].filter(x => typeof x === 'string' && x).map(x => x.slice(0, 120));
+  // The technical reason always reaches the console — staff diagnosing a
+  // failing form need it — but the donor reads a sentence, not a DB error.
+  try { console.error('[self-service] server refused:', JSON.stringify(out)); } catch(e) {}
+  if (!out || typeof out !== 'object') return 'אין תשובה מהשרת. בדקו את החיבור לאינטרנט ונסו שוב.';
+  const code = typeof out.error === 'string' ? out.error : '';
+  if (_SS_ERRORS[code]) return _SS_ERRORS[code];
+  const parts = [code, out.detail].filter(x => typeof x === 'string' && x).map(x => x.slice(0, 120));
   return parts.join(': ') || 'שגיאה לא ידועה';
 }
 async function _ssPost(body) {
@@ -10228,9 +10246,11 @@ async function submitSelfEdit(donorId, token) {
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
     const { ok, out } = await _ssPost({ action: 'submit', donorId, token, edits });
-    if (!ok) throw new Error(_ssErrText(out));
+    if (!ok) { _ssShowResult(false, _ssErrText(out)); if (btn) btn.disabled = false; return; }
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
+    // the request never reached the server
+    console.error('[self-service] submit failed:', e && e.message);
+    _ssShowResult(false, 'השליחה לא הגיעה לשרת. בדקו את החיבור לאינטרנט ונסו שוב.');
     if (btn) btn.disabled = false;
     return;
   }
@@ -10253,9 +10273,10 @@ async function submitPublicAdd() {
   const btn = document.getElementById('ss_submit'); if (btn) btn.disabled = true;
   try {
     const { ok, out } = await _ssPost({ action: 'register', edits, website: document.getElementById('ss_website')?.value || '' });
-    if (!ok) throw new Error(_ssErrText(out));
+    if (!ok) { _ssShowResult(false, _ssErrText(out)); if (btn) btn.disabled = false; return; }
   } catch(e) {
-    _ssShowResult(false, 'שגיאה בשליחה, נסו שוב' + (e && e.message ? ' (' + e.message + ')' : ''));
+    console.error('[self-service] register failed:', e && e.message);
+    _ssShowResult(false, 'השליחה לא הגיעה לשרת. בדקו את החיבור לאינטרנט ונסו שוב.');
     if (btn) btn.disabled = false;
     return;
   }

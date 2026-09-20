@@ -1,5 +1,6 @@
-// Runs the transpiled self-service edge function in Node with a fake Supabase
-// client: RPC present vs missing (→ CAS fallback), diag output, error detail.
+// Runs the transpiled edge functions in Node with a fake Supabase client:
+// self-service (RPC present vs missing → CAS fallback, diag, tokens, queue caps,
+// throttle) and yemot-ivr (required secret, amount bounds, queueing).
 const fs = require('fs');
 let src = fs.readFileSync('fn-self-service.js', 'utf8').replace('// import stripped', '');
 let handler = null;
@@ -33,9 +34,53 @@ const T = []; const ok = (n, c, x) => T.push((c ? 'PASS ' : 'FAIL ') + n + (c ? 
   r = await call({ action: 'submit', donorId: 'D1', token: 'BAD', edits: {} });
   ok('bad token rejected', r.status === 403, r);
   r = await call({ action: 'get', donorId: 'D1', token: 'TOK' });
-  console.log('GET →', JSON.stringify(r));
   ok('get returns affils + options', r.out.donor.affils[0] === 'בוגר' && r.out.affiliations.length === 2 && !('selfServiceTokens' in r.out), r.out);
-  // write failure surfaces a detail string
-  const realFrom = createClient; 
+  rpcMissing = false;
+
+  // ── the approvals queue stays bounded, for token holders too ──
+  const saved = store.main.data.pendingEdits;
+  store.main.data.pendingEdits = Array.from({ length: 500 }, (_, i) => ({ id: 'X' + i }));
+  r = await call({ action: 'submit', donorId: 'D1', token: 'TOK', edits: { notes: 'עוד' } });
+  ok('submit refused when the queue is full', r.status === 429 && store.main.data.pendingEdits.length === 500, r);
+  r = await call({ action: 'register', edits: { firstName: 'פ', mobile: '052' } });
+  ok('register refused when the queue is full', r.status === 429, r);
+  store.main.data.pendingEdits = saved;
+
+  // ── per-caller throttle (the function allows 10/min per IP) ──
+  const callFrom = async (ip, body) => { const res = await handler(new Request('http://x/', { method: 'POST', headers: { 'x-forwarded-for': ip }, body: JSON.stringify(body) })); return { status: res.status, out: await res.json() }; };
+  let throttled = 0;
+  for (let i = 0; i < 13; i++) { const rr = await callFrom('1.2.3.4', { action: 'register', edits: { firstName: 'ס' + i, mobile: '05' + i } }); if (rr.status === 429) throttled++; }
+  ok('a flood from one address is throttled', throttled >= 2, throttled);
+  r = await callFrom('9.9.9.9', { action: 'register', edits: { firstName: 'אחר', mobile: '0501' } });
+  ok('another address is unaffected', r.status === 200, r);
+
+  // ════ yemot-ivr ════
+  const yemotSrc = fs.readFileSync('fn-yemot-ivr.js', 'utf8').replace('// import stripped', '');
+  const loadYemot = (secret) => {
+    globalThis.Deno.env.get = k => ({ SUPABASE_URL: 'http://x', SUPABASE_SERVICE_ROLE_KEY: 'k', YEMOT_WEBHOOK_SECRET: secret })[k];
+    new Function('createClient', yemotSrc)(createClient);
+  };
+  const ivr = async (qs) => { const res = await handler(new Request('http://x/?' + qs)); return { status: res.status, text: await res.text() }; };
+
+  loadYemot(undefined);
+  r = await ivr('ApiPhone=0501112222&amount=100');
+  ok('yemot refuses to run without a configured secret', /אינו מוגדר/.test(r.text), r);
+
+  loadYemot('s3cret');
+  r = await ivr('ApiPhone=0501112222&amount=100');
+  ok('yemot rejects a call with no secret', /שגיאת אבטחה/.test(r.text), r);
+  r = await ivr('secret=wrong&ApiPhone=0501112222&amount=100');
+  ok('yemot rejects a wrong secret', /שגיאת אבטחה/.test(r.text), r);
+  r = await ivr('secret=s3cret&ApiPhone=0501112222&amount=99999999');
+  ok('yemot rejects an out-of-range amount', /חורג/.test(r.text), r);
+  r = await ivr('secret=s3cret&ApiPhone=0501112222&amount=0');
+  ok('yemot rejects a zero amount', /לא התקבלו/.test(r.text), r);
+  const before = store.main.data.pendingEdits.length;
+  r = await ivr('secret=s3cret&ApiPhone=0501112222&amount=180.567');
+  ok('yemot queues an unknown caller and rounds the amount',
+     /תודה רבה/.test(r.text) && store.main.data.pendingEdits.length === before + 1 &&
+     store.main.data.pendingEdits[before].edits._phoneDonation.amount === 180.57,
+     { text: r.text, pe: store.main.data.pendingEdits[before] });
+
   T.forEach(t => console.log(t)); console.log(T.some(t => t.startsWith('FAIL')) ? 'EDGE FAILURES' : 'ALL EDGE TESTS PASS');
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

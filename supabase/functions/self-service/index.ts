@@ -24,6 +24,25 @@ const TEXT_FIELDS = ["firstName", "lastName", "address", "entrance", "zip", "pho
                      "marriageYear", "marriageMonth", "cohort", "notes"];
 const MAX_LEN: Record<string, number> = { notes: 1000, address: 200 };
 const DEFAULT_AFFILS = ["תלמיד", "בוגר", "הורה תלמיד", "הורה בוגר", "סבא תלמיד", "סבא בוגר", "מכר", "עסקי", "אחר"];
+// Staff review every queued request by hand, so the queue must stay bounded —
+// for self-edits just as much as for the open add-donor form.
+const MAX_PENDING = 500;
+
+// Best-effort per-caller throttle. The isolate is recycled often and there can
+// be several of them, so this is a speed bump for a naive script rather than a
+// guarantee; MAX_PENDING is the hard limit behind it.
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 10;
+const recentByIp = new Map<string, number[]>();
+function rateLimited(req: Request): boolean {
+  const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+  const now = Date.now();
+  const hits = (recentByIp.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  hits.push(now);
+  recentByIp.set(ip, hits);
+  if (recentByIp.size > 5000) recentByIp.clear();   // never grow without bound
+  return hits.length > RATE_MAX;
+}
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -124,11 +143,12 @@ Deno.serve(async (req) => {
   if (action === "register") {
     // honeypot: bots fill the hidden "website" field → pretend success
     if (typeof payload.website === "string" && payload.website.trim()) return json({ ok: true });
+    if (rateLimited(req)) return json({ error: "too many requests" }, 429);
     const clean = cleanEdits(edits, affilOptions);
     if (!clean.firstName && !clean.lastName) return json({ error: "name required" }, 400);
     if (!clean.phone && !clean.mobile && !clean.email) return json({ error: "contact required" }, 400);
     // soft flood guard: never let the queue grow without bound
-    if (Array.isArray(DB.pendingEdits) && DB.pendingEdits.length >= 500) return json({ error: "queue full" }, 429);
+    if (Array.isArray(DB.pendingEdits) && DB.pendingEdits.length >= MAX_PENDING) return json({ error: "queue full" }, 429);
     const fail = await appendPendingEdit(sb, {
       id: newId("PE"),
       donorId: null,
@@ -159,6 +179,10 @@ Deno.serve(async (req) => {
   }
 
   if (action === "submit") {
+    // A valid token is not a licence to fill the queue: the same caps as the
+    // open form apply, or one shared link could bury the approvals page.
+    if (rateLimited(req)) return json({ error: "too many requests" }, 429);
+    if (Array.isArray(DB.pendingEdits) && DB.pendingEdits.length >= MAX_PENDING) return json({ error: "queue full" }, 429);
     const clean = cleanEdits(edits, affilOptions);
     const fail = await appendPendingEdit(sb, {
       id: newId("PE"),

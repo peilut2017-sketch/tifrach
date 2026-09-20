@@ -87,13 +87,33 @@ const { chromium } = require('playwright');
     ok('public form success text', document.getElementById('ss_result').textContent.includes('בהצלחה'), '');
     window.fetch = realFetch; document.body.innerHTML = bk2;
 
-    // failed submit must show the server's reason (not a bare "try again")
+    // a failed submit must explain itself in Hebrew — never a bare "try again",
+    // and never the raw database error
     window.fetch = async (url, opts) => { const b=JSON.parse(opts.body); if(b.action==='get') return {ok:true,json:async()=>({donor:{firstName:'א',lastName:'ב'}})}; return {ok:false,json:async()=>({error:'save failed',detail:'read failed: permission denied'})}; };
     const bk3=document.body.innerHTML;
     showSelfEditForm({ id:'D1', firstName:'א', lastName:'ב' }, 'TOK', ['בוגר']);
     await submitSelfEdit('D1','TOK');
-    ok('failed submit shows server reason', document.getElementById('ss_result').textContent.includes('permission denied'), document.getElementById('ss_result').textContent);
+    ok('failed submit shows a clear Hebrew reason (not a DB error)', (() => { const t = document.getElementById('ss_result').textContent; return t.includes('השמירה בשרת נכשלה') && !t.includes('permission denied'); })(), document.getElementById('ss_result').textContent);
     window.fetch = realFetch; document.body.innerHTML = bk3;
+
+    // the server's throttle / queue-full answers reach the donor as sentences
+    for (const [code, expect] of [['too many requests','יותר מדי בקשות'], ['queue full','מלאה'], ['invalid token','אינו בתוקף']]) {
+      window.fetch = async (url, opts) => { const b=JSON.parse(opts.body); if(b.action==='get') return {ok:true,json:async()=>({donor:{firstName:'א',lastName:'ב'}})}; return {ok:false,json:async()=>({error:code})}; };
+      const bk=document.body.innerHTML;
+      showSelfEditForm({ id:'D1', firstName:'א', lastName:'ב' }, 'TOK', ['בוגר']);
+      await submitSelfEdit('D1','TOK');
+      const txt = document.getElementById('ss_result').textContent;
+      ok('"' + code + '" is explained to the donor', txt.includes(expect) && !txt.includes(code), txt);
+      window.fetch = realFetch; document.body.innerHTML = bk;
+    }
+
+    // a request that never reaches the server says so
+    window.fetch = async (url, opts) => { const b=JSON.parse(opts.body); if(b.action==='get') return {ok:true,json:async()=>({donor:{firstName:'א',lastName:'ב'}})}; throw new Error('Failed to fetch'); };
+    const bk4=document.body.innerHTML;
+    showSelfEditForm({ id:'D1', firstName:'א', lastName:'ב' }, 'TOK', ['בוגר']);
+    await submitSelfEdit('D1','TOK');
+    ok('a network failure is reported as one', document.getElementById('ss_result').textContent.includes('החיבור לאינטרנט'), document.getElementById('ss_result').textContent);
+    window.fetch = realFetch; document.body.innerHTML = bk4;
 
     // admin diagnostics button explains a missing migration
     window.fetch = async () => ({ ok:true, json:async()=>({ ok:true, version:'t', dbRead:true, rpc:'missing', rpcError:'PGRST202 Could not find the function' }) });
