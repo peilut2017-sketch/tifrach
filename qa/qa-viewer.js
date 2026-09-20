@@ -38,6 +38,12 @@ const { chromium } = require('playwright');
     ok('save btn hidden', document.getElementById('saveDonorBtnTop').style.display==='none','');
     ok('delete btn hidden', document.getElementById('deleteDonorBtn').style.display==='none','');
     closeModal('donorModal');
+    // every page's action bar is hidden for a viewer, not just the donors page
+    showPage('fundraisers'); await new Promise(r=>setTimeout(r,200));
+    ok('fundraiser action buttons hidden', document.getElementById('frBtns').style.display==='none', document.getElementById('frBtns').style.display);
+    const frBefore = DB.fundraisers.length;
+    openFRModal();
+    ok('new fundraiser blocked', !document.getElementById('frModal').classList.contains('open') && DB.fundraisers.length===frBefore, '');
     return T;
   });
   out.forEach(t=>console.log(t));

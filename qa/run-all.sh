@@ -9,7 +9,7 @@ if ! curl -s -o /dev/null -w '%{http_code}' "${QA_URL:-http://localhost:8123/ind
 fi
 fail=0
 run() { echo "== $1"; if node "$1" 2>&1 | grep -v "Failed to load resource\|Geocode error\|^ *at " | grep -E "FAIL|PASS ALL|ALL .*PASS|FATAL|PAGEERROR|distinct errors|violation types|h-scroll" | grep -qE "FAIL|FATAL|PAGEERROR|distinct errors: [1-9]"; then echo "   ✗ $1"; fail=1; else echo "   ✓ $1"; fi; }
-for t in smoke.js qa-flows.js qa-merge.js qa-xss.js qa-viewer.js qa-mobile.js qa-viewports.js qa-mobile-save.js qa-sync-e2e.js qa-chat.js qa-routing-cache.js qa-keyboard.js qa-clickall.js qa-a11y.js qa-perf.js; do run "$t"; done
+for t in smoke.js qa-flows.js qa-merge.js qa-xss.js qa-viewer.js qa-mobile.js qa-viewports.js qa-mobile-save.js qa-sync-e2e.js qa-chat.js qa-routing-cache.js qa-keyboard.js qa-clickall.js qa-a11y.js qa-roles.js qa-perf.js; do run "$t"; done
 # (Re)build the edge-function bundles when missing or stale, so the unit test
 # below always runs against the current TypeScript sources.
 stale=0

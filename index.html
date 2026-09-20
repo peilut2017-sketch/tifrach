@@ -1364,7 +1364,7 @@ tr:hover td { background: var(--primary-bg) }
 <div class="page" id="pageFundraisers">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
     <h2 style="font-family:'Noto Serif Hebrew',serif;font-size:24px">🎓 פאנל מתרימים</h2>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap" id="frBtns">
       <button class="btn btn-navy btn-sm" onclick="openIOCenter('excel','fundraisers')">📦 ייצוא והדפסה</button>
       <button class="btn btn-outline btn-sm" onclick="openIOCenter('import')">📥 ייבוא</button>
       <button class="btn btn-gold" onclick="openFRModal()">+ הוסף מתרים</button>
@@ -2963,17 +2963,17 @@ tr:hover td { background: var(--primary-bg) }
         <div class="fg3">
           <div class="fg"><label class="form-label">קוד תורם</label><input class="form-control" id="f_code" readonly></div>
           <div class="fg"><label class="form-label">ת"ז / דרכון <span style="font-size:10px;color:var(--muted)">(לא חובה)</span></label>
-            <div class="ig"><input class="form-control" id="f_idNumber" placeholder="מספר ת״ז (9 ספרות)" maxlength="9" inputmode="numeric" oninput="validateIdField(this);checkFieldDuplicate('idNumber',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_title').focus()}"><span id="f_idValidIcon" style="padding:0 8px;font-size:14px;line-height:36px"></span></div>
+            <div class="ig"><input class="form-control" id="f_idNumber" placeholder="מספר ת״ז (9 ספרות)" maxlength="9" inputmode="numeric" oninput="validateIdField(this);checkFieldDuplicate('idNumber',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_title')}"><span id="f_idValidIcon" style="padding:0 8px;font-size:14px;line-height:36px"></span></div>
             <div id="f_idError" style="color:var(--danger);font-size:11px;margin-top:2px;display:none">מספר תעודת זהות לא תקין</div>
           </div>
 
           <div class="fg"><label class="form-label">תואר</label>
-            <select class="form-control" id="f_title" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_firstName').focus()}"><option value="">ללא</option><option>הרב</option><option>ד"ר</option><option>פרופ'</option><option>מר</option><option>גב'</option><option>הרבנית</option><option>האדמו"ר</option></select>
+            <select class="form-control" id="f_title" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_firstName')}"><option value="">ללא</option><option>הרב</option><option>ד"ר</option><option>פרופ'</option><option>מר</option><option>גב'</option><option>הרבנית</option><option>האדמו"ר</option></select>
           </div>
-          <div class="fg"><label class="form-label">שם פרטי <span class="req">*</span></label><input class="form-control" id="f_firstName" placeholder="שם פרטי" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_lastName').focus()}"></div>
-          <div class="fg"><label class="form-label">שם משפחה <span class="req">*</span></label><input class="form-control" id="f_lastName" placeholder="שם משפחה" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_closingName').focus()}"></div>
+          <div class="fg"><label class="form-label">שם פרטי <span class="req">*</span></label><input class="form-control" id="f_firstName" placeholder="שם פרטי" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_lastName')}"></div>
+          <div class="fg"><label class="form-label">שם משפחה <span class="req">*</span></label><input class="form-control" id="f_lastName" placeholder="שם משפחה" oninput="checkFieldDuplicate('name')" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_closingName')}"></div>
           <div class="fg"><label class="form-label">שם סגירה</label>
-            <select class="form-control" id="f_closingName" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_affil').focus()}"><option value="">-</option><option>בברכה</option><option>בכבוד רב</option><option>בהוקרה</option><option>בידידות</option><option>בתודה</option><option>יישר כח</option></select>
+            <select class="form-control" id="f_closingName" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_affilBtn')}"><option value="">-</option><option>בברכה</option><option>בכבוד רב</option><option>בהוקרה</option><option>בידידות</option><option>בתודה</option><option>יישר כח</option></select>
           </div>
           <div class="fg"><label class="form-label">שיוך <span style="font-size:10px;color:var(--muted);text-transform:none">(ניתן לבחור כמה)</span></label>
             <div style="position:relative">
@@ -2985,23 +2985,23 @@ tr:hover td { background: var(--primary-bg) }
           </div>
           <div class="fg half"><label class="form-label">כתובת מלאה</label>
             <div style="position:relative">
-              <input class="form-control" id="f_address" placeholder="רחוב, מספר, עיר" autocomplete="off" oninput="addressAutocomplete(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_entrance').focus()}">
+              <input class="form-control" id="f_address" placeholder="רחוב, מספר, עיר" autocomplete="off" oninput="addressAutocomplete(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_entrance')}">
               <div id="addressSuggestions" style="position:absolute;top:100%;right:0;left:0;background:white;border:1.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;z-index:100;max-height:200px;overflow-y:auto;display:none"></div>
             </div>
             <div id="addressMapPreview" style="margin-top:6px;display:none;border-radius:8px;overflow:hidden;height:120px"></div>
           </div>
-          <div class="fg"><label class="form-label">כניסה / קומה</label><input class="form-control" id="f_entrance" placeholder="כניסה א', קומה 3" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_zip').focus()}"></div>
-          <div class="fg"><label class="form-label">מיקוד</label><input class="form-control" id="f_zip" placeholder="מיקוד" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_phone').focus()}"></div>
-          <div class="fg"><label class="form-label">טלפון</label><input class="form-control" id="f_phone" placeholder="02-..." oninput="checkFieldDuplicate('phone',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_mobile').focus()}"></div>
+          <div class="fg"><label class="form-label">כניסה / קומה</label><input class="form-control" id="f_entrance" placeholder="כניסה א', קומה 3" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_zip')}"></div>
+          <div class="fg"><label class="form-label">מיקוד</label><input class="form-control" id="f_zip" placeholder="מיקוד" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_phone')}"></div>
+          <div class="fg"><label class="form-label">טלפון</label><input class="form-control" id="f_phone" placeholder="02-..." oninput="checkFieldDuplicate('phone',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_mobile')}"></div>
           <div class="fg"><label class="form-label">סלולרי</label>
-            <div class="ig"><input class="form-control" id="f_mobile" placeholder="05X-..." oninput="checkFieldDuplicate('mobile',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_email').focus()}"><button class="btn-icon wa" onclick="openWA()" title="WhatsApp">💬</button></div>
+            <div class="ig"><input class="form-control" id="f_mobile" placeholder="05X-..." oninput="checkFieldDuplicate('mobile',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_email')}"><button class="btn-icon wa" onclick="openWA()" title="WhatsApp">💬</button></div>
           </div>
           <div class="fg"><label class="form-label">מייל</label>
-            <div class="ig"><input class="form-control" id="f_email" placeholder="email@example.com" oninput="checkFieldDuplicate('email',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_prefTime').focus()}"><button class="btn-icon em" onclick="openMail()" title="שלח מייל">✉️</button></div>
+            <div class="ig"><input class="form-control" id="f_email" placeholder="email@example.com" oninput="checkFieldDuplicate('email',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_prefTime')}"><button class="btn-icon em" onclick="openMail()" title="שלח מייל">✉️</button></div>
           </div>
 
           <div class="fg"><label class="form-label">מועד תרמה רצוי</label>
-            <select class="form-control" id="f_prefTime" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_marriageYear').focus()}"><option value="">לא נקבע</option><option>טלפוני לפני פורים</option><option>פורים בבית</option><option>טלפוני בפורים</option></select>
+            <select class="form-control" id="f_prefTime" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_marriageYear')}"><option value="">לא נקבע</option><option>טלפוני לפני פורים</option><option>פורים בבית</option><option>טלפוני בפורים</option></select>
           </div>
           <div class="fg" style="grid-column:1/-1">
             <label class="form-label">שיוך גיוס — מתרים / קבוצה / מסלול</label>
@@ -3016,12 +3016,12 @@ tr:hover td { background: var(--primary-bg) }
               <select class="form-control" id="f_assignId" aria-label="בחירת יעד השיוך" style="display:none;flex:1;min-width:200px"></select>
             </div>
           </div>
-          <div class="fg"><label class="form-label">שנת נישואין (עברי)</label><input class="form-control" id="f_marriageYear" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_cohort').focus()}"></div>
+          <div class="fg"><label class="form-label">שנת נישואין (עברי)</label><input class="form-control" id="f_marriageYear" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_cohort')}"></div>
           <div class="fg"><label class="form-label">חודש נישואין</label>
             <select class="form-control" id="f_marriageMonth"><option value="">-</option><option>תשרי</option><option>חשוון</option><option>כסלו</option><option>טבת</option><option>שבט</option><option>אדר</option><option>אדר א</option><option>אדר ב</option><option>ניסן</option><option>אייר</option><option>סיוון</option><option>תמוז</option><option>אב</option><option>אלול</option></select>
           </div>
-          <div class="fg"><label class="form-label">מחזור (שנה עברית)</label><input class="form-control" id="f_cohort" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_createdAt').focus()}"></div>
-          <div class="fg"><label class="form-label">תאריך יצירה</label><input class="form-control" id="f_createdAt" type="date" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('f_notes').focus()}"></div>
+          <div class="fg"><label class="form-label">מחזור (שנה עברית)</label><input class="form-control" id="f_cohort" placeholder="תשנ״ה" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_createdAt')}"></div>
+          <div class="fg"><label class="form-label">תאריך יצירה</label><input class="form-control" id="f_createdAt" type="date" onkeydown="if(event.key==='Enter'){event.preventDefault();focusField('f_notes')}"></div>
           <div class="fg"><label class="form-label">עדכון אחרון</label><input class="form-control" id="f_updatedAt" type="text" readonly style="background:var(--bg-app);font-size:12px;color:var(--muted)" placeholder="טרם עודכן"></div>
           <div class="fg"><label class="form-label">סטטוס תורם</label>
             <select class="form-control" id="f_status">
@@ -4610,6 +4610,15 @@ try {
 
 const ROLES = { superadmin:'מנהל ראשי', admin:'מנהל', editor:'עורך', viewer:'מבקר' };
 
+// One place to say "this action needs a role". Roles are enforced in the
+// client (see supabase/README → מודל ההרשאות), so every write path has to ask
+// — hiding the button is not the same as refusing the action.
+function needRole(p, what) {
+  if (can(p)) return true;
+  toastWarn('אין לך הרשאה ' + (what || 'לבצע פעולה זו') + '. פנה למנהל המערכת.');
+  return false;
+}
+
 function can(p) {
   if (!currentUser) return false;
   const r = currentUser.role;
@@ -4944,6 +4953,14 @@ function parseImportDate(raw) {
   }
   const d = new Date(txt);                                        // "Jan 15 2026" etc.
   return isNaN(d) ? '' : _ymd(d);
+}
+// Enter in a form field jumps to the next one. Guarded, because the chain is
+// written by id: renaming a field must not throw on every keystroke — it used
+// to, after the affiliation input became a multi-select button.
+function focusField(id) {
+  const el = document.getElementById(id);
+  if (el) el.focus();
+  else console.warn('[form] no field to focus: ' + id);
 }
 function _padYMD(y, m, d) { return y + '-' + String(+m).padStart(2,'0') + '-' + String(+d).padStart(2,'0'); }
 
@@ -5475,6 +5492,7 @@ function renderAffilOptions() {
 }
 // "➕ שיוך חדש" inside the affiliation picker: saved to the shared list and selected for this donor
 function confirmAddAffil() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const inp = document.getElementById('f_affilNew'); const v = (inp?.value || '').trim();
   if (!v) return;
   const S = getSettings(); S.affiliations = S.affiliations || [];
@@ -5845,6 +5863,7 @@ function editDonation(idx) {
 }
 
 function saveDonation() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('ndon')) return;
   const rawAmount=parseFloat(document.getElementById('nd_amount').value);
   if(!rawAmount||rawAmount<=0){toastWarn('יש להזין סכום תקין'); return;}
@@ -5905,6 +5924,7 @@ function saveDonation() {
 }
 
 function deleteDonation(idx) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d||!confirm('למחוק תרומה?'))return;
   const snapshot = JSON.parse(JSON.stringify(d.donations[idx]));
   const amount = d.donations[idx]?.amount || '';
@@ -5968,6 +5988,7 @@ function editFuture(idx) {
 }
 
 function saveFutureDonation() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('future')) return;
   const date=document.getElementById('nf_date').value;
   const notes=document.getElementById('nf_notes').value.trim();
@@ -5999,6 +6020,7 @@ function saveFutureDonation() {
 }
 
 function deleteFuture(idx) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const d=DB.donors.find(x=>x.id===currentDonorId); if(!d||!confirm('למחוק?'))return;
   const f=d.futureDonations.splice(idx,1)[0];
   auditLog('delete', `מחיקת התחייבות עתידית${f&&f.expectedAmount?' ₪'+parseFloat(f.expectedAmount).toLocaleString():''} — ${donorName(d)}`, null, {donorId:currentDonorId, kind:'future'});
@@ -6070,6 +6092,7 @@ function openDonorAndFuture(id, fi) {
 }
 
 function deleteFutureFromPage(id, fi) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const d=DB.donors.find(x=>x.id===id); if(!d||!confirm('למחוק תרומה עתידית?'))return;
   const f=d.futureDonations.splice(fi,1)[0];
   auditLog('delete', `מחיקת התחייבות עתידית${f&&f.expectedAmount?' ₪'+parseFloat(f.expectedAmount).toLocaleString():''} — ${donorName(d)}`, null, {donorId:id, kind:'future'});
@@ -6278,6 +6301,7 @@ function pickQDDonor(id) {
 }
 
 function saveQuickDonation() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('qdon')) return;
   if(!qd_selectedId){toastWarn('יש לבחור תורם'); return;}
   const rawAmount=parseFloat(document.getElementById('qd_amount').value);
@@ -6331,6 +6355,7 @@ async function updateQDCurrencyConversion() {
 }
 
 function saveQuickDonationAndNew() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('qdon')) return;
   if(!qd_selectedId){toastWarn('יש לבחור תורם'); return;}
   const rawAmount=parseFloat(document.getElementById('qd_amount').value);
@@ -6372,6 +6397,7 @@ function populateCampaignSelect(elId) {
 }
 
 function openNewCampaignModal() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   document.getElementById('cm_editId').value='';
   document.getElementById('campModalTitle').textContent='מגבית חדשה';
   document.getElementById('cm_name').value='';
@@ -6384,6 +6410,7 @@ function openNewCampaignModal() {
 }
 
 function saveCampaign() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('campaign')) return;
   const name=document.getElementById('cm_name').value.trim();
   if(!name){toastWarn('יש להזין שם'); return;}
@@ -6499,6 +6526,7 @@ function renderCampaignPage() {
 }
 
 function openCampaignMgmtModal() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   renderCampMgmtList();
   openModal('campMgmtModal');
 }
@@ -6538,6 +6566,7 @@ function editCampaign(id) {
 }
 
 function deleteCampaign(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(!confirm('למחוק מגבית זו?')) return;
   DB.campaigns=DB.campaigns.filter(x=>x.id!==id);
   saveDB(); renderCampaignPage();
@@ -6620,6 +6649,7 @@ function removeUser(i){
   renderUsersTable();
 }
 function saveUsers(){
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   if (_tooSoon('users')) return;
   const cleaned=_usersDraft.map(u=>({...u,email:(u.email||'').trim(),username:(u.email||'').trim()||u.username}))
     .filter(u=>(u.email||u.username||'').trim());
@@ -6673,6 +6703,7 @@ function _settingItemHtml(key, v) {
   </div>`;
 }
 function openSettingsModal(){
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   const S = getSettings();
   document.getElementById('settingsBody').innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:14px">הסדר כאן הוא סדר התצוגה בכל הרשימות הנפתחות. גרור ב-⋮⋮ או השתמש בחצים ▲▼.</div>` +
     SETTINGS_LISTS.map((lst,li)=>`
@@ -6710,6 +6741,7 @@ function _stDrop(ev) {
 function _stDragEnd(ev) { ev.currentTarget.classList.remove('dragging'); ev.currentTarget.draggable = false; document.querySelectorAll('.setting-item.drag-over').forEach(x => x.classList.remove('drag-over')); _stDragEl = null; }
 
 function saveSettings() {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   if (_tooSoon('settings')) return;
   const S = getSettings();
   SETTINGS_LISTS.forEach(({key},li) => {
@@ -6807,6 +6839,7 @@ const IMP_AUTO_MAP = {
 let _impRawRows = [], _impHeaders = [], _impColMap = {};
 
 function openImportModal(){
+  if (!needRole('import', 'לייבא נתונים')) return;
   openModal('importModal');
   impReset();
 }
@@ -6982,6 +7015,7 @@ function impDoImport(){
 
 // ════ GEOCODE BATCH ════
 function openGeocodeBatchModal(){
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   const withAddr=DB.donors.filter(d=>d.address&&d.address.trim().length>2);
   const noGeo=withAddr.filter(d=>!d.lat||!d.lng);
   document.getElementById('geoSummary').innerHTML=`
@@ -6998,6 +7032,7 @@ function openGeocodeBatchModal(){
 }
 
 async function runGeocodeBatch(){
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   const pool=DB.donors.filter(d=>d.address&&d.address.trim().length>2&&(!d.lat||!d.lng));
   if(!pool.length){toast('אין תורמים לגיאוקוד');return;}
   const btn=document.getElementById('geoBatchBtn');
@@ -7251,6 +7286,7 @@ function renderFundraisingDatesList() {
 }
 
 function openFundraisingDateModal(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const isEdit = !!id;
   document.getElementById('fdModalTitle').textContent = isEdit ? 'עריכת תאריך גיוס' : 'הוספת תאריך גיוס';
   document.getElementById('fdDeleteBtn').style.display = isEdit ? '' : 'none';
@@ -7270,6 +7306,7 @@ function openFundraisingDateModal(id) {
 }
 
 function saveFundraisingDate() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (_tooSoon('fdate')) return;
   const label = document.getElementById('fd_label').value.trim();
   if (!label) { toastWarn('יש להזין תווית'); return; }
@@ -7292,6 +7329,7 @@ function saveFundraisingDate() {
 }
 
 function deleteFundraisingDate() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const id = document.getElementById('fd_editId').value;
   const inUse = (DB.groups||[]).some(g=>g.fundraisingDateId===id);
   if (inUse && !confirm('תאריך זה בשימוש בקבוצות קיימות. למחוק?')) return;
@@ -7509,6 +7547,7 @@ function exportGroupsReport() {
 let rptRows = [];
 
 function openReportsModal() {
+  if (!needRole('export', 'לייצא ולהדפיס')) return;
   const S = getSettings();
   const fills = [
     ['rpt_affil', S.affiliations||[]],
@@ -7679,6 +7718,7 @@ const LB_FMTS = {
 };
 
 function openLabelsWizard() {
+  if (!needRole('export', 'לייצא ולהדפיס')) return;
   const grpSel = document.getElementById('lb_group_sel');
   if(grpSel) grpSel.innerHTML = '<option value="">\u05db\u05dc \u05d4\u05e7\u05d1\u05d5\u05e6\u05d5\u05ea</option>' + DB.groups.map(g=>`<option value="${g.id}">${escHtml(g.name)} (${escHtml(g.code||'')})</option>`).join('');
   const srcEl = document.getElementById('lb_source');
@@ -8067,6 +8107,7 @@ function deleteSelectedFR() {
 
 // ── FR Modal ──
 function openFRModal(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const isEdit = !!id;
   document.getElementById('frModalTitle').textContent = isEdit ? 'עריכת מתרים' : 'הוספת מתרים';
   document.getElementById('frDeleteBtn').style.display = isEdit ? '' : 'none';
@@ -8170,6 +8211,7 @@ function deleteFR() {
 }
 
 function deleteFRById(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const f = DB.fundraisers.find(x => x.id === id);
   const snapshot = JSON.parse(JSON.stringify(DB.fundraisers));
   DB.fundraisers = DB.fundraisers.filter(x => x.id !== id);
@@ -8553,6 +8595,7 @@ function renderGroupsList() { renderGroupsPage(); }
 
 // ── Group Modal ──
 function openGroupModal(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const isEdit = !!id;
   document.getElementById('grpModalTitle').textContent = isEdit ? 'עריכת קבוצה' : 'קבוצה חדשה';
   document.getElementById('grpDeleteBtn').style.display = isEdit ? '' : 'none';
@@ -8726,6 +8769,7 @@ function removeTempDonor(id) {
 }
 
 function saveGroup() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('group')) return;
   const name = document.getElementById('grp_name').value.trim();
   if (!name) { toastWarn('יש להזין שם קבוצה'); return; }
@@ -8773,6 +8817,7 @@ function saveGroup() {
 }
 
 function deleteGroup() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const id = document.getElementById('grp_editId').value;
   if (!confirm('למחוק קבוצה זו?')) return;
   DB.groups = DB.groups.filter(x => x.id !== id);
@@ -8835,6 +8880,7 @@ function makeSelectAddable(selId, settingsKey, addBlank) {
 }
 
 function confirmAddOpt(selId, settingsKey) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const inp = document.getElementById('addinput_'+selId);
   const val = inp?.value?.trim();
   if (!val) { inp?.focus(); return; }
@@ -9321,6 +9367,7 @@ function renderAuditLog() {
 }
 
 async function undoAuditEntry(entryId) {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   const entry = (DB.auditLog||[]).find(e => e.id === entryId);
   if (!entry || !entry.undoData) { toast('אין מידע לשחזור'); return; }
   // Check if undoData was stripped (cloud version — reload from the local cache)
@@ -9376,6 +9423,7 @@ function openNedarimSettings() {
 }
 
 function saveNedarimSettings() {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   DB.nedarim = {
     mosad: document.getElementById('ndMosad').value.trim(),
     apiKey: document.getElementById('ndApiKey').value.trim(),
@@ -9975,6 +10023,7 @@ function leaveChat() {
 // DONOR SELF-SERVICE PORTAL
 // ════════════════════════════════════════════════════
 function generateSelfServiceToken(donorId) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (!DB.selfServiceTokens) DB.selfServiceTokens = {};
   if (!DB.selfServiceTokens[donorId]) {
     // 128-bit random token (the link is effectively a password for the donor's data)
@@ -10438,6 +10487,7 @@ function approvePhoneDonation(idx) {
 }
 
 function approvePendingEdit(idx) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx];
   if (!pe) return;
@@ -10460,6 +10510,7 @@ function approvePendingEdit(idx) {
 }
 
 function rejectPendingEdit(idx) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (_tooSoon('pending:' + idx)) return;   // the same request twice in a row (double click) — never the next one in line
   const pe = (DB.pendingEdits||[])[idx];
   const d = pe ? DB.donors.find(x => x.id === pe.donorId) : null;
@@ -10502,6 +10553,7 @@ function openEmailSettings() {
 }
 
 function saveEmailSettings() {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   DB.emailSettings = {
     publicKey: document.getElementById('ejPublicKey').value.trim(),
     serviceId: document.getElementById('ejServiceId').value.trim(),
@@ -10567,6 +10619,7 @@ async function sendForgotPassword() {
 let _emailDonorId = null;
 
 function openSendEmailModal(donorId) {
+  if (!needRole('export', 'לייצא ולהדפיס')) return;
   if (!donorId && currentDonorId) donorId = currentDonorId;
   const d = DB.donors.find(x => x.id === donorId);
   if (!d) return;
@@ -10727,6 +10780,7 @@ function openYemotSettings() {
 }
 
 function saveYemotSettings() {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   const supabaseUrl = document.getElementById('ymSupabaseUrl').value.trim();
   DB.yemotSettings = {
     ...(DB.yemotSettings || {}),
@@ -10896,6 +10950,7 @@ function openGmapsSettings() {
   openModal('gmapsModal');
 }
 function saveGmapsKey() {
+  if (!needRole('admin', 'לשנות הגדרות מערכת')) return;
   if (!DB.settings) DB.settings = {};
   DB.settings.googleMapsKey = document.getElementById('gmapsKeyInput').value.trim();
   saveDB();
@@ -11230,6 +11285,7 @@ let _rpMap = null, _rpMapLayers = {}, _rpActiveRouteId = null, _rpDragFromIdx = 
 
 // ── Main: generate routes ──
 async function rpGenerate() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const cityFilter = (document.getElementById('rpWizCity')?.value||'').trim().toLowerCase();
   const perRoute = Math.max(2, parseInt(document.getElementById('rpWizPer')?.value)||10);
   const maxDist  = Math.max(100, parseInt(document.getElementById('rpWizDist')?.value)||500);
@@ -11702,6 +11758,7 @@ function rpDrop(e,toIdx,rid) {
 }
 
 function rpSaveDragOrder() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   saveDB();
   renderRoutesPage();
   toast('✅ סדר המסלול נשמר');
@@ -11710,6 +11767,7 @@ function rpSaveDragOrder() {
 
 // ── Delete route ──
 function rpDeleteRoute(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (!confirm('למחוק מסלול זה?')) return;
   DB.routes = (DB.routes||[]).filter(r=>r.id!==id);
   (DB.groups||[]).forEach(g => { g.routeIds = (g.routeIds||[]).filter(rid => rid !== id); });
@@ -11720,6 +11778,7 @@ function rpDeleteRoute(id) {
 
 // ── Clear all ──
 function rpClearAll() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (!confirm('למחוק את כל המסלולים? (השיוכים לקבוצות ינוקו גם)')) return;
   DB.routes=[];
   (DB.groups||[]).forEach(g => { g.routeIds = []; });
@@ -11776,7 +11835,8 @@ function rpWizPreview() {
 }
 
 // ── Neighborhood rules ──
-function openNbhEditor() { rpRenderNbhList(); openModal('rpNbhModal'); }
+function openNbhEditor() {
+  if (!needRole('edit', 'לערוך נתונים')) return; rpRenderNbhList(); openModal('rpNbhModal'); }
 
 function rpRenderNbhList() {
   const rules = DB.nbhRules||{};
@@ -11792,6 +11852,7 @@ function rpRenderNbhList() {
 }
 
 function rpAddNbhRule() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const pat=(document.getElementById('rpNbhPat')?.value||'').trim();
   const name=(document.getElementById('rpNbhName')?.value||'').trim();
   if (!pat||!name){toast('נא למלא שניהם');return;}
@@ -11802,6 +11863,7 @@ function rpAddNbhRule() {
 }
 
 function rpDelNbhRule(pat) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if (!DB.nbhRules) return;
   delete DB.nbhRules[pat]; saveDB(); rpRenderNbhList();
 }
@@ -11869,6 +11931,7 @@ function renderDuplicateModal(groups) {
   window._dupGroups=groups;
 }
 function openMergeModal(gi) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const g=window._dupGroups[gi];
   const donors=g.ids.map(id=>DB.donors.find(d=>d.id===id)).filter(Boolean);
   document.getElementById('mergeOptions').innerHTML=`
@@ -11881,6 +11944,7 @@ function openMergeModal(gi) {
   openModal('mergeModal');
 }
 function confirmMerge() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const base=document.querySelector('input[name="mergeBase"]:checked')?.value; if(!base)return;
   const others=window._mergeIds.filter(id=>id!==base);
   const baseDonor=DB.donors.find(d=>d.id===base); if(!baseDonor)return;
@@ -12016,6 +12080,7 @@ const RECIP_REL = {
 };
 
 function deleteRel(idx){
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const d=DB.donors.find(x=>x.id===currentDonorId);if(!d||!confirm('להסיר?'))return;
   const r=d.relations.splice(idx,1)[0];
   const tname=r&&r.donorId? (r.donorId.startsWith('fr_')?(frNameById(r.donorId.slice(3))||'?'):donorName(DB.donors.find(x=>x.id===r.donorId)||{})) : '';
@@ -12026,6 +12091,7 @@ function deleteRel(idx){
 // ── New Relation Panel functions ──────────────────────────────
 let _relAddMode='donor', _relAddSelId=null;
 function openAddRelPanel(){
+  if (!needRole('edit', 'לערוך נתונים')) return;
   _relAddMode='donor'; _relAddSelId=null;
   document.getElementById('addRelPanel').style.display='';
   document.getElementById('relAddSearch').value='';
@@ -12069,6 +12135,7 @@ function selectRelAddItem(id,name){
   document.getElementById('relAddSelected').style.display='';
 }
 function confirmNewRel(){
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const id=document.getElementById('relAddSelId').value;
   if(!id){toast('בחר תורם/מתרים תחילה');return;}
   const relType=document.getElementById('relAddType2').value;
@@ -13376,6 +13443,7 @@ function populateExpSelects() {
 }
 
 function addCustomExpOption(selectId, label) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   const val = prompt(`הוסף ${label} חדש:`);
   if(!val || !val.trim()) return;
   const v = val.trim();
@@ -13391,6 +13459,7 @@ function addCustomExpOption(selectId, label) {
 function onExpDeptChange() {}
 
 function openExpenseModal(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   populateExpSelects();
   document.getElementById('exp_editId').value = id || '';
   document.getElementById('expModalTitle').textContent = id ? 'עריכת הוצאה' : 'הוצאה חדשה';
@@ -13423,6 +13492,7 @@ function closeExpenseModal() {
 }
 
 function saveExpense() {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(_tooSoon('expense')) return;
   const dept = document.getElementById('exp_dept').value;
   const date = document.getElementById('exp_date').value;
@@ -13458,6 +13528,7 @@ function saveExpense() {
 }
 
 function deleteExpense(id) {
+  if (!needRole('edit', 'לערוך נתונים')) return;
   if(!confirm('למחוק הוצאה זו?')) return;
   DB.expenses = (DB.expenses||[]).filter(e=>e.id!==id);
   saveDB();
