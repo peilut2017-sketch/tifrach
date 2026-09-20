@@ -34,7 +34,15 @@ function bigFixture(nDonors = 60) {
     fundraisers: [{ id: 'F1', code: '1', firstName: 'תלמיד', lastName: 'ראשון', vaad: 'וועד א', parentMobile: '050-1111111', studentMobile: '', idNumber: '', campaignTargets: { C1: 5000 }, target: 5000 }, { id: 'F2', code: '2', firstName: 'תלמיד', lastName: 'שני', vaad: 'וועד ב', parentMobile: '', studentMobile: '', idNumber: '', campaignTargets: {}, target: 0 }],
     groups: [{ id: 'G1', code: '1101', name: 'קבוצה א', vaad: 'וועד א', memberIds: ['F1', 'F2'], donorIds: donors.slice(0, 8).map(d => d.id), routeIds: ['r1'], target: 12000, fundraisingDateId: '' }],
     routes: [{ id: 'r1', code: 'ירושלים-001', city: 'ירושלים', neighborhood: 'רמות', area: 'הרצל', color: '#2360d8', donors: donors.slice(0, 6).filter(d => d.lat).map(d => d.id), createdAt: '2026-08-01' }],
-    expenses: [{ id: 'E1', date: '2026-02-01', amount: 1200, dept: 'מגבית פורים', method: 'אשראי', status: 'שולם', desc: 'הדפסות', notes: '' }],
+    // scales with the donor count so the 3,000-donor run also exercises the
+    // expenses table at a realistic size
+    expenses: Array.from({ length: Math.max(1, Math.round(nDonors * 0.8)) }, (_, i) => ({
+      id: 'E' + i, date: `2026-0${1 + (i % 9)}-1${i % 9}`, amount: 200 + (i * 37) % 4000,
+      dept: ['מגבית פורים', 'מענק פסח', 'אחר'][i % 3], method: methods[i % methods.length],
+      status: i % 3 === 0 ? 'לתשלום' : 'שולם', purpose: 'הוצאה מס\' ' + (i + 1),
+      payer: 'הנהלה', payee: last[i % last.length], payeePhone: i % 4 ? '' : '050-1234567',
+      details: '', notes: i % 7 === 0 ? 'הערה' : '',
+    })),
     fundraisingDates: [{ id: 'FD1', date: '2026-03-01', label: 'פורים' }],
     pendingEdits: [
       { id: 'PE1', donorId: 'D1', edits: { address: 'חדש 5', affils: ['בוגר'] }, ts: '2026-08-20T10:00:00Z', token: 'T' },

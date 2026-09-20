@@ -1573,6 +1573,7 @@ tr:hover td { background: var(--primary-bg) }
       </table>
     </div>
   </div>
+  <div id="expPagination" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap"></div>
   <!-- Dept summary -->
   <div style="margin-top:24px">
     <h3 style="font-size:15px;font-weight:700;color:var(--slate-900);margin-bottom:12px"><i data-lucide="bar-chart-3" style="width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0"></i> סיכום לפי מחלקות</h3>
@@ -3644,6 +3645,7 @@ let currentDTab = 'details';
 let sortCol = 'name', sortDir = 1;
 let filteredRows = [];
 let _donorsPage = 1;
+let _bootWarning = '';   // shown once the app shell is up (see _setupSession)
 const DONORS_PER_PAGE = 200;
 let _lastDonsRows = [];
 let qd_selectedId = null;
@@ -3700,11 +3702,20 @@ async function loadDB() {
   // Fallback: localStorage
   if (!loadedFromCloud) {
     const s = await _cacheGet('donorDB_v6');
-    if (s) { try { DB = JSON.parse(s); } catch(e){} }
+    if (s) {
+      try { DB = JSON.parse(s); }
+      catch(e) {
+        // A truncated or corrupted cache must not quietly look like an empty
+        // database: drop it, say so, and let the next cloud read repopulate.
+        console.error('[cache] local copy is corrupted, discarding:', e.message);
+        _cacheDel('donorDB_v6');
+        _bootWarning = 'העותק המקומי של הנתונים היה פגום ונמחק. הנתונים ייטענו מהשרת בחיבור הבא — אין צורך לעשות דבר.';
+      }
+    }
     // Migration from v5
     if (!DB.donors || !DB.donors.length) {
       const old = localStorage.getItem('donorDB_v5');
-      if (old) { try { const o = JSON.parse(old); DB = {...DB, ...o}; } catch(e){} }
+      if (old) { try { const o = JSON.parse(old); DB = {...DB, ...o}; } catch(e){ console.warn('[cache] v5 copy unreadable:', e.message); } }
     }
   }
   // Ensure emailSettings defaults are always present
@@ -4332,6 +4343,7 @@ async function _checkDonorLock(donorId) {
 
 // Live collaboration: when the server has a newer version, pull it and
 // merge automatically. Local unsynced edits are preserved and pushed back.
+let _pollFailures = 0;
 async function _pollForCloudChanges() {
   if (_syncBusy || !currentUser) return;
   try {
@@ -4344,7 +4356,14 @@ async function _pollForCloudChanges() {
         if (_dirty) _syncToSupabase();
       }
     }
-  } catch(e) {}
+    // A poll that got through means the connection is alive again.
+    if (_pollFailures) { _pollFailures = 0; if (!_dirty) _showSyncStatus('ok'); }
+  } catch(e) {
+    // Never silent: after two misses the dot stops claiming we are in sync, so
+    // nobody keeps typing into a tab that stopped talking to the server.
+    console.warn('[sync] poll failed:', e && e.message);
+    if (++_pollFailures === 2) _showSyncStatus(navigator.onLine === false ? 'offline' : 'error');
+  }
 }
 
 // Presence rows (heartbeat every 20s per signed-in client), cached briefly so the
@@ -4715,6 +4734,7 @@ function _setupSession(user) {
   initSidebar();
   showPage(_pageFromHash() || 'dash');
   _applyHash();   // shared link straight to a donor card
+  if (_bootWarning) { const w = _bootWarning; _bootWarning = ''; setTimeout(() => toastWarn(w), 400); }
   _a11yEnhance(document);
   console.info('[boot] app ready in ' + Math.round(performance.now()) + 'ms');
   startInactivityTimer();
@@ -5175,33 +5195,39 @@ function renderAll() { renderGlobalStats(); rebuildDonorFilters(); applyFilters(
 
 
 // ─── Pagination for donors table ───
+// One pagination bar for every long table (donors, donations, expenses).
+// `goFn` is the name of a global function taking the target page number.
+const PAGER_STYLE = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap';
+function renderPager(el, total, perPage, page, goFn) {
+  if (!el) return;
+  const totalPages = Math.ceil(total / perPage);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  const base = 'border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px';
+  const btn = (label, target, disabled, aria, active) =>
+    `<button onclick="${goFn}(${target})" ${disabled ? 'disabled' : ''} aria-label="${aria}" ${active ? 'aria-current="page"' : ''}` +
+    ` style="border:1px solid ${active?'var(--primary)':'var(--slate-300)'};background:${active?'var(--primary)':'none'};color:${active?'white':'inherit'};${base};min-width:30px">${label}</button>`;
+  const from = (page - 1) * perPage + 1, to = Math.min(page * perPage, total);
+  let html = `<span style="font-size:12px;color:var(--slate-500)">${from.toLocaleString()}–${to.toLocaleString()} מתוך ${total.toLocaleString()}</span>`;
+  html += btn('«', 1, page === 1, 'לעמוד הראשון') + btn('‹', page - 1, page === 1, 'לעמוד הקודם');
+  for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) html += btn(p, p, false, 'עמוד ' + p, p === page);
+  html += btn('›', page + 1, page === totalPages, 'לעמוד הבא') + btn('»', totalPages, page === totalPages, 'לעמוד האחרון');
+  el.innerHTML = html;
+}
+
+function goDonorsPage(p) { _donorsPage = p; sortAndRender(); }
 function renderDonorPagination(total, page) {
   let el = document.getElementById('donorPagination');
   if (!el) {
     // Create pagination bar under the donors table — OUTSIDE .table-wrap so
     // it stays visible on mobile, where the table is swapped for cards
     const tableWrap = document.querySelector('#donorsBody')?.closest('.table-wrap');
-    if (tableWrap) {
-      el = document.createElement('div');
-      el.id = 'donorPagination';
-      el.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap';
-      tableWrap.after(el);
-    } else return;
+    if (!tableWrap) return;
+    el = document.createElement('div');
+    el.id = 'donorPagination';
+    el.style.cssText = PAGER_STYLE;
+    tableWrap.after(el);
   }
-  const totalPages = Math.ceil(total / DONORS_PER_PAGE);
-  if (totalPages <= 1) { el.innerHTML = ''; return; }
-  const start = (_donorsPage - 1) * DONORS_PER_PAGE + 1;
-  const end = Math.min(_donorsPage * DONORS_PER_PAGE, total);
-  let html = `<span style="font-size:12px;color:var(--slate-500)">${start}–${end} מתוך ${total}</span>`;
-  html += `<button onclick="_donorsPage=1;sortAndRender()" style="border:1px solid var(--slate-300);background:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" ${page===1?'disabled':''}>«</button>`;
-  html += `<button onclick="_donorsPage--;sortAndRender()" style="border:1px solid var(--slate-300);background:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" ${page===1?'disabled':''}>‹</button>`;
-  const startP = Math.max(1, page - 2), endP = Math.min(totalPages, page + 2);
-  for (let p = startP; p <= endP; p++) {
-    html += `<button onclick="_donorsPage=${p};sortAndRender()" style="border:1px solid ${p===page?'var(--primary)':'var(--slate-300)'};background:${p===page?'var(--primary)':'none'};color:${p===page?'white':'inherit'};border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;min-width:30px">${p}</button>`;
-  }
-  html += `<button onclick="_donorsPage++;sortAndRender()" style="border:1px solid var(--slate-300);background:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" ${page===totalPages?'disabled':''}>›</button>`;
-  html += `<button onclick="_donorsPage=${totalPages};sortAndRender()" style="border:1px solid var(--slate-300);background:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px" ${page===totalPages?'disabled':''}>»</button>`;
-  el.innerHTML = html;
+  renderPager(el, total, DONORS_PER_PAGE, page, 'goDonorsPage');
 }
 
 function sortAndRender() {
@@ -7248,6 +7274,9 @@ function deleteFundraisingDate() {
 let donsPanelSort = { col:'date', dir:-1 };
 let _donsPage = 1, _donsFilterSig = null;
 const DONS_PER_PAGE = 200;
+let _expPage = 1, _expFilterSig = null;
+const EXP_PER_PAGE = 200;
+function goExpPage(p) { _expPage = p; renderExpenses(); }
 
 // id → display-name maps for the donations panel. Rebuilt per render (cheap)
 // so a campaign renamed in another tab shows up immediately, but built once
@@ -7266,20 +7295,7 @@ function _donFrLabel(dn, frById, grpById) {
   return '';
 }
 
-function renderDonsPagination(total) {
-  const el = document.getElementById('donsPagination');
-  if (!el) return;
-  const totalPages = Math.ceil(total / DONS_PER_PAGE);
-  if (totalPages <= 1) { el.innerHTML = ''; return; }
-  const page = _donsPage;
-  const btn = (label, target, disabled, active) =>
-    `<button onclick="_donsPage=${target};renderDonationsPanel()" ${disabled ? 'disabled' : ''} style="border:1px solid ${active?'var(--primary)':'var(--slate-300)'};background:${active?'var(--primary)':'none'};color:${active?'white':'inherit'};border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;min-width:30px">${label}</button>`;
-  let html = `<span style="font-size:12px;color:var(--slate-500)">${(page-1)*DONS_PER_PAGE+1}–${Math.min(page*DONS_PER_PAGE,total)} מתוך ${total.toLocaleString()}</span>`;
-  html += btn('«', 1, page === 1) + btn('‹', page - 1, page === 1);
-  for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) html += btn(p, p, false, p === page);
-  html += btn('›', page + 1, page === totalPages) + btn('»', totalPages, page === totalPages);
-  el.innerHTML = html;
-}
+function goDonsPage(p) { _donsPage = p; renderDonationsPanel(); }
 
 function renderDonationsPanel() {
   rebuildDonsFilters();
@@ -7374,7 +7390,7 @@ function renderDonationsPanel() {
   const totalPages = Math.ceil(rows.length / DONS_PER_PAGE);
   if (_donsPage > totalPages) _donsPage = 1;
   const pageRows = totalPages > 1 ? rows.slice((_donsPage - 1) * DONS_PER_PAGE, _donsPage * DONS_PER_PAGE) : rows;
-  renderDonsPagination(rows.length);
+  renderPager(document.getElementById('donsPagination'), rows.length, DONS_PER_PAGE, _donsPage, 'goDonsPage');
   body.innerHTML = rows.length === 0
     ? _emptyState(9, (DB.donors||[]).some(d => (d.donations||[]).length) ? { action: 'clearDonsFilters()' } : null, { icon: '💰', title: 'עדיין לא נרשמו תרומות', hint: 'רשום תרומה ראשונה או ייבא מנדרים פלוס', action: 'openQuickDonationModal()', label: '+ הוסף תרומה', needEdit: true })
     : pageRows.map(r => {
@@ -13441,11 +13457,20 @@ function renderExpenses() {
   if(month) exps = exps.filter(e=>(e.date||'').startsWith(month));
   exps.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
+  // Same treatment as the donors and donations tables: the summary below and
+  // the Excel export still see every filtered row, only the DOM is paged.
+  const expSig = [q, dept, status, month].join('\u0002');
+  if (expSig !== _expFilterSig) { _expFilterSig = expSig; _expPage = 1; }
+  const expPages = Math.ceil(exps.length / EXP_PER_PAGE);
+  if (_expPage > expPages) _expPage = 1;
+  const pageExps = expPages > 1 ? exps.slice((_expPage-1)*EXP_PER_PAGE, _expPage*EXP_PER_PAGE) : exps;
+  renderPager(document.getElementById('expPagination'), exps.length, EXP_PER_PAGE, _expPage, 'goExpPage');
+
   const statusColor = {שולם:'var(--success)',לתשלום:'#f59e0b',אחר:'#6b7280'};
   const ce = can('edit');
   body.innerHTML = exps.length===0
     ? _emptyState(9, (DB.expenses||[]).length ? { action: 'clearExpFilters()' } : null, { icon: '💸', title: 'אין הוצאות רשומות', hint: 'הוצאות נרשמות כאן ומופיעות מול ההכנסות בדשבורד', action: 'openExpenseModal()', label: '+ הוסף הוצאה', needEdit: true })
-    : exps.map(e=>`<tr>
+    : pageExps.map(e=>`<tr>
         <td style="font-size:12px">${fmt(e.date)}</td>
         <td><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">${escHtml(e.dept)}</span></td>
         <td style="font-weight:600">${escHtml(e.purpose)}</td>

@@ -11,7 +11,7 @@ const BUDGET = {
   'boot to app': 6000, 'renderAll': 400, 'showPage donors': 400, 'showPage donations': 250,
   'showPage dash': 400, 'donors filter': 250, 'donations search keystroke': 150,
   'openDonorModal': 400, 'findDuplicateDonors': 250, 'checkAllFieldDuplicates': 250,
-  'saveDB': 500, '_merge3DB self': 250,
+  'saveDB': 500, '_merge3DB self': 250, 'showPage expenses': 250, 'expenses search keystroke': 150,
 };
 
 (async () => {
@@ -54,6 +54,13 @@ const BUDGET = {
     ds.value = 'כהן'; ds.dispatchEvent(new Event('input'));
     T.pageResetOnFilter = _donsPage === 1;
     ds.value = ''; ds.dispatchEvent(new Event('input'));
+    time('showPage expenses', () => showPage('expenses'));
+    T.expenseRowsInDom = document.getElementById('expListBody').children.length;
+    T.expensePagerShown = !!document.getElementById('expPagination').innerHTML;
+    T.expenseSummaryDepts = document.getElementById('expDeptSummary').children.length;
+    const es = document.getElementById('expSearch');
+    time('expenses search keystroke', () => { es.value = 'הוצאה'; es.dispatchEvent(new Event('input')); });
+    es.value = ''; es.dispatchEvent(new Event('input'));
     time('showPage dash', () => showPage('dash'));
     time('openDonorModal', () => openDonorModal('D5'));
     closeModal('donorModal');
@@ -61,6 +68,7 @@ const BUDGET = {
     time('findDuplicateDonors', () => findDuplicateDonors());
     time('saveDB', () => saveDB());
     time('_merge3DB self', () => _merge3DB(_baseDB, DB, _baseDB));
+    T.pagerLabels = document.querySelectorAll('#expPagination button[aria-label]').length;
     T.jsonKB = Math.round(JSON.stringify(DB).length / 1024);
     return T;
   });
@@ -75,6 +83,10 @@ const BUDGET = {
   ok('page 2 shows a different window', r.page2Differs, r);
   ok('totals stay whole-set across pages', r.page2Total === r.donationsTotalLabel, [r.page2Total, r.donationsTotalLabel]);
   ok('changing a filter returns to page 1', r.pageResetOnFilter, r);
+  ok('expenses table paginates (200 rows in the DOM)', r.expenseRowsInDom === 200, r.expenseRowsInDom);
+  ok('expenses pager is shown', r.expensePagerShown, r);
+  ok('expense summary still covers every filtered row', r.expenseSummaryDepts === 3, r.expenseSummaryDepts);
+  ok('pager buttons are labelled', r.pagerLabels >= 4, r.pagerLabels);
 
   console.log(JSON.stringify(r, null, 1));
   T.forEach(l => console.log(l));
